@@ -1,26 +1,68 @@
+import { BarcodeScanner } from '@/components/barcode-scanner';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from 'nativewind';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ScanScreen() {
     const { colorScheme, toggleColorScheme } = useColorScheme();
+    const [showScanner, setShowScanner] = useState(false);
+    const [barcodeInput, setBarcodeInput] = useState('');
+
+    const handleBarcodeScanned = (barcode: string) => {
+        setBarcodeInput(barcode);
+        setShowScanner(false);
+    };
 
     return (
-        <SafeAreaView className="flex-1 bg-background items-center justify-center">
-            <View className="items-center">
+        <SafeAreaView className="flex-1 bg-background">
+            <View className="flex-1 items-center justify-center px-6">
+                {/* Başlık */}
+                <Text className="text-foreground text-2xl font-bold mb-2">
+                    Barkod Tara
+                </Text>
+                <Text className="text-muted-foreground text-center mb-8">
+                    Barkodu manuel girin veya kamera ile tarayın
+                </Text>
+
+                {/* Manuel Barkod Girişi */}
+                <View className="w-full mb-6">
+                    <Text className="text-foreground font-medium mb-2">Barkod Numarası</Text>
+                    <TextInput
+                        value={barcodeInput}
+                        onChangeText={setBarcodeInput}
+                        placeholder="Örn: 8690632006314"
+                        placeholderTextColor={colorScheme === 'dark' ? '#A0A0A0' : '#757575'}
+                        keyboardType="numeric"
+                        className="bg-secondary/50 border border-border rounded-2xl px-4 py-4 text-foreground text-base font-mono"
+                    />
+                </View>
+
+                {/* Barkod Tara Butonu */}
                 <TouchableOpacity
-                    className="bg-primary w-48 h-48 rounded-full items-center justify-center shadow-lg"
+                    className="bg-primary w-full py-4 rounded-2xl items-center mb-4"
                     activeOpacity={0.7}
+                    onPress={() => setShowScanner(true)}
                 >
-                    <Ionicons name="barcode-outline" size={64} color="white" />
-                    <Text className="text-primary-foreground font-bold text-lg mt-2 text-center px-4">
-                        Barkod Tara
+                    <View className="flex-row items-center">
+                        <Ionicons name="barcode-outline" size={24} color="white" />
+                        <Text className="text-primary-foreground font-bold text-base ml-2">
+                            Kamera ile Tara
+                        </Text>
+                    </View>
+                </TouchableOpacity>
+
+                {/* Ara Butonu (Şimdilik disabled) */}
+                <TouchableOpacity
+                    className={`w-full py-4 rounded-2xl items-center ${barcodeInput ? 'bg-accent' : 'bg-muted'}`}
+                    activeOpacity={0.7}
+                    disabled={!barcodeInput}
+                >
+                    <Text className={`font-bold text-base ${barcodeInput ? 'text-accent-foreground' : 'text-muted-foreground'}`}>
+                        Ürünü Ara
                     </Text>
                 </TouchableOpacity>
-                <Text className="text-muted-foreground mt-6 text-base">
-                    Taramak için butona basın
-                </Text>
             </View>
 
             {/* Tema Değiştirme Butonu - Sağ Alt Köşe Sabit */}
@@ -37,6 +79,13 @@ export default function ScanScreen() {
             >
                 <Ionicons name={colorScheme === 'dark' ? "sunny" : "moon"} size={24} color="#FFFFFF" />
             </TouchableOpacity>
+
+            {/* Barkod Scanner Modal */}
+            <BarcodeScanner
+                visible={showScanner}
+                onClose={() => setShowScanner(false)}
+                onBarcodeConfirmed={handleBarcodeScanned}
+            />
         </SafeAreaView>
     );
 }
