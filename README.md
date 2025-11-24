@@ -1,50 +1,74 @@
-# Welcome to your Expo app 👋
+# Besin Denetle 🍎
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Barkod okuma ve besin değeri analizi yapan mobil uygulama ve backend API.
 
-## Get started
+## 📁 Monorepo Yapısı
 
-1. Install dependencies
+Bu proje pnpm workspaces kullanılarak organize edilmiş bir monorepo'dur:
 
-   ```bash
-   npm install
-   ```
+```
+apps/
+  ├── mobile/     # React Native (Expo) mobil uygulaması
+  └── backend/    # Backend API (Node.js/Python)
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+packages/
+  └── shared/     # Ortak tipler ve utility'ler
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🚀 Başlangıç
 
-## Learn more
+### Gereksinimler
 
-To learn more about developing your project with Expo, look at the following resources:
+- Node.js >= 18
+- pnpm >= 8
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+# pnpm kur (eğer yoksa)
+npm install -g pnpm
 
-## Join the community
+# Tüm bağımlılıkları yükle
+pnpm install
+```
 
-Join our community of developers creating universal apps.
+### Mobil Uygulamayı Çalıştırma
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+# Development server başlat
+pnpm mobile
+
+# Android'de çalıştır
+pnpm mobile:android
+
+# iOS'ta çalıştır (macOS gerekli)
+pnpm mobile:ios
+```
+
+### Backend'i Çalıştırma
+
+```bash
+pnpm backend
+```
+
+_(Henüz implement edilmedi)_
+
+## 📦 Workspace Komutları
+
+```bash
+# Sadece mobile için bağımlılık ekle
+pnpm --filter @besin-denetle/mobile add <package>
+
+# Sadece backend için bağımlılık ekle
+pnpm --filter @besin-denetle/backend add <package>
+
+# Tüm workspace'leri temizle
+pnpm clean
+```
+
+## 📚 Daha Fazla Bilgi
+
+- [Mobile App README](./apps/mobile/README.md)
+- [Backend README](./apps/backend/README.md)
+
+## 📄 Lisans
+
+GPL-3.0

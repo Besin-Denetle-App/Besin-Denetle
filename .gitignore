@@ -1,13 +1,21 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
+# pnpm
+.pnpm-store/
+
 # dependencies
 node_modules/
+**/node_modules/
+
+# Build outputs
+**/dist/
+**/build/
 
 # Expo
-.expo/
+**/.expo/
 dist/
 web-build/
-expo-env.d.ts
+**/expo-env.d.ts
 
 # Native
 .kotlin/
@@ -25,6 +33,8 @@ expo-env.d.ts
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+*.log
+pnpm-debug.log*
 
 # macOS
 .DS_Store
