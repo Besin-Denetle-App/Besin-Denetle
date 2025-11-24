@@ -12,14 +12,14 @@ export default function HomeScreen() {
         {/* Başlık Alanı */}
         <View className="mb-6 mt-2">
           <Text className="text-3xl font-bold text-foreground">Besin Denetle</Text>
-          <Text className="text-muted-foreground text-base">Sağlıklı seçimler yapın</Text>
+          <Text className="text-muted-foreground text-base">Daha sağlıklı bir yaşam için seçimlerinizi doğru yapın</Text>
         </View>
 
         {/* Arama Çubuğu */}
         <View className="flex-row items-center bg-secondary/50 rounded-2xl px-4 py-3 border border-border">
           <Ionicons name="search" size={24} className="text-muted-foreground" color={colorScheme === 'dark' ? '#A3A3A3' : '#737373'} />
           <TextInput
-            placeholder="Ürün ara (örn. Süt, Çikolata)"
+            placeholder="Ürün adı, marka veya barkod ara..."
             className="flex-1 ml-3 text-foreground text-base"
             placeholderTextColor={colorScheme === 'dark' ? '#A3A3A3' : '#737373'}
           />
@@ -29,7 +29,7 @@ export default function HomeScreen() {
         <View className="flex-1 items-center justify-center">
           <Ionicons name="nutrition-outline" size={64} color={colorScheme === 'dark' ? '#404040' : '#E5E5E5'} />
           <Text className="text-muted-foreground mt-4 text-center">
-            Barkod taratın veya ürün arayın
+            Geçmiş aramalarınız burada görünecek. Başlamak için barkod taratın veya ürün arayın.
           </Text>
         </View>
       </View>

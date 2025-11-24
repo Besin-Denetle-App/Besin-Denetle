@@ -24,7 +24,6 @@ export default function RootLayout() {
       <View className={`flex-1 ${colorScheme}`}>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
         </Stack>
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} backgroundColor={colorScheme === 'dark' ? '#0a0a0a' : '#ffffff'} />
       </View>
