@@ -9,7 +9,7 @@ Bu proje pnpm workspaces kullanılarak organize edilmiş bir monorepo'dur:
 ```
 apps/
   ├── mobile/     # React Native (Expo) mobil uygulaması
-  └── backend/    # Backend API (Node.js/Python)
+  └── backend/    # Backend API
 
 packages/
   └── shared/     # Ortak tipler ve utility'ler
