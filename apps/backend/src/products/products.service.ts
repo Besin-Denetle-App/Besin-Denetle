@@ -1,28 +1,34 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Product } from '../entities';
 
 @Injectable()
 export class ProductsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Product)
+    private productRepository: Repository<Product>,
+  ) {}
 
-  create(data: Prisma.ProductCreateInput) {
-    return this.prisma.product.create({ data });
+  // Yeni ürün oluştur
+  create(data: Partial<Product>) {
+    const product = this.productRepository.create(data);
+    return this.productRepository.save(product);
   }
 
+  // Tüm ürünleri getir
   findAll() {
-    return this.prisma.product.findMany();
+    return this.productRepository.find();
   }
 
+  // Barcode'a göre ürün getir (ilişkilerle birlikte)
   findOne(barcode: string) {
-    return this.prisma.product.findUnique({
+    return this.productRepository.findOne({
       where: { barcode },
-      include: {
+      relations: {
         variantSection1s: {
-          include: {
-            variantSection2s: true,
-            votes: true,
-          },
+          variantSection2s: true,
+          votes: true,
         },
       },
     });

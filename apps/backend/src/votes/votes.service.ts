@@ -1,12 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Vote } from '../entities';
 
 @Injectable()
 export class VotesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Vote)
+    private voteRepository: Repository<Vote>,
+  ) {}
 
-  create(data: Prisma.VoteCreateInput) {
-    return this.prisma.vote.create({ data });
+  // Yeni oy oluştur
+  create(data: Partial<Vote>) {
+    const vote = this.voteRepository.create(data);
+    return this.voteRepository.save(vote);
   }
 }

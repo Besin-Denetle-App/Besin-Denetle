@@ -1,16 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { VariantSection1, VariantSection2 } from '../entities';
 
 @Injectable()
 export class VariantsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(VariantSection1)
+    private variantSection1Repository: Repository<VariantSection1>,
+    @InjectRepository(VariantSection2)
+    private variantSection2Repository: Repository<VariantSection2>,
+  ) {}
 
-  createSection1(data: Prisma.VariantSection1CreateInput) {
-    return this.prisma.variantSection1.create({ data });
+  // Section 1 variant'ı oluştur
+  createSection1(data: Partial<VariantSection1>) {
+    const variant = this.variantSection1Repository.create(data);
+    return this.variantSection1Repository.save(variant);
   }
 
-  createSection2(data: Prisma.VariantSection2CreateInput) {
-    return this.prisma.variantSection2.create({ data });
+  // Section 2 variant'ı oluştur
+  createSection2(data: Partial<VariantSection2>) {
+    const variant = this.variantSection2Repository.create(data);
+    return this.variantSection2Repository.save(variant);
   }
 }
