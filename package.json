@@ -12,7 +12,7 @@
     "clean": "pnpm -r exec rm -rf node_modules && rm -rf node_modules"
   },
   "devDependencies": {
-    "typescript": "~5.9.2"
+    "typescript": "^5.7.3"
   },
   "engines": {
     "node": ">=18.0.0",

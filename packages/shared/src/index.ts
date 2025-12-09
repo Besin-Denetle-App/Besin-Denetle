@@ -1,74 +1,250 @@
 // ============================================
-// BARCODE TİPLERİ
+// ENUMS
 // ============================================
 
+/**
+ * Oy tipi
+ */
+export enum VoteType {
+  UP = 'UP',
+  DOWN = 'DOWN',
+}
+
+/**
+ * Barkod durumu
+ */
+export enum BarcodeStatus {
+  PENDING = 0, // AI henüz sorgulamadı
+  ACTIVE = 1, // Besin ürünü, aktif
+  REJECTED = 2, // Besin değil
+}
+
+// ============================================
+// ENTITY TİPLERİ
+// ============================================
+
+/**
+ * Barkod Entity
+ */
 export interface Barcode {
-  value: string;
-  type: BarcodeType;
-  timestamp: number;
+  id: string;
+  code: string; // Barkod numarası
+  status: BarcodeStatus;
+  isFlagged: boolean; // Kullanıcı itiraz etti mi?
+  createdAt: Date;
 }
 
-export type BarcodeType = 'ean13' | 'ean8' | 'upc_a' | 'upc_e' | 'code128' | 'code39';
-
-// ============================================
-// ÜRÜN TİPLERİ
-// ============================================
-
+/**
+ * Ürün Entity
+ */
 export interface Product {
-  barcode: string;
+  id: string;
+  barcodeId: string; // FK -> Barcode
+  brand: string | null;
   name: string;
+  quantity: string | null; // "500g", "1L"
+  isManual: boolean; // false=AI, true=Manuel
+  isFlagged: boolean; // Hata var mı?
+  createdAt: Date;
+}
+
+/**
+ * Ürün İçeriği Entity (İçindekiler, Besin Değerleri)
+ */
+export interface ProductContent {
+  id: string;
+  productId: string; // FK -> Product
+  ingredients: string | null;
+  allergens: string | null;
+  nutritionTable: NutritionTable | null;
+  score: number; // Oy skoru
+  voteCount: number; // Oy veren kişi sayısı
+  isManual: boolean;
+  createdAt: Date;
+}
+
+/**
+ * İçerik Analizi Entity (AI Yorumu)
+ */
+export interface ContentAnalysis {
+  id: string;
+  productContentId: string; // FK -> ProductContent
+  analysisText: string;
+  score: number;
+  voteCount: number;
+  isManual: boolean;
+  createdAt: Date;
+}
+
+/**
+ * Oy Entity
+ */
+export interface Vote {
+  id: string;
+  userId: string; // Google Auth User ID
+  productContentId: string | null; // FK -> ProductContent
+  contentAnalysisId: string | null; // FK -> ContentAnalysis
+  voteType: VoteType;
+  updatedAt: Date;
+  createdAt: Date;
+}
+
+/**
+ * Beslenme Tablosu (JSONB)
+ * Ürünün 100g veya 1 porsiyonundaki besin değerlerini tutar.
+ */
+export interface NutritionTable {
+  servingSize?: string; // Porsiyon bilgisi (örn: "100g", "30ml")
+  calories: number; // Kalori (kcal)
+  protein: number; // Protein (gram)
+  carbohydrates: number; // Karbonhidrat (gram)
+  sugars?: number; // Şeker (gram) - Opsiyonel
+  fat: number; // Yağ (gram)
+  saturatedFat?: number; // Doymuş Yağ (gram) - Opsiyonel
+  fiber?: number; // Lif (gram) - Opsiyonel
+  sodium?: number; // Sodyum (mg) - Opsiyonel
+  salt?: number; // Tuz (gram) - Opsiyonel
+}
+
+// ============================================
+// DTO'LAR (Data Transfer Objects)
+// ============================================
+
+/**
+ * Barkod sorgulama DTO
+ */
+export interface QueryBarcodeDto {
+  code: string;
+}
+
+/**
+ * Barkod oluşturma DTO
+ */
+export interface CreateBarcodeDto {
+  code: string;
+  status?: BarcodeStatus;
+}
+
+/**
+ * Ürün oluşturma DTO
+ */
+export interface CreateProductDto {
+  barcodeId: string;
   brand?: string;
-  imageUrl?: string;
-  categories?: string[];
-  nutritionInfo?: NutritionInfo;
-  ingredients?: string[];
-  allergens?: string[];
-  labels?: string[]; // Örn: "Vegan", "Gluten-free"
+  name: string;
+  quantity?: string;
+  isManual?: boolean;
 }
 
-export interface NutritionInfo {
-  servingSize?: string; // Örn: "100g"
-  calories: number;
-  protein: number;      // gram
-  carbohydrates: number; // gram
-  sugars?: number;      // gram
-  fat: number;          // gram
-  saturatedFat?: number; // gram
-  fiber?: number;       // gram
-  sodium?: number;      // mg
-  salt?: number;        // gram
+/**
+ * Ürün içeriği oluşturma DTO
+ */
+export interface CreateProductContentDto {
+  productId: string;
+  ingredients?: string;
+  allergens?: string;
+  nutritionTable?: NutritionTable;
+  isManual?: boolean;
+}
+
+/**
+ * İçerik analizi oluşturma DTO
+ */
+export interface CreateContentAnalysisDto {
+  productContentId: string;
+  analysisText: string;
+  isManual?: boolean;
+}
+
+/**
+ * Oy verme DTO
+ */
+export interface CreateVoteDto {
+  userId: string;
+  productContentId?: string;
+  contentAnalysisId?: string;
+  voteType: VoteType;
+}
+
+/**
+ * Oy güncelleme DTO
+ */
+export interface UpdateVoteDto {
+  voteType: VoteType;
+}
+
+/**
+ * Flag DTO
+ */
+export interface FlagDto {
+  userId: string;
+  reason?: string;
 }
 
 // ============================================
-// NUTRI-SCORE
+// RESPONSE TİPLERİ
 // ============================================
 
-export type NutriScore = 'A' | 'B' | 'C' | 'D' | 'E';
-
-export interface NutriScoreData {
-  grade: NutriScore;
-  score: number; // -15 ile +40 arası
-}
-
-// ============================================
-// API RESPONSE TİPLERİ
-// ============================================
-
+/**
+ * Genel API Response
+ */
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
   error?: string;
+  message?: string;
 }
 
-export interface ProductSearchResponse {
-  products: Product[];
-  total: number;
-  page: number;
-  pageSize: number;
+/**
+ * Barkod sorgulama sonucu
+ */
+export interface BarcodeQueryResponse {
+  barcode: Barcode;
+  products?: ProductDetail[]; // Eğer status=1 Active ise
+  message?: string; // Eğer status=2 Rejected ise
+}
+
+/**
+ * Ürün detayı (Tüm varyantlarla)
+ */
+export interface ProductDetail {
+  product: Product;
+  contents: ProductContentDetail[];
+}
+
+/**
+ * İçerik detayı (Tüm analizlerle)
+ */
+export interface ProductContentDetail {
+  content: ProductContent;
+  analyses: ContentAnalysis[];
+  userVote?: Vote; // Kullanıcının bu content için oyu
+}
+
+/**
+ * Tam sayfa verisi
+ */
+export interface FullPageData {
+  product: Product;
+  displayedContent: ProductContent; // En yüksek skorlu
+  displayedAnalysis: ContentAnalysis; // En yüksek skorlu
+  userContentVote?: Vote;
+  userAnalysisVote?: Vote;
+  alternativeContents?: ProductContent[]; // Diğer varyantlar
+  alternativeAnalyses?: ContentAnalysis[]; // Diğer varyantlar
+}
+
+/**
+ * Oy verme sonucu
+ */
+export interface VoteResponse {
+  vote: Vote;
+  updatedScore: number;
+  updatedVoteCount: number;
 }
 
 // ============================================
-// UTILITY FONKSİYONLARI
+// VALIDATION HELPERS
 // ============================================
 
 /**
@@ -79,67 +255,46 @@ export function isValidEAN13(barcode: string): boolean {
     return false;
   }
 
-  // Checksum kontrolü
   const digits = barcode.split('').map(Number);
   const checksum = digits.pop()!;
-  
+
   const sum = digits.reduce((acc, digit, index) => {
     return acc + digit * (index % 2 === 0 ? 1 : 3);
   }, 0);
-  
+
   const calculatedChecksum = (10 - (sum % 10)) % 10;
-  
+
   return checksum === calculatedChecksum;
 }
 
 /**
- * Barkod tipi validasyonu
+ * Barkod formatı validasyonu (EAN-13, EAN-8, UPC-A)
  */
-export function isValidBarcode(barcode: string, type?: BarcodeType): boolean {
-  if (!type || type === 'ean13') {
-    return isValidEAN13(barcode);
-  }
-  
-  if (type === 'ean8') {
-    return /^\d{8}$/.test(barcode);
-  }
-  
-  if (type === 'upc_a') {
-    return /^\d{12}$/.test(barcode);
-  }
-  
-  // Diğer tipler için basit regex
-  return barcode.length > 0;
+export function isValidBarcode(barcode: string): boolean {
+  if (/^\d{13}$/.test(barcode)) return isValidEAN13(barcode);
+  if (/^\d{8}$/.test(barcode)) return true; // EAN-8
+  if (/^\d{12}$/.test(barcode)) return true; // UPC-A
+  return false;
 }
+
+// ============================================
+// CONSTANTS
+// ============================================
 
 /**
- * Nutri-Score hesaplama (basitleştirilmiş)
- * Gerçek algoritma çok daha karmaşık: https://www.santepubliquefrance.fr/
+ * Maksimum varyant limitleri
  */
-export function calculateNutriScore(nutrition: NutritionInfo): NutriScoreData {
-  // Bu basitleştirilmiş bir versiyondur
-  // Gerçek Nutri-Score algoritması çok daha detaylıdır
-  
-  let score = 0;
-  
-  // Negatif puanlar (kötü öğeler)
-  score += Math.min(Math.floor(nutrition.calories / 335) * 1, 10); // Kalori
-  score += Math.min(Math.floor((nutrition.sugars || 0) / 4.5) * 1, 10); // Şeker
-  score += Math.min(Math.floor(nutrition.saturatedFat || 0), 10); // Doymuş yağ
-  score += Math.min(Math.floor((nutrition.sodium || 0) / 90) * 1, 10); // Sodyum
-  
-  // Pozitif puanlar (iyi öğeler) - çıkar
-  score -= Math.min(Math.floor((nutrition.fiber || 0) / 0.9) * 1, 5); // Lif
-  score -= Math.min(Math.floor(nutrition.protein / 1.6) * 1, 5); // Protein
-  
-  // Grade belirle
-  let grade: NutriScore;
-  if (score <= -1) grade = 'A';
-  else if (score <= 2) grade = 'B';
-  else if (score <= 10) grade = 'C';
-  else if (score <= 18) grade = 'D';
-  else grade = 'E';
-  
-  return { grade, score };
-}
+export const MAX_VARIANTS = {
+  CONTENTS_PER_PRODUCT: 3,
+  ANALYSES_PER_CONTENT: 3,
+} as const;
 
+/**
+ * Score değişim değerleri
+ */
+export const SCORE_CHANGES = {
+  NEW_UPVOTE: 1,
+  NEW_DOWNVOTE: -1,
+  UP_TO_DOWN: -2,
+  DOWN_TO_UP: 2,
+} as const;
