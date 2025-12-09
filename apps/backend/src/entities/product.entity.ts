@@ -1,28 +1,50 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { BaseEntity } from '../common/base.entity';
+import { Barcode } from './barcode.entity';
+import { ProductContent } from './product-content.entity';
 
-// Product Entity - Ürünün temel bilgileri (barcode)
 @Entity('products')
-export class Product {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export class Product extends BaseEntity {
+  @ManyToOne(() => Barcode, (barcode) => barcode.products)
+  @JoinColumn({ name: 'barcode_id' })
+  barcode: Barcode;
 
-  @Column({ unique: true })
-  barcode: string;
+  @Column()
+  barcodeId: string;
 
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  /**
+   * Ürün Markası
+   */
+  @Column({ nullable: true })
+  brand: string;
 
-  @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+  /**
+   * Ürün Adı
+   */
+  @Column()
+  name: string;
 
-  // Relations - İlişkiler  
-  @OneToMany('VariantSection1', (variant: any) => variant.product)
-  variantSection1s: any[];
+  /**
+   * Miktar / Gramaj (örn: 500g, 1L)
+   */
+  @Column({ nullable: true })
+  quantity: string;
+
+  /**
+   * Veri Kaynağı
+   * False = AI tarafından oluşturuldu
+   * True = Kullanıcı manuel girdi
+   */
+  @Column({ default: false })
+  isManual: boolean;
+
+  /**
+   * Hata Bildirimi
+   * True = Kullanıcılar bu üründe hata bildirdi
+   */
+  @Column({ default: false })
+  isFlagged: boolean;
+
+  @OneToMany(() => ProductContent, (content) => content.product)
+  contents: ProductContent[];
 }

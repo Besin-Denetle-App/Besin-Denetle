@@ -1,50 +1,43 @@
-import {
-    Column,
-    CreateDateColumn,
-    Entity,
-    JoinColumn,
-    ManyToOne,
-    PrimaryGeneratedColumn,
-} from 'typeorm';
-import { VariantSection1 } from './variant-section1.entity';
-import { VariantSection2 } from './variant-section2.entity';
-import { VoteType } from './vote-type.enum';
+import { VoteType } from '@besin-denetle/shared';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { BaseEntity } from '../common/base.entity';
+import { ContentAnalysis } from './content-analysis.entity';
+import { ProductContent } from './product-content.entity';
 
-// Vote Entity - Kullanıcı oyları
 @Entity('votes')
-export class Vote {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export class Vote extends BaseEntity {
+  /**
+   * Oy Veren Kullanıcı ID
+   * Firebase/Google Auth ID'si tutulur.
+   */
+  @Column()
+  userId: string; // Google Auth ID or similar
 
-  @Column({ name: 'user_id' })
-  userId: string; // Google Auth'tan gelen kullanıcı ID
+  @ManyToOne(() => ProductContent, (content) => content.votes, {
+    nullable: true,
+  })
+  @JoinColumn({ name: 'product_content_id' })
+  productContent: ProductContent;
 
-  @Column({ name: 'variant_section1_id', nullable: true })
-  variantSection1Id: string | null;
+  @Column({ nullable: true })
+  productContentId: string;
 
-  @Column({ name: 'variant_section2_id', nullable: true })
-  variantSection2Id: string | null;
+  @ManyToOne(() => ContentAnalysis, (analysis) => analysis.votes, {
+    nullable: true,
+  })
+  @JoinColumn({ name: 'content_analysis_id' })
+  contentAnalysis: ContentAnalysis;
 
+  @Column({ nullable: true })
+  contentAnalysisId: string;
+
+  /**
+   * Oy Tipi
+   * UP (Yukarı) veya DOWN (Aşağı)
+   */
   @Column({
     type: 'enum',
     enum: VoteType,
-    name: 'vote_type',
   })
-  voteType: VoteType; // UPVOTE veya DOWNVOTE
-
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
-
-  // Relations - İlişkiler
-  @ManyToOne(() => VariantSection1, (variant) => variant.votes, {
-    nullable: true,
-  })
-  @JoinColumn({ name: 'variant_section1_id' })
-  variantSection1: VariantSection1 | null;
-
-  @ManyToOne(() => VariantSection2, (variant) => variant.votes, {
-    nullable: true,
-  })
-  @JoinColumn({ name: 'variant_section2_id' })
-  variantSection2: VariantSection2 | null;
+  voteType: VoteType;
 }
