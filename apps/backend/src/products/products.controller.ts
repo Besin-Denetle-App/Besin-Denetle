@@ -1,23 +1,22 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { Product } from '../entities';
+import { Body, Controller, Post } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ConfirmProductDto, ScanProductDto } from './dto/create-product.dto';
 import { ProductsService } from './products.service';
 
+@ApiTags('products')
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @Post()
-  create(@Body() createProductDto: Partial<Product>) {
-    return this.productsService.create(createProductDto);
+  @Post('scan')
+  @ApiOperation({ summary: 'Scan a barcode with image. AI checks if it is food.' })
+  scan(@Body() dto: ScanProductDto) {
+    return this.productsService.scan(dto);
   }
 
-  @Get()
-  findAll() {
-    return this.productsService.findAll();
-  }
-
-  @Get(':barcode')
-  findOne(@Param('barcode') barcode: string) {
-    return this.productsService.findOne(barcode);
+  @Post('confirm')
+  @ApiOperation({ summary: 'Confirm AI result and save to DB' })
+  confirm(@Body() dto: ConfirmProductDto) {
+    return this.productsService.confirm(dto);
   }
 }
