@@ -10,18 +10,37 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
+  // Swagger konfigürasyonu
   const config = new DocumentBuilder()
     .setTitle('Besin Denetle API')
-    .setDescription('The Besin Denetle API description')
+    .setDescription('Besin Denetle mobil uygulama backend API dokümantasyonu')
     .setVersion('1.0')
-    .addTag('barcodes')
-    .addTag('products')
-    .addTag('votes')
+    // API tag'leri (controller sırasına göre)
+    .addTag('auth', 'Kimlik doğrulama işlemleri')
+    .addTag('products', 'Ürün tarama ve yönetimi')
+    .addTag('vote', 'Oylama işlemleri')
+    // JWT Bearer token desteği - Swagger UI'da "Authorize" butonu ekler
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'JWT access token giriniz',
+      },
+      'JWT-auth', // Security scheme adı
+    )
     .build();
   
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  await app.listen(process.env.PORT ?? 3000);
+  // Port seçimi:
+  // - PORT env variable varsa onu kullan
+  // - PORT=0 ile dinamik port seçilebilir
+  const port = process.env.PORT ?? 3200;
+  await app.listen(port);
+  
+  console.log(`🚀 Server running on port ${port}`);
+  console.log(`📖 Swagger docs: http://localhost:${port}/api/docs`);
 }
 bootstrap();
