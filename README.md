@@ -1,73 +1,104 @@
 # Besin Denetle 🍎
 
-Barkod okuma ve besin değeri analizi yapan mobil uygulama ve backend API.
+Besin Denetle, tüketicilerin market alışverişlerinde ürünlerin içeriklerini, besin değerlerini ve sağlık üzerindeki etkilerini şeffaf bir şekilde görmelerini sağlayan, Yapay Zeka (AI) destekli bir mobil platformdur.
 
-## 📁 Monorepo Yapısı
+## 🌟 Özellikler
 
-Bu proje pnpm workspaces kullanılarak organize edilmiş bir monorepo'dur:
+- **Barkod Tarama:** Ürün barkodlarını tarayarak anında detaylı bilgiye ulaşın.
+- **Yapay Zeka Analizi:** Veritabanında olmayan ürünler için AI (Google Gemini) anlık web araması yapar ve besin değerlerini analiz eder.
+- **Sağlık Puanlaması:** Ürünlerin içeriklerine göre otomatik sağlık skoru ve tüketim önerileri.
+- **Topluluk Odaklı Doğrulama:** Kullanıcı oylarıyla en doğru ürün verisinin hayatta kalması (Survival of the Fittest).
+- **Detaylı İçerik:** Alerjen uyarıları, besin değeri tabloları ve zararlı bileşen analizleri.
+
+## 🏗️ Proje Mimarisi
+
+Bu proje, **PNPM Workspaces** kullanılarak yönetilen bir Monorepo yapısına sahiptir.
 
 ```
-apps/
-  ├── mobile/     # React Native (Expo) mobil uygulaması
-  └── backend/    # Backend API
-
-packages/
-  └── shared/     # Ortak tipler ve utility'ler
+besin-denetle/
+├── apps/
+│   ├── backend/    # NestJS tabanlı REST API
+│   └── mobile/     # React Native (Expo) mobil uygulaması
+│
+└── packages/
+    └── shared/     # Ortak TypeScript tipleri, DTO'lar ve utility fonksiyonları
 ```
 
 ## 🚀 Başlangıç
 
+Projeyi yerel ortamınızda çalıştırmak için aşağıdaki adımları takip edebilirsiniz.
+
 ### Gereksinimler
 
-- Node.js >= 18
-- pnpm >= 8
+- **Node.js**: v18 veya üzeri
+- **PNPM**: v8 veya üzeri (`npm install -g pnpm`)
+- **Docker**: PostgreSQL veritabanını çalıştırmak için
+- **Expo Go**: Mobil uygulamayı test etmek için (iOS/Android)
 
-```bash
-# pnpm kur (eğer yoksa)
-npm install -g pnpm
+### Kurulum
 
-# Tüm bağımlılıkları yükle
-pnpm install
-```
+1. **Projeyi Klonlayın**
+   ```bash
+   git clone https://github.com/Furkan-Pasa/Besin-Denetle.git
+   cd Besin-Denetle
+   ```
 
-### Mobil Uygulamayı Çalıştırma
+2. **Bağımlılıkları Yükleyin**
+   ```bash
+   pnpm install
+   ```
+   > Monorepo yapısı sayesinde tüm projelerin bağımlılıkları tek komutla yüklenir.
 
-```bash
-# Development server başlat
-pnpm mobile
+3. **Veritabanını Başlatın**
+   ```bash
+   docker-compose up -d
+   ```
+   > Docker kurulu değilse, yerel bir PostgreSQL sunucusu kurup `.env` dosyasındaki bağlantı bilgilerini güncelleyebilirsiniz.
 
-# Android'de çalıştır
-pnpm mobile:android
+### Uygulamaları Çalıştırma
 
-# iOS'ta çalıştır (macOS gerekli)
-pnpm mobile:ios
-```
-
-### Backend'i Çalıştırma
+**Backend'i Başlatma:**
 
 ```bash
 pnpm backend
+# Veya detaylı log görmek için:
+cd apps/backend && pnpm dev
 ```
 
-_(Henüz implement edilmedi)_
-
-## 📦 Workspace Komutları
+**Mobil Uygulamayı Başlatma:**
 
 ```bash
-# Sadece mobile için bağımlılık ekle
-pnpm --filter @besin-denetle/mobile add <package>
-
-# Sadece backend için bağımlılık ekle
-pnpm --filter @besin-denetle/backend add <package>
-
-# Tüm workspace'leri temizle
-pnpm clean
+pnpm mobile
+# Veya:
+cd apps/mobile && pnpm start
 ```
 
-## 📚 Daha Fazla Bilgi
+## 🛠️ Teknoloji Yığını
 
-- [Mobile App README](./apps/mobile/README.md)
+- **Mobile:** React Native, Expo, NativeWind (Tailwind CSS)
+- **Backend:** NestJS, TypeScript, TypeORM
+- **Database:** PostgreSQL (JSONB desteği ile)
+- **AI:** Google Gemini API (Search Grounding)
+
+## 📦 Paket Yönetimi
+
+Workspace içindeki paketlere bağımlılık eklemek için filter komutunu kullanabilirsiniz:
+
+```bash
+# Mobile uygulamasına paket ekleme
+pnpm --filter @besin-denetle/mobile add packet-name
+
+# Backend uygulamasına paket ekleme
+pnpm --filter @besin-denetle/backend add packet-name
+```
+
+## 📚 Dokümantasyon
+
+Daha detaylı bilgi için alt proje dokümanlarını inceleyebilirsiniz:
+
+- [Mobile README](./apps/mobile/README.md)
 - [Backend README](./apps/backend/README.md)
+- [Shared Package README](./packages/shared/README.md)
 
 ## 📄 Lisans
 
