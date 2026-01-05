@@ -1,10 +1,17 @@
+import {
+  ConfirmRequest,
+  RejectAnalysisRequest,
+  RejectContentRequest,
+  RejectProductRequest,
+  ScanRequest,
+} from '@besin-denetle/shared';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 /**
  * Barkod tarama isteği
  */
-export class ScanRequestDto {
+export class ScanRequestDto implements ScanRequest {
   @ApiProperty({ description: 'Barkod numarası', example: '8690000123456' })
   @IsString()
   @IsNotEmpty()
@@ -14,7 +21,7 @@ export class ScanRequestDto {
 /**
  * Ürün onaylama isteği
  */
-export class ConfirmRequestDto {
+export class ConfirmRequestDto implements ConfirmRequest {
   @ApiProperty({ description: 'Ürün ID', example: 'uuid' })
   @IsUUID()
   productId: string;
@@ -23,7 +30,7 @@ export class ConfirmRequestDto {
 /**
  * Ürün reddetme isteği
  */
-export class RejectProductRequestDto {
+export class RejectProductRequestDto implements RejectProductRequest {
   @ApiProperty({ description: 'Ürün ID', example: 'uuid' })
   @IsUUID()
   productId: string;
@@ -32,7 +39,7 @@ export class RejectProductRequestDto {
 /**
  * İçerik reddetme isteği
  */
-export class RejectContentRequestDto {
+export class RejectContentRequestDto implements RejectContentRequest {
   @ApiProperty({ description: 'İçerik ID', example: 'uuid' })
   @IsUUID()
   contentId: string;
@@ -41,7 +48,7 @@ export class RejectContentRequestDto {
 /**
  * Analiz reddetme isteği
  */
-export class RejectAnalysisRequestDto {
+export class RejectAnalysisRequestDto implements RejectAnalysisRequest {
   @ApiProperty({ description: 'Analiz ID', example: 'uuid' })
   @IsUUID()
   analysisId: string;

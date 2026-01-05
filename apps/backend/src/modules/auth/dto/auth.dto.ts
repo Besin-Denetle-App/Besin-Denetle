@@ -1,11 +1,16 @@
-import { AuthProvider } from '@besin-denetle/shared';
+import {
+  AuthProvider,
+  OAuthRequest,
+  RefreshTokenRequest,
+  RegisterRequest,
+} from '@besin-denetle/shared';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsEnum, IsNotEmpty, IsString } from 'class-validator';
 
 /**
  * OAuth login isteği
  */
-export class OAuthRequestDto {
+export class OAuthRequestDto implements OAuthRequest {
   @ApiProperty({ description: 'OAuth sağlayıcı', enum: AuthProvider })
   @IsEnum(AuthProvider)
   provider: AuthProvider;
@@ -19,7 +24,7 @@ export class OAuthRequestDto {
 /**
  * Kayıt tamamlama isteği
  */
-export class RegisterRequestDto {
+export class RegisterRequestDto implements RegisterRequest {
   @ApiProperty({ description: 'Geçici kayıt token' })
   @IsString()
   @IsNotEmpty()
@@ -38,7 +43,7 @@ export class RegisterRequestDto {
 /**
  * Token yenileme isteği
  */
-export class RefreshTokenRequestDto {
+export class RefreshTokenRequestDto implements RefreshTokenRequest {
   @ApiProperty({ description: 'Refresh token' })
   @IsString()
   @IsNotEmpty()
