@@ -1,8 +1,15 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { WinstonModule } from 'nest-winston';
+
+// Common
+import { HttpExceptionFilter, LoggingInterceptor } from './common';
+
+// Config
+import { createLoggerConfig, databaseConfig, jwtConfig } from './config';
 
 // Entity'ler
 import {
@@ -17,13 +24,17 @@ import {
 // Modüller
 import { AiModule } from './modules/ai';
 import { AuthModule } from './modules/auth';
+import { HealthModule } from './modules/health';
 import { ProductModule } from './modules/product';
 import { VoteModule } from './modules/vote';
 
 @Module({
   imports: [
+    // Winston logger (production'da dosyaya yazar, 50MB, 30 gün)
+    WinstonModule.forRoot(createLoggerConfig()),
     ConfigModule.forRoot({
       isGlobal: true,
+      load: [databaseConfig, jwtConfig],
     }),
     // API güvenliği için Rate Limiting ayarları (Brute-force koruması)
     ThrottlerModule.forRoot({
@@ -40,30 +51,39 @@ import { VoteModule } from './modules/vote';
         },
       ],
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432'),
-      username: process.env.DB_USER || 'myuser',
-      password: process.env.DB_PASSWORD || 'mypassword',
-      database: process.env.DB_NAME || 'besindenetle',
-      entities: [Barcode, Product, ProductContent, ContentAnalysis, User, Vote],
-      // Geliştirme (Dev) ortamında; entity dosyasında yaptığımız değişiklikleri otomatik olarak veritabanına yansıtır. 
-      // ANCAK Production ortamında bu özellik kapalıdır çünkü yanlışlıkla veri kaybına sebep olabilir 
-      // (örn. bir kolonu silersek içindeki veriler de gider). Production'da değişimler için "Migration" kullanıyoruz.
-      synchronize: process.env.NODE_ENV !== 'production',
-      logging: ['error'],
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('database.host'),
+        port: configService.get('database.port'),
+        username: configService.get('database.username'),
+        password: configService.get('database.password'),
+        database: configService.get('database.database'),
+        entities: [Barcode, Product, ProductContent, ContentAnalysis, User, Vote],
+        synchronize: configService.get('database.synchronize'),
+        logging: ['error'],
+      }),
     }),
     // Modüller
+    HealthModule,
     AuthModule,
     ProductModule,
     VoteModule,
     AiModule,
   ],
   providers: [
-    // Bu Guard'ı global olarak kaydediyoruz.
-    // Böylece her controller'ın tepesine tek tek @UseGuards() yazmamıza gerek kalmıyor.
-    // Uygulamaya gelen her istek otomatik olarak bu güvenlik kontrolünden geçecek.
+    // Global logging interceptor - tüm HTTP isteklerini loglar
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
+    },
+    // Global exception filter - tüm hataları standart formatta döndürür
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+    // Global rate limiting guard - brute-force koruması
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

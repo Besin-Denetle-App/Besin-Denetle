@@ -1,9 +1,9 @@
 import {
-  AI_RATE_LIMIT_MS,
-  AIAnalysisResult,
-  AIContentResult,
-  AIProductResult,
-  ProductType,
+    AI_RATE_LIMIT_MS,
+    AIAnalysisResult,
+    AIContentResult,
+    AIProductResult,
+    ProductType,
 } from '@besin-denetle/shared';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -28,6 +28,32 @@ export class AiService {
 
     if (this.isMockMode) {
       this.logger.warn('AI Service running in MOCK MODE - no API key provided');
+    }
+
+    // Her 1 saatte eski rate limit kayıtlarını temizle (bellek sızıntısını önler)
+    setInterval(() => {
+      this.cleanupOldRateLimitEntries();
+    }, 60 * 60 * 1000);
+  }
+
+  /**
+   * Eski rate limit kayıtlarını temizler.
+   * 1 saatten eski kayıtlar silinerek bellek tasarrufu sağlanır.
+   */
+  private cleanupOldRateLimitEntries(): void {
+    const now = Date.now();
+    const maxAge = 60 * 60 * 1000; // 1 saat
+    let deleted = 0;
+
+    for (const [key, timestamp] of this.lastCallTime) {
+      if (now - timestamp > maxAge) {
+        this.lastCallTime.delete(key);
+        deleted++;
+      }
+    }
+
+    if (deleted > 0) {
+      this.logger.debug(`Rate limit cleanup: ${deleted} eski kayıt silindi, ${this.lastCallTime.size} kayıt kaldı`);
     }
   }
 

@@ -1,13 +1,21 @@
-import { VoteTarget, VoteType } from '@besin-denetle/shared';
 import {
-  BadRequestException,
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  NotFoundException,
-  Post,
-  UseGuards,
+    ConfirmResponse,
+    RejectAnalysisResponse,
+    RejectContentResponse,
+    RejectProductResponse,
+    ScanResponse,
+    VoteTarget,
+    VoteType,
+} from '@besin-denetle/shared';
+import {
+    BadRequestException,
+    Body,
+    Controller,
+    HttpCode,
+    HttpStatus,
+    NotFoundException,
+    Post,
+    UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AiService } from '../ai/ai.service';
@@ -18,11 +26,11 @@ import { AnalysisService } from './analysis.service';
 import { BarcodeService } from './barcode.service';
 import { ContentService } from './content.service';
 import {
-  ConfirmRequestDto,
-  RejectAnalysisRequestDto,
-  RejectContentRequestDto,
-  RejectProductRequestDto,
-  ScanRequestDto,
+    ConfirmRequestDto,
+    RejectAnalysisRequestDto,
+    RejectContentRequestDto,
+    RejectProductRequestDto,
+    ScanRequestDto,
 } from './dto';
 import { ProductService } from './product.service';
 
@@ -50,7 +58,7 @@ export class ProductController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Barkod tara' })
   @ApiResponse({ status: 200, description: 'Ürün bulundu veya oluşturuldu' })
-  async scan(@Body() dto: ScanRequestDto): Promise<any> {
+  async scan(@Body() dto: ScanRequestDto): Promise<ScanResponse> {
     const { barcode } = dto;
 
     if (!barcode || barcode.trim() === '') {
@@ -115,7 +123,7 @@ export class ProductController {
   async confirm(
     @CurrentUser('id') userId: string,
     @Body() dto: ConfirmRequestDto,
-  ): Promise<any> {
+  ): Promise<ConfirmResponse> {
     const { productId } = dto;
 
     // Ürünü bul
@@ -196,7 +204,7 @@ export class ProductController {
   async rejectProduct(
     @CurrentUser('id') userId: string,
     @Body() dto: RejectProductRequestDto,
-  ): Promise<any> {
+  ): Promise<RejectProductResponse> {
     const { productId } = dto;
 
     // Ürünü bul
@@ -270,7 +278,7 @@ export class ProductController {
   async rejectContent(
     @CurrentUser('id') userId: string,
     @Body() dto: RejectContentRequestDto,
-  ): Promise<any> {
+  ): Promise<RejectContentResponse> {
     const { contentId } = dto;
 
     // İçeriği bul
@@ -364,7 +372,7 @@ export class ProductController {
   async rejectAnalysis(
     @CurrentUser('id') userId: string,
     @Body() dto: RejectAnalysisRequestDto,
-  ): Promise<any> {
+  ): Promise<RejectAnalysisResponse> {
     const { analysisId } = dto;
 
     // Analizi bul
