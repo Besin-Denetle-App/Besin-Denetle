@@ -9,7 +9,7 @@ import { WinstonModule } from 'nest-winston';
 import { HttpExceptionFilter, LoggingInterceptor } from './common';
 
 // Config
-import { createLoggerConfig, databaseConfig, jwtConfig } from './config';
+import { createLoggerConfig, databaseConfig, jwtConfig, oauthConfig } from './config';
 
 // Entity'ler
 import {
@@ -34,7 +34,7 @@ import { VoteModule } from './modules/vote';
     WinstonModule.forRoot(createLoggerConfig()),
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, jwtConfig],
+      load: [databaseConfig, jwtConfig, oauthConfig],
     }),
     // API güvenliği için Rate Limiting ayarları (Brute-force koruması)
     ThrottlerModule.forRoot({

@@ -3,6 +3,8 @@ import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
+import appleSignin from 'apple-signin-auth';
+import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { User } from '../../entities';
@@ -29,6 +31,9 @@ export class AuthService {
   private readonly isMockMode: boolean;
   private readonly jwtSecret: string;
   private readonly jwtExpiresIn: number;
+  private readonly googleClientId: string;
+  private readonly appleClientId: string;
+  private readonly googleClient: OAuth2Client;
 
   constructor(
     @InjectRepository(User)
@@ -39,6 +44,11 @@ export class AuthService {
     this.isMockMode = this.configService.get<string>('MOCK_AUTH') === 'true';
     this.jwtSecret = this.configService.get<string>('JWT_SECRET') || 'dev-secret-key';
     this.jwtExpiresIn = 60 * 60 * 24 * 7; // 7 gün (saniye)
+    this.googleClientId = this.configService.get<string>('oauth.google.clientId') || '';
+    this.appleClientId = this.configService.get<string>('oauth.apple.clientId') || '';
+    
+    // Google OAuth client (sadece gerçek modda kullanılır)
+    this.googleClient = new OAuth2Client(this.googleClientId);
 
     if (this.isMockMode) {
       this.logger.warn('Auth Service running in MOCK MODE');
@@ -47,6 +57,11 @@ export class AuthService {
     // Production uyarısı: JWT_SECRET set edilmemişse
     if (!this.configService.get<string>('JWT_SECRET')) {
       this.logger.warn('⚠️ JWT_SECRET not set, using dev fallback. DO NOT use in production!');
+    }
+
+    // OAuth client ID kontrolü
+    if (!this.isMockMode && !this.googleClientId && !this.appleClientId) {
+      this.logger.warn('⚠️ OAuth client IDs not configured. Real OAuth will fail!');
     }
   }
 
@@ -213,14 +228,79 @@ export class AuthService {
     provider: AuthProvider,
     token: string,
   ): Promise<{ providerId: string; email: string }> {
+    // Mock mod aktifse, her zaman mock kullan
     if (this.isMockMode) {
       return this.mockVerifyOAuthToken(provider, token);
     }
 
-    // TODO: Gerçek OAuth doğrulama
-    // Google: https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=TOKEN
-    // Apple: JWT doğrulama
-    return this.mockVerifyOAuthToken(provider, token);
+    // Gerçek OAuth doğrulama
+    switch (provider) {
+      case AuthProvider.GOOGLE:
+        return this.verifyGoogleToken(token);
+      case AuthProvider.APPLE:
+        return this.verifyAppleToken(token);
+      default:
+        throw new UnauthorizedException(`Desteklenmeyen OAuth sağlayıcısı: ${provider}`);
+    }
+  }
+
+  /**
+   * Google ID Token doğrulama
+   * Frontend'den gelen idToken'u Google API ile doğrular.
+   */
+  private async verifyGoogleToken(idToken: string): Promise<{ providerId: string; email: string }> {
+    try {
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken,
+        audience: this.googleClientId,
+      });
+
+      const payload: TokenPayload | undefined = ticket.getPayload();
+
+      if (!payload || !payload.sub || !payload.email) {
+        throw new UnauthorizedException('Google token geçersiz veya eksik bilgi içeriyor');
+      }
+
+      this.logger.debug(`Google OAuth doğrulama başarılı: ${payload.email}`);
+
+      return {
+        providerId: payload.sub,
+        email: payload.email,
+      };
+    } catch (error) {
+      this.logger.error(`Google OAuth doğrulama hatası: ${(error as Error).message}`);
+      throw new UnauthorizedException('Google token doğrulanamadı');
+    }
+  }
+
+  /**
+   * Apple Identity Token doğrulama
+   * Frontend'den gelen identityToken'u Apple public key ile doğrular.
+   */
+  private async verifyAppleToken(identityToken: string): Promise<{ providerId: string; email: string }> {
+    try {
+      const appleUser = await appleSignin.verifyIdToken(identityToken, {
+        audience: this.appleClientId,
+        ignoreExpiration: false,
+      });
+
+      if (!appleUser.sub) {
+        throw new UnauthorizedException('Apple token geçersiz veya eksik bilgi içeriyor');
+      }
+
+      // Apple ilk girişte email verir, sonraki girişlerde vermeyebilir
+      const email = appleUser.email || `${appleUser.sub}@privaterelay.appleid.com`;
+
+      this.logger.debug(`Apple OAuth doğrulama başarılı: ${email}`);
+
+      return {
+        providerId: appleUser.sub,
+        email,
+      };
+    } catch (error) {
+      this.logger.error(`Apple OAuth doğrulama hatası: ${(error as Error).message}`);
+      throw new UnauthorizedException('Apple token doğrulanamadı');
+    }
   }
 
   /**
