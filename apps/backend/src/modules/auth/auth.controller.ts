@@ -1,11 +1,17 @@
 import {
-    Body,
-    Controller,
-    HttpCode,
-    HttpStatus,
-    Post,
-    Request,
-    UseGuards,
+  LogoutResponse,
+  OAuthResponse,
+  RefreshTokenResponse,
+  RegisterResponse,
+} from '@besin-denetle/shared';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -29,26 +35,26 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'OAuth ile giriş' })
   @ApiResponse({ status: 200, description: 'Login başarılı veya tempToken döner' })
-  async oauth(@Body() dto: OAuthRequestDto): Promise<any> {
+  async oauth(@Body() dto: OAuthRequestDto): Promise<OAuthResponse> {
     const result = await this.authService.validateOAuth(dto.provider, dto.token);
 
     if (result.isNewUser) {
       return {
         isNewUser: true,
-        tempToken: result.tempToken,
+        tempToken: result.tempToken!,
         message: 'Kayıt tamamlanmalı',
       };
     }
 
     return {
       isNewUser: false,
-      accessToken: result.accessToken,
-      refreshToken: result.refreshToken,
+      accessToken: result.accessToken!,
+      refreshToken: result.refreshToken!,
       user: {
-        id: result.user?.id,
-        username: result.user?.username,
-        email: result.user?.email,
-        role: result.user?.role,
+        id: result.user!.id,
+        username: result.user!.username,
+        email: result.user!.email,
+        role: result.user!.role,
       },
     };
   }
@@ -61,7 +67,7 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Kayıt tamamla' })
   @ApiResponse({ status: 201, description: 'Kayıt başarılı' })
-  async register(@Body() dto: RegisterRequestDto): Promise<any> {
+  async register(@Body() dto: RegisterRequestDto): Promise<RegisterResponse> {
     const result = await this.authService.completeRegistration(
       dto.tempToken,
       dto.username,
@@ -88,7 +94,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Token yenile' })
   @ApiResponse({ status: 200, description: 'Yeni token döner' })
-  async refresh(@Body() dto: RefreshTokenRequestDto): Promise<any> {
+  async refresh(@Body() dto: RefreshTokenRequestDto): Promise<RefreshTokenResponse> {
     const tokens = await this.authService.refreshTokens(dto.refreshToken);
 
     return {
@@ -107,11 +113,11 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Çıkış yap' })
   @ApiResponse({ status: 200, description: 'Çıkış başarılı' })
-  async logout(@Request() req: any): Promise<any> {
+  async logout(@Request() req: any): Promise<LogoutResponse> {
     // Token blacklist uygulanabilir (opsiyonel)
     return {
       message: 'Çıkış başarılı',
-      userId: req.user?.id,
+      userId: req.user?.id ?? '',
     };
   }
 }

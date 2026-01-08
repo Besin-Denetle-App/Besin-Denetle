@@ -1,6 +1,6 @@
 {
   "name": "@besin-denetle/shared",
-  "version": "1.0.2",
+  "version": "1.1.4",
   "private": true,
   "description": "Shared types, DTOs and utilities for Besin Denetle",
   "main": "dist/index.js",

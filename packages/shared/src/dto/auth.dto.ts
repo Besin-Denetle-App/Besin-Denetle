@@ -9,22 +9,38 @@ export interface OAuthRequest {
 }
 
 /**
- * OAuth yanıtı - Mevcut kullanıcı için
+ * OAuth yanıtı - Yeni kullanıcı için (kayıt gerekli)
  */
-export interface OAuthLoginResponse {
-  accessToken: string;
-  refreshToken: string;
-  user: IUser;
+export interface OAuthNewUserResponse {
+  isNewUser: true;
+  tempToken: string;
+  message: string;
 }
 
 /**
- * OAuth yanıtı - Yeni kullanıcı için
+ * Kullanıcı bilgileri (public alanlar)
  */
-export interface OAuthRegisterResponse {
-  tempToken: string;
+export interface UserPublicInfo {
+  id: string;
+  username: string;
   email: string;
-  needsRegistration: true;
+  role: IUser['role'];
 }
+
+/**
+ * OAuth yanıtı - Mevcut kullanıcı için (login başarılı)
+ */
+export interface OAuthExistingUserResponse {
+  isNewUser: false;
+  accessToken: string;
+  refreshToken: string;
+  user: UserPublicInfo;
+}
+
+/**
+ * OAuth yanıtı - Her iki durumu kapsayan union type
+ */
+export type OAuthResponse = OAuthNewUserResponse | OAuthExistingUserResponse;
 
 /**
  * Kayıt isteği
@@ -41,7 +57,7 @@ export interface RegisterRequest {
 export interface RegisterResponse {
   accessToken: string;
   refreshToken: string;
-  user: IUser;
+  user: UserPublicInfo;
 }
 
 /**
@@ -57,4 +73,12 @@ export interface RefreshTokenRequest {
 export interface RefreshTokenResponse {
   accessToken: string;
   refreshToken: string;
+}
+
+/**
+ * Çıkış yanıtı
+ */
+export interface LogoutResponse {
+  message: string;
+  userId: string;
 }

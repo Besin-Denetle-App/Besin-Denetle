@@ -1,3 +1,4 @@
+import { VoteResponse } from '@besin-denetle/shared';
 import {
     Body,
     Controller,
@@ -34,7 +35,7 @@ export class VoteController {
   async vote(
     @CurrentUser('id') userId: string,
     @Body() dto: VoteRequestDto,
-  ): Promise<any> {
+  ): Promise<VoteResponse> {
     const result = await this.voteService.vote(
       userId,
       dto.target,

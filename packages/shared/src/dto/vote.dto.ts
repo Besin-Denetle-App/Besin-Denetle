@@ -14,7 +14,7 @@ export interface VoteRequest {
  */
 export interface VoteResponse {
   success: boolean;
-  newScore: number;
-  newVoteCount: number;
-  previousVote: VoteType | null; // Önceki oy (değişim için)
+  scoreDelta: number;
+  previousVote: VoteType | null;
 }
+
