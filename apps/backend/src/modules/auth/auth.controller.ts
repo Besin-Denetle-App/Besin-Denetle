@@ -1,19 +1,20 @@
 import {
-  LogoutResponse,
-  OAuthResponse,
-  RefreshTokenResponse,
-  RegisterResponse,
+    LogoutResponse,
+    OAuthResponse,
+    RefreshTokenResponse,
+    RegisterResponse,
 } from '@besin-denetle/shared';
 import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-  Request,
-  UseGuards,
+    Body,
+    Controller,
+    HttpCode,
+    HttpStatus,
+    Post,
+    Request,
+    UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { OAuthRequestDto, RefreshTokenRequestDto, RegisterRequestDto } from './dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -21,6 +22,10 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 /**
  * Auth Controller
  * OAuth, register, refresh, logout endpoint'leri
+ *
+ * Rate Limiting:
+ * - oauth, register: 5/dk (IP bazlı, brute-force koruması)
+ * - refresh, logout: 20/dk (User bazlı)
  */
 @ApiTags('auth')
 @Controller('auth')
@@ -30,9 +35,11 @@ export class AuthController {
   /**
    * POST /api/auth/oauth
    * OAuth token gönder, login veya tempToken al
+   * Rate Limit: 5/dk (IP bazlı - brute-force koruması)
    */
   @Post('oauth')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @ApiOperation({ summary: 'OAuth ile giriş' })
   @ApiResponse({ status: 200, description: 'Login başarılı veya tempToken döner' })
   async oauth(@Body() dto: OAuthRequestDto): Promise<OAuthResponse> {
@@ -62,9 +69,11 @@ export class AuthController {
   /**
    * POST /api/auth/register
    * Kayıt tamamla, JWT al
+   * Rate Limit: 5/dk (IP bazlı - brute-force koruması)
    */
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @ApiOperation({ summary: 'Kayıt tamamla' })
   @ApiResponse({ status: 201, description: 'Kayıt başarılı' })
   async register(@Body() dto: RegisterRequestDto): Promise<RegisterResponse> {
@@ -89,9 +98,11 @@ export class AuthController {
   /**
    * POST /api/auth/refresh
    * JWT yenile
+   * Rate Limit: 20/dk (User bazlı)
    */
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @ApiOperation({ summary: 'Token yenile' })
   @ApiResponse({ status: 200, description: 'Yeni token döner' })
   async refresh(@Body() dto: RefreshTokenRequestDto): Promise<RefreshTokenResponse> {
@@ -106,9 +117,11 @@ export class AuthController {
   /**
    * POST /api/auth/logout
    * Çıkış (client-side token silme)
+   * Rate Limit: 20/dk (User bazlı)
    */
   @Post('logout')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Çıkış yap' })

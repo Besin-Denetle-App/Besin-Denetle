@@ -58,6 +58,10 @@ export class User {
   @CreateDateColumn()
   created_at: Date;
 
+  // Son çevrimiçi olma tarihi (her authenticated istekte güncellenir)
+  @Column({ type: 'timestamp', nullable: true })
+  last_active: Date | null;
+
   // İlişkiler
   @OneToMany(() => Vote, (vote) => vote.user)
   votes: Vote[];

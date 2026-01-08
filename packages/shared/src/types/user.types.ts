@@ -26,6 +26,7 @@ export interface IUser {
   role: UserRole;
   is_active: boolean;
   created_at: Date;
+  last_active?: Date;
 }
 
 /**

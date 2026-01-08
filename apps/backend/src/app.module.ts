@@ -6,10 +6,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { WinstonModule } from 'nest-winston';
 
 // Common
-import { HttpExceptionFilter, LoggingInterceptor } from './common';
+import { HttpExceptionFilter, LastActiveInterceptor, LoggingInterceptor } from './common';
 
 // Config
-import { createLoggerConfig, databaseConfig, jwtConfig, oauthConfig } from './config';
+import {
+  createLoggerConfig,
+  databaseConfig,
+  jwtConfig,
+  oauthConfig,
+  throttlerConfig,
+} from './config';
 
 // Entity'ler
 import {
@@ -34,22 +40,21 @@ import { VoteModule } from './modules/vote';
     WinstonModule.forRoot(createLoggerConfig()),
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, jwtConfig, oauthConfig],
+      load: [databaseConfig, jwtConfig, oauthConfig, throttlerConfig],
     }),
-    // API güvenliği için Rate Limiting ayarları (Brute-force koruması)
-    ThrottlerModule.forRoot({
-      throttlers: [
-        {
-          name: 'short',
-          ttl: 1000, // 1 saniye
-          limit: 10, // Saniyede max 10 istek
-        },
-        {
-          name: 'medium',
-          ttl: 60000, // 1 dakika
-          limit: 100, // Dakikada max 100 istek
-        },
-      ],
+    // API güvenliği için Rate Limiting ayarları
+    // Katman 1: IP bazlı global limit (DDoS/CGNAT koruması)
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        throttlers: [
+          {
+            name: 'global',
+            ttl: configService.get<number>('throttler.global.ttl') || 60000,
+            limit: configService.get<number>('throttler.global.limit') || 1000,
+          },
+        ],
+      }),
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -71,6 +76,8 @@ import { VoteModule } from './modules/vote';
     ProductModule,
     VoteModule,
     AiModule,
+    // LastActiveInterceptor için User entity erişimi
+    TypeOrmModule.forFeature([User]),
   ],
   providers: [
     // Global logging interceptor - tüm HTTP isteklerini loglar
@@ -78,12 +85,17 @@ import { VoteModule } from './modules/vote';
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
     },
+    // Last active interceptor - authenticated kullanıcıların last_active tarihini günceller
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LastActiveInterceptor,
+    },
     // Global exception filter - tüm hataları standart formatta döndürür
     {
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
     },
-    // Global rate limiting guard - brute-force koruması
+    // Global rate limiting guard - brute-force koruması (IP bazlı)
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
@@ -91,6 +103,3 @@ import { VoteModule } from './modules/vote';
   ],
 })
 export class AppModule {}
-
-
-

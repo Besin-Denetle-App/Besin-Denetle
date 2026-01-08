@@ -19,7 +19,6 @@ async function bootstrap() {
     // API tag'leri (controller sırasına göre)
     .addTag('auth', 'Kimlik doğrulama işlemleri')
     .addTag('products', 'Ürün tarama ve yönetimi')
-    .addTag('vote', 'Oylama işlemleri')
     // JWT Bearer token desteği - Swagger UI'da "Authorize" butonu ekler
     .addBearerAuth(
       {

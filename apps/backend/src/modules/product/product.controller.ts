@@ -18,6 +18,7 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { AiService } from '../ai/ai.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -54,8 +55,12 @@ export class ProductController {
    * Barkod tarama servisi. { POST /api/products/scan }
    * Gelen barkodu önce veritabanında arar, yoksa AI servisine sorar.
    */
+  /**
+   * Rate Limit: 20/dk (normal akış)
+   */
   @Post('products/scan')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @ApiOperation({ summary: 'Barkod tara' })
   @ApiResponse({ status: 200, description: 'Ürün bulundu veya oluşturuldu' })
   async scan(@Body() dto: ScanRequestDto): Promise<ScanResponse> {
@@ -114,8 +119,12 @@ export class ProductController {
    * Kullanıcı ürünü doğruladığında çağrılır. { POST /api/products/confirm }
    * Bu aşamada ürünün detaylı içerik ve analiz verilerini hazırlayıp dönüyoruz.
    */
+  /**
+   * Rate Limit: 20/dk (normal akış)
+   */
   @Post('products/confirm')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Ürün onayla, içerik ve analiz getir' })
@@ -195,8 +204,12 @@ export class ProductController {
    * Kullanıcı ürünü "Bu değil" diyerek reddettiğinde çalışır. { POST /api/products/reject }
    * Sistem alternatif varyant varsa onu sunar, yoksa AI'dan yeni bir tahmin ister.
    */
+  /**
+   * Rate Limit: 6/dk (reject akışı - AI maliyeti yüksek)
+   */
   @Post('products/reject')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 6, ttl: 60000 } })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Ürün reddet, sonraki varyant getir' })
@@ -269,8 +282,12 @@ export class ProductController {
    * İçerik reddedildiğinde "Domino Etkisi" başlar. { POST /api/content/reject }
    * İçerik değişince, ona bağlı analiz de geçersiz olur ve yenilenmesi gerekir.
    */
+  /**
+   * Rate Limit: 6/dk (reject akışı - AI maliyeti yüksek, domino etkisi)
+   */
   @Post('content/reject')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 6, ttl: 60000 } })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'İçerik reddet (domino etkisi)' })
@@ -363,8 +380,12 @@ export class ProductController {
    * POST /api/analysis/reject
    * Analiz reddi - sadece yeni analysis
    */
+  /**
+   * Rate Limit: 6/dk (reject akışı - AI maliyeti yüksek)
+   */
   @Post('analysis/reject')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 6, ttl: 60000 } })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Analiz reddet' })

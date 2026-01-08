@@ -52,7 +52,4 @@ export const API_ENDPOINTS = {
   ANALYSIS: {
     REJECT: '/api/analysis/reject',
   },
-  VOTE: {
-    SUBMIT: '/api/vote',
-  },
 } as const;
