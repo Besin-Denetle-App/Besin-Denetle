@@ -87,7 +87,6 @@ export class ProductService {
       is_manual: data.is_manual ?? false,
       score: 0,
       vote_count: 0,
-      is_flagged: false,
     });
     return this.productRepository.save(product);
   }
@@ -125,12 +124,5 @@ export class ProductService {
       })
       .where('id = :id', { id })
       .execute();
-  }
-
-  /**
-   * Ürünü raporla (flag işaretle)
-   */
-  async flag(id: string): Promise<void> {
-    await this.productRepository.update(id, { is_flagged: true });
   }
 }

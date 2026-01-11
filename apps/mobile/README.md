@@ -47,13 +47,12 @@ Tüm proje bağımlılıklarını kurun:
 pnpm install
 ```
 
-### 2. Yapılandırma
-Mobil uygulamanın backend'e ulaşabilmesi için API adresini belirtmelisiniz. Varsayılan olarak localhost'a bakar.
-Fiziksel cihaz kullanıyorsanız bilgisayarınızın yerel IP adresini (örn: 192.168.1.x) kullanmalısınız.
+### 2. Environment Variables (.env)
+Mobil uygulamanın backend'e ulaşabilmesi için `.env` dosyası oluşturmalısınız.
 
-`.env` dosyası veya ilgili config dosyasında:
 ```bash
-EXPO_PUBLIC_API_URL=http://<BILGISAYAR_IP_ADRESI>:3200
+# .env.example dosyasını kopyalayın
+cp .env.example .env
 ```
 
 ### 3. Başlatma
@@ -83,6 +82,9 @@ eas login
 
 # Android APK oluştur
 eas build -p android --profile preview
+
+# Temiz build almak için
+npx expo prebuild --clean
 ```
 
 ### B. Local Build (Prebuild)

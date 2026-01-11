@@ -42,6 +42,10 @@ export class Barcode {
   @Column({ default: false })
   is_flagged: boolean;
 
+  // Kaç kez bildirildi (önceliklendirme için)
+  @Column({ type: 'int', default: 0 })
+  flag_count: number;
+
   // Kaydın oluşturulma tarihi
   @CreateDateColumn()
   created_at: Date;

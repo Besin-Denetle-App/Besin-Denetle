@@ -1,12 +1,12 @@
 import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
+    Column,
+    CreateDateColumn,
+    Entity,
+    Index,
+    JoinColumn,
+    ManyToOne,
+    OneToMany,
+    PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Barcode } from './barcode.entity';
 import { ProductContent } from './product-content.entity';
@@ -59,10 +59,6 @@ export class Product {
   // Kayıt tipi (false: AI üretimi, true: admin girişi)
   @Column({ default: false })
   is_manual: boolean;
-
-  // İçerik hatalı  olarak işaretlendi mi?
-  @Column({ default: false })
-  is_flagged: boolean;
 
   // Varyantın oluşturulma tarihi
   @CreateDateColumn()

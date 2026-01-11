@@ -1,9 +1,10 @@
 import {
-  ConfirmRequest,
-  RejectAnalysisRequest,
-  RejectContentRequest,
-  RejectProductRequest,
-  ScanRequest,
+    ConfirmRequest,
+    FlagBarcodeRequest,
+    RejectAnalysisRequest,
+    RejectContentRequest,
+    RejectProductRequest,
+    ScanRequest,
 } from '@besin-denetle/shared';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
@@ -52,4 +53,13 @@ export class RejectAnalysisRequestDto implements RejectAnalysisRequest {
   @ApiProperty({ description: 'Analiz ID', example: 'uuid' })
   @IsUUID()
   analysisId: string;
+}
+
+/**
+ * Barkod bildirme isteği
+ */
+export class FlagBarcodeRequestDto implements FlagBarcodeRequest {
+  @ApiProperty({ description: 'Barkod ID', example: 'uuid' })
+  @IsUUID()
+  barcodeId: string;
 }

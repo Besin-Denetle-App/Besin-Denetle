@@ -116,3 +116,19 @@ export interface AIContentResult {
  * AI Prompt 3 yanıtı - Sağlık analizi
  */
 export interface AIAnalysisResult extends IAnalysisResult {}
+
+// ==================== FLAG ====================
+
+/**
+ * Barkod bildirme isteği
+ */
+export interface FlagBarcodeRequest {
+  barcodeId: string;
+}
+
+/**
+ * Barkod bildirme yanıtı
+ */
+export interface FlagBarcodeResponse {
+  success: boolean;
+}

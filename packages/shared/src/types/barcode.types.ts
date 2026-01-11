@@ -23,6 +23,7 @@ export interface IBarcode {
   type: ProductType;
   is_manual: boolean;
   is_flagged: boolean;
+  flag_count: number;
   created_at: Date;
 }
 

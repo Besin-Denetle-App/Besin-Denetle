@@ -60,9 +60,10 @@ export class BarcodeService {
   }
 
   /**
-   * Barkodu raporla (flag işaretle)
+   * Barkodu raporla (flag işaretle ve sayacı artır)
    */
   async flag(id: string): Promise<void> {
+    await this.barcodeRepository.increment({ id }, 'flag_count', 1);
     await this.barcodeRepository.update(id, { is_flagged: true });
   }
 }

@@ -3,7 +3,7 @@ import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import appleSignin from 'apple-signin-auth';
+// import appleSignin from 'apple-signin-auth';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
@@ -32,7 +32,7 @@ export class AuthService {
   private readonly jwtSecret: string;
   private readonly jwtExpiresIn: number;
   private readonly googleClientId: string;
-  private readonly appleClientId: string;
+  // private readonly appleClientId: string;
   private readonly googleClient: OAuth2Client;
 
   constructor(
@@ -45,7 +45,7 @@ export class AuthService {
     this.jwtSecret = this.configService.get<string>('JWT_SECRET') || 'dev-secret-key';
     this.jwtExpiresIn = 60 * 60 * 24 * 7; // 7 gün (saniye)
     this.googleClientId = this.configService.get<string>('oauth.google.clientId') || '';
-    this.appleClientId = this.configService.get<string>('oauth.apple.clientId') || '';
+    // this.appleClientId = this.configService.get<string>('oauth.apple.clientId') || '';
     
     // Google OAuth client (sadece gerçek modda kullanılır)
     this.googleClient = new OAuth2Client(this.googleClientId);
@@ -60,7 +60,7 @@ export class AuthService {
     }
 
     // OAuth client ID kontrolü
-    if (!this.isMockMode && !this.googleClientId && !this.appleClientId) {
+    if (!this.isMockMode && !this.googleClientId /* && !this.appleClientId */) {
       this.logger.warn('⚠️ OAuth client IDs not configured. Real OAuth will fail!');
     }
   }
@@ -237,8 +237,8 @@ export class AuthService {
     switch (provider) {
       case AuthProvider.GOOGLE:
         return this.verifyGoogleToken(token);
-      case AuthProvider.APPLE:
-        return this.verifyAppleToken(token);
+      // case AuthProvider.APPLE:
+      //   return this.verifyAppleToken(token);
       default:
         throw new UnauthorizedException(`Desteklenmeyen OAuth sağlayıcısı: ${provider}`);
     }
@@ -277,6 +277,7 @@ export class AuthService {
    * Apple Identity Token doğrulama
    * Frontend'den gelen identityToken'u Apple public key ile doğrular.
    */
+  /*
   private async verifyAppleToken(identityToken: string): Promise<{ providerId: string; email: string }> {
     try {
       const appleUser = await appleSignin.verifyIdToken(identityToken, {
@@ -302,6 +303,7 @@ export class AuthService {
       throw new UnauthorizedException('Apple token doğrulanamadı');
     }
   }
+  */
 
   /**
    * Mock OAuth doğrulama

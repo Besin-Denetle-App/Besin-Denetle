@@ -11,7 +11,6 @@ export interface IProduct {
   score: number;
   vote_count: number;
   is_manual: boolean;
-  is_flagged: boolean;
   created_at: Date;
 }
 

@@ -2,6 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useEffect, useRef, useState } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { APP_CONFIG, SHADOWS } from '../../constants';
+import { lightImpact } from '../../utils/haptics';
+
+// Sabitleri constants'tan al
+const { confirmationThreshold, scanDebounceMs } = APP_CONFIG.scanner;
 
 interface BarcodeScannerProps {
     visible: boolean;
@@ -66,12 +71,15 @@ export function BarcodeScanner({ visible, onClose, onBarcodeConfirmed }: Barcode
         const now = Date.now();
         const timeSinceLastScan = now - lastScanTimeRef.current;
 
-        // 500ms içinde tekrar okuma yapılmışsa sayacı artır
-        if (timeSinceLastScan < 500) {
+        // Debounce süresi içinde tekrar okuma yapılmışsa sayacı artır
+        if (timeSinceLastScan < scanDebounceMs) {
             scanCountRef.current[data] = (scanCountRef.current[data] || 0) + 1;
 
-            // Aynı barkod 3 kez okunduysa onay ekranını göster
-            if (scanCountRef.current[data] >= 3) {
+            // Threshold'a ulaşıldıysa onay ekranını göster
+            if (scanCountRef.current[data] >= confirmationThreshold) {
+                // Haptic feedback - barkod okundu
+                lightImpact();
+                
                 setScannedBarcode(data);
                 setShowConfirmation(true);
                 scanCountRef.current = {}; // Sayacı sıfırla
@@ -168,14 +176,7 @@ export function BarcodeScanner({ visible, onClose, onBarcodeConfirmed }: Barcode
                     facing="back"
                     onBarcodeScanned={handleBarcodeScanned}
                     barcodeScannerSettings={{
-                        barcodeTypes: [
-                            'ean13',
-                            'ean8',
-                            'upc_a',
-                            'upc_e',
-                            'code128',
-                            'code39',
-                        ],
+                        barcodeTypes: APP_CONFIG.scanner.supportedFormats as any,
                     }}
                 />
 
@@ -210,13 +211,7 @@ export function BarcodeScanner({ visible, onClose, onBarcodeConfirmed }: Barcode
                 <TouchableOpacity
                     onPress={onClose}
                     className="absolute top-12 right-6 bg-black/70 w-12 h-12 rounded-full items-center justify-center"
-                    style={{
-                        shadowColor: '#000',
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.25,
-                        shadowRadius: 3.84,
-                        elevation: 5,
-                    }}
+                    style={SHADOWS.sm}
                 >
                     <Ionicons name="close" size={28} color="white" />
                 </TouchableOpacity>

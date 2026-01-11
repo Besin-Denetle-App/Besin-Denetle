@@ -28,6 +28,7 @@ import { BarcodeService } from './barcode.service';
 import { ContentService } from './content.service';
 import {
     ConfirmRequestDto,
+    FlagBarcodeRequestDto,
     RejectAnalysisRequestDto,
     RejectContentRequestDto,
     RejectProductRequestDto,
@@ -448,5 +449,32 @@ export class ProductController {
       isNew,
       noMoreVariants: false,
     };
+  }
+
+  /**
+   * POST /api/barcodes/flag
+   * Non-food barkodu bildir
+   * Rate Limit: 5/dk
+   */
+  @Post('barcodes/flag')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Barkodu bildir (non-food)' })
+  @ApiResponse({ status: 200, description: 'Bildirim alındı' })
+  async flagBarcode(
+    @Body() dto: FlagBarcodeRequestDto,
+  ): Promise<{ success: boolean }> {
+    const { barcodeId } = dto;
+
+    const barcode = await this.barcodeService.findById(barcodeId);
+    if (!barcode) {
+      throw new NotFoundException('Barkod bulunamadı');
+    }
+
+    await this.barcodeService.flag(barcodeId);
+
+    return { success: true };
   }
 }
