@@ -101,7 +101,11 @@ export class ContentService {
   /**
    * Score güncelle
    */
-  async updateScore(id: string, scoreDelta: number, voteCountDelta: number): Promise<void> {
+  async updateScore(
+    id: string,
+    scoreDelta: number,
+    voteCountDelta: number,
+  ): Promise<void> {
     await this.contentRepository
       .createQueryBuilder()
       .update(ProductContent)

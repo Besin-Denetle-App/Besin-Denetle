@@ -33,7 +33,10 @@ const dataSource = new DataSource({
 });
 
 async function importCsv() {
-  const csvFilePath = path.resolve(__dirname, '../../../../Ürün Listesi (14.442) .csv');
+  const csvFilePath = path.resolve(
+    __dirname,
+    '../../../../Ürün Listesi (14.442) .csv',
+  );
   console.log(`Starting Import from: ${csvFilePath}`);
 
   if (!fs.existsSync(csvFilePath)) {
@@ -43,15 +46,15 @@ async function importCsv() {
 
   // Connect to DB
   try {
-      await dataSource.initialize();
-      console.log('Database connected.');
+    await dataSource.initialize();
+    console.log('Database connected.');
   } catch (error) {
-      console.error('Database connection failed:', error);
-      return;
+    console.error('Database connection failed:', error);
+    return;
   }
 
   const rows: any[] = [];
-  
+
   await new Promise((resolve, reject) => {
     fs.createReadStream(csvFilePath)
       .pipe(csv())
@@ -64,10 +67,10 @@ async function importCsv() {
 
   // Helper to clean CSV values (trim whitespace, convert empty strings to null)
   const clean = (val: string | undefined): string | null => {
-      if (!val) return null;
-      // csv-parser handles quotes automatically, but we trim extra whitespace
-      const trimmed = val.trim();
-      return trimmed === '' ? null : trimmed;
+    if (!val) return null;
+    // csv-parser handles quotes automatically, but we trim extra whitespace
+    const trimmed = val.trim();
+    return trimmed === '' ? null : trimmed;
   };
 
   const batchSize = 100;
@@ -76,49 +79,49 @@ async function importCsv() {
   let createdProductCount = 0;
 
   for (let i = 0; i < rows.length; i += batchSize) {
-      const batch = rows.slice(i, i + batchSize);
-      
-      await dataSource.manager.transaction(async (transactionalEntityManager) => {
-          for (const row of batch) {
-              if (!row.barcode) continue;
-              const barcodeCode = row.barcode.trim();
-              
-              // 1. Check if Barcode exists
-              let barcode = await transactionalEntityManager.findOne(Barcode, {
-                  where: { code: barcodeCode }
-              });
+    const batch = rows.slice(i, i + batchSize);
 
-              if (!barcode) {
-                  // Create new Barcode
-                  barcode = transactionalEntityManager.create(Barcode, {
-                      code: barcodeCode,
-                      type: row.type ? parseInt(row.type, 10) : 0, // Default to 0 if missing
-                      is_manual: false, // Imported data is NOT manual
-                  });
-                  await transactionalEntityManager.save(Barcode, barcode);
-                  createdBarcodeCount++;
-              }
+    await dataSource.manager.transaction(async (transactionalEntityManager) => {
+      for (const row of batch) {
+        if (!row.barcode) continue;
+        const barcodeCode = row.barcode.trim();
 
-              // 2. Create Product (Variant)
-              const product = transactionalEntityManager.create(Product, {
-                  barcode: barcode,
-                  barcode_id: barcode.id,
-                  brand: clean(row.brand),
-                  name: clean(row.name),
-                  quantity: clean(row.quantity),
-                  image_url: clean(row.image_url),
-                  is_manual: false, // Imported data is NOT manual
-              });
+        // 1. Check if Barcode exists
+        let barcode = await transactionalEntityManager.findOne(Barcode, {
+          where: { code: barcodeCode },
+        });
 
-              await transactionalEntityManager.save(Product, product);
-              createdProductCount++;
-          }
-      });
+        if (!barcode) {
+          // Create new Barcode
+          barcode = transactionalEntityManager.create(Barcode, {
+            code: barcodeCode,
+            type: row.type ? parseInt(row.type, 10) : 0, // Default to 0 if missing
+            is_manual: false, // Imported data is NOT manual
+          });
+          await transactionalEntityManager.save(Barcode, barcode);
+          createdBarcodeCount++;
+        }
 
-      processedCount += batch.length;
-      if (processedCount % 1000 === 0) {
-          console.log(`Processed ${processedCount} / ${rows.length} rows...`);
+        // 2. Create Product (Variant)
+        const product = transactionalEntityManager.create(Product, {
+          barcode: barcode,
+          barcode_id: barcode.id,
+          brand: clean(row.brand),
+          name: clean(row.name),
+          quantity: clean(row.quantity),
+          image_url: clean(row.image_url),
+          is_manual: false, // Imported data is NOT manual
+        });
+
+        await transactionalEntityManager.save(Product, product);
+        createdProductCount++;
       }
+    });
+
+    processedCount += batch.length;
+    if (processedCount % 1000 === 0) {
+      console.log(`Processed ${processedCount} / ${rows.length} rows...`);
+    }
   }
 
   console.log('------------------------------------------------');

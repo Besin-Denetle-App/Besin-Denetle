@@ -34,7 +34,10 @@ const dataSource = new DataSource({
 
 async function analyzeCsv() {
   // Correct path to the CSV file in the root directory
-  const csvFilePath = path.resolve(__dirname, '../../../../Ürün Listesi (14.442) .csv');
+  const csvFilePath = path.resolve(
+    __dirname,
+    '../../../../Ürün Listesi (14.442) .csv',
+  );
   console.log(`Reading CSV from: ${csvFilePath}`);
 
   if (!fs.existsSync(csvFilePath)) {
@@ -52,12 +55,14 @@ async function analyzeCsv() {
       .on('data', (data: any) => {
         results.push(data);
         if (data.barcode) {
-             const trimmed = data.barcode.trim();
-             if (barcodes.has(trimmed)) {
-                 duplicateBarcodesInCsv++;
-                 console.log(`[Duplicate] Barcode: ${trimmed} | Name: ${data.name} | Row: ${JSON.stringify(data)}`);
-             }
-             barcodes.add(trimmed);
+          const trimmed = data.barcode.trim();
+          if (barcodes.has(trimmed)) {
+            duplicateBarcodesInCsv++;
+            console.log(
+              `[Duplicate] Barcode: ${trimmed} | Name: ${data.name} | Row: ${JSON.stringify(data)}`,
+            );
+          }
+          barcodes.add(trimmed);
         }
       })
       .on('end', resolve)
@@ -71,33 +76,37 @@ async function analyzeCsv() {
 
   // Connect to DB
   try {
-      await dataSource.initialize();
-      console.log('Database connected.');
+    await dataSource.initialize();
+    console.log('Database connected.');
 
-      const barcodeList = Array.from(barcodes);
-      const chunkSize = 1000;
-      let existingCount = 0;
+    const barcodeList = Array.from(barcodes);
+    const chunkSize = 1000;
+    let existingCount = 0;
 
-      for (let i = 0; i < barcodeList.length; i += chunkSize) {
-          const chunk = barcodeList.slice(i, i + chunkSize);
-          if (chunk.length === 0) continue;
-          
-          const count = await dataSource.getRepository(Barcode)
-              .createQueryBuilder('barcode')
-              .where('barcode.code IN (:...codes)', { codes: chunk })
-              .getCount();
-          existingCount += count;
-      }
+    for (let i = 0; i < barcodeList.length; i += chunkSize) {
+      const chunk = barcodeList.slice(i, i + chunkSize);
+      if (chunk.length === 0) continue;
 
-      console.log(`Existing Barcodes in DB (out of CSV unique ones): ${existingCount}`);
-      console.log(`New Barcodes to be created: ${barcodeList.length - existingCount}`);
+      const count = await dataSource
+        .getRepository(Barcode)
+        .createQueryBuilder('barcode')
+        .where('barcode.code IN (:...codes)', { codes: chunk })
+        .getCount();
+      existingCount += count;
+    }
 
+    console.log(
+      `Existing Barcodes in DB (out of CSV unique ones): ${existingCount}`,
+    );
+    console.log(
+      `New Barcodes to be created: ${barcodeList.length - existingCount}`,
+    );
   } catch (error) {
-      console.error('Database error:', error);
+    console.error('Database error:', error);
   } finally {
-      if (dataSource.isInitialized) {
-          await dataSource.destroy();
-      }
+    if (dataSource.isInitialized) {
+      await dataSource.destroy();
+    }
   }
 }
 

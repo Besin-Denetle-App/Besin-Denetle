@@ -27,7 +27,9 @@ export class ContentAnalysis {
   @Index()
   product_content_id: string;
 
-  @ManyToOne(() => ProductContent, (content) => content.analyses, { onDelete: 'CASCADE' })
+  @ManyToOne(() => ProductContent, (content) => content.analyses, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'product_content_id' })
   productContent: ProductContent;
 

@@ -6,4 +6,3 @@ export * from './dto';
 export { ProductController } from './product.controller';
 export { ProductModule } from './product.module';
 export { ProductService } from './product.service';
-

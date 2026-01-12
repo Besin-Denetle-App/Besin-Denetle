@@ -34,12 +34,7 @@ import { ProductService } from './product.service';
     AiModule,
   ],
   controllers: [ProductController],
-  providers: [
-    ProductService,
-    BarcodeService,
-    ContentService,
-    AnalysisService,
-  ],
+  providers: [ProductService, BarcodeService, ContentService, AnalysisService],
   exports: [ProductService, BarcodeService, ContentService, AnalysisService],
 })
 export class ProductModule {}

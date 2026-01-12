@@ -30,9 +30,9 @@ export const createLoggerConfig = () => {
       new winston.transports.DailyRotateFile({
         filename: 'logs/app-%DATE%.log',
         datePattern: 'YYYY-MM-DD',
-        maxSize: '50m',     // Dosya başına max 50MB
-        maxFiles: '30d',    // 30 gün sakla, eskilerini sil
-        zippedArchive: true,     // Eski logları gzip ile sıkıştır
+        maxSize: '50m', // Dosya başına max 50MB
+        maxFiles: '30d', // 30 gün sakla, eskilerini sil
+        zippedArchive: true, // Eski logları gzip ile sıkıştır
         format: winston.format.combine(
           winston.format.timestamp(),
           winston.format.json(),

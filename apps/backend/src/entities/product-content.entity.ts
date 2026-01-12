@@ -28,7 +28,9 @@ export class ProductContent {
   @Index()
   product_id: string;
 
-  @ManyToOne(() => Product, (product) => product.contents, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Product, (product) => product.contents, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'product_id' })
   product: Product;
 

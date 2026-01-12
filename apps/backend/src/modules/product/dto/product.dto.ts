@@ -1,10 +1,10 @@
 import {
-    ConfirmRequest,
-    FlagBarcodeRequest,
-    RejectAnalysisRequest,
-    RejectContentRequest,
-    RejectProductRequest,
-    ScanRequest,
+  ConfirmRequest,
+  FlagBarcodeRequest,
+  RejectAnalysisRequest,
+  RejectContentRequest,
+  RejectProductRequest,
+  ScanRequest,
 } from '@besin-denetle/shared';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, IsUUID } from 'class-validator';

@@ -6,4 +6,3 @@ export { CurrentUser } from './decorators/current-user.decorator';
 export * from './dto';
 export { JwtAuthGuard } from './guards/jwt-auth.guard';
 export { JwtStrategy } from './strategies/jwt.strategy';
-

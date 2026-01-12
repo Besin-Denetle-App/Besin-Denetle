@@ -1,4 +1,8 @@
-import { AuthProvider, TEMP_TOKEN_EXPIRY_MS, UserRole } from '@besin-denetle/shared';
+import {
+  AuthProvider,
+  TEMP_TOKEN_EXPIRY_MS,
+  UserRole,
+} from '@besin-denetle/shared';
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -42,11 +46,13 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {
     this.isMockMode = this.configService.get<string>('MOCK_AUTH') === 'true';
-    this.jwtSecret = this.configService.get<string>('JWT_SECRET') || 'dev-secret-key';
+    this.jwtSecret =
+      this.configService.get<string>('JWT_SECRET') || 'dev-secret-key';
     this.jwtExpiresIn = 60 * 60 * 24 * 7; // 7 gün (saniye)
-    this.googleClientId = this.configService.get<string>('oauth.google.clientId') || '';
+    this.googleClientId =
+      this.configService.get<string>('oauth.google.clientId') || '';
     // this.appleClientId = this.configService.get<string>('oauth.apple.clientId') || '';
-    
+
     // Google OAuth client (sadece gerçek modda kullanılır)
     this.googleClient = new OAuth2Client(this.googleClientId);
 
@@ -56,12 +62,16 @@ export class AuthService {
 
     // Production uyarısı: JWT_SECRET set edilmemişse
     if (!this.configService.get<string>('JWT_SECRET')) {
-      this.logger.warn('⚠️ JWT_SECRET not set, using dev fallback. DO NOT use in production!');
+      this.logger.warn(
+        '⚠️ JWT_SECRET not set, using dev fallback. DO NOT use in production!',
+      );
     }
 
     // OAuth client ID kontrolü
     if (!this.isMockMode && !this.googleClientId /* && !this.appleClientId */) {
-      this.logger.warn('⚠️ OAuth client IDs not configured. Real OAuth will fail!');
+      this.logger.warn(
+        '⚠️ OAuth client IDs not configured. Real OAuth will fail!',
+      );
     }
   }
 
@@ -72,7 +82,13 @@ export class AuthService {
   async validateOAuth(
     provider: AuthProvider,
     token: string,
-  ): Promise<{ isNewUser: boolean; tempToken?: string; accessToken?: string; refreshToken?: string; user?: User }> {
+  ): Promise<{
+    isNewUser: boolean;
+    tempToken?: string;
+    accessToken?: string;
+    refreshToken?: string;
+    user?: User;
+  }> {
     // OAuth token'ı doğrula ve kullanıcı bilgilerini al
     const oauthData = await this.verifyOAuthToken(provider, token);
 
@@ -122,12 +138,14 @@ export class AuthService {
     const tokenData = tempTokenStore.get(tempToken);
 
     if (!tokenData) {
-      throw new UnauthorizedException('Geçersiz veya süresi dolmuş kayıt token\'ı');
+      throw new UnauthorizedException(
+        "Geçersiz veya süresi dolmuş kayıt token'ı",
+      );
     }
 
     if (Date.now() > tokenData.expiresAt) {
       tempTokenStore.delete(tempToken);
-      throw new UnauthorizedException('Kayıt token\'ının süresi dolmuş');
+      throw new UnauthorizedException("Kayıt token'ının süresi dolmuş");
     }
 
     if (!termsAccepted) {
@@ -171,7 +189,9 @@ export class AuthService {
   /**
    * JWT yenileme
    */
-  async refreshTokens(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
+  async refreshTokens(
+    refreshToken: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     try {
       const payload = this.jwtService.verify(refreshToken, {
         secret: this.jwtSecret,
@@ -182,7 +202,9 @@ export class AuthService {
       });
 
       if (!user || !user.is_active) {
-        throw new UnauthorizedException('Kullanıcı bulunamadı veya aktif değil');
+        throw new UnauthorizedException(
+          'Kullanıcı bulunamadı veya aktif değil',
+        );
       }
 
       return this.generateTokens(user);
@@ -201,7 +223,10 @@ export class AuthService {
   /**
    * JWT token üret
    */
-  private generateTokens(user: User): { accessToken: string; refreshToken: string } {
+  private generateTokens(user: User): {
+    accessToken: string;
+    refreshToken: string;
+  } {
     const payload = {
       sub: user.id,
       username: user.username,
@@ -240,7 +265,9 @@ export class AuthService {
       // case AuthProvider.APPLE:
       //   return this.verifyAppleToken(token);
       default:
-        throw new UnauthorizedException(`Desteklenmeyen OAuth sağlayıcısı: ${provider}`);
+        throw new UnauthorizedException(
+          `Desteklenmeyen OAuth sağlayıcısı: ${provider}`,
+        );
     }
   }
 
@@ -248,7 +275,9 @@ export class AuthService {
    * Google ID Token doğrulama
    * Frontend'den gelen idToken'u Google API ile doğrular.
    */
-  private async verifyGoogleToken(idToken: string): Promise<{ providerId: string; email: string }> {
+  private async verifyGoogleToken(
+    idToken: string,
+  ): Promise<{ providerId: string; email: string }> {
     try {
       const ticket = await this.googleClient.verifyIdToken({
         idToken,
@@ -258,7 +287,9 @@ export class AuthService {
       const payload: TokenPayload | undefined = ticket.getPayload();
 
       if (!payload || !payload.sub || !payload.email) {
-        throw new UnauthorizedException('Google token geçersiz veya eksik bilgi içeriyor');
+        throw new UnauthorizedException(
+          'Google token geçersiz veya eksik bilgi içeriyor',
+        );
       }
 
       this.logger.debug(`Google OAuth doğrulama başarılı: ${payload.email}`);
@@ -268,7 +299,9 @@ export class AuthService {
         email: payload.email,
       };
     } catch (error) {
-      this.logger.error(`Google OAuth doğrulama hatası: ${(error as Error).message}`);
+      this.logger.error(
+        `Google OAuth doğrulama hatası: ${(error as Error).message}`,
+      );
       throw new UnauthorizedException('Google token doğrulanamadı');
     }
   }

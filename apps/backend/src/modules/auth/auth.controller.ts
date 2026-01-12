@@ -1,22 +1,31 @@
 import {
-    LogoutResponse,
-    OAuthResponse,
-    RefreshTokenResponse,
-    RegisterResponse,
+  LogoutResponse,
+  OAuthResponse,
+  RefreshTokenResponse,
+  RegisterResponse,
 } from '@besin-denetle/shared';
 import {
-    Body,
-    Controller,
-    HttpCode,
-    HttpStatus,
-    Post,
-    Request,
-    UseGuards,
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
-import { OAuthRequestDto, RefreshTokenRequestDto, RegisterRequestDto } from './dto';
+import {
+  OAuthRequestDto,
+  RefreshTokenRequestDto,
+  RegisterRequestDto,
+} from './dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 /**
@@ -41,9 +50,15 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @ApiOperation({ summary: 'OAuth ile giriş' })
-  @ApiResponse({ status: 200, description: 'Login başarılı veya tempToken döner' })
+  @ApiResponse({
+    status: 200,
+    description: 'Login başarılı veya tempToken döner',
+  })
   async oauth(@Body() dto: OAuthRequestDto): Promise<OAuthResponse> {
-    const result = await this.authService.validateOAuth(dto.provider, dto.token);
+    const result = await this.authService.validateOAuth(
+      dto.provider,
+      dto.token,
+    );
 
     if (result.isNewUser) {
       return {
@@ -105,7 +120,9 @@ export class AuthController {
   @Throttle({ default: { limit: 20, ttl: 60000 } })
   @ApiOperation({ summary: 'Token yenile' })
   @ApiResponse({ status: 200, description: 'Yeni token döner' })
-  async refresh(@Body() dto: RefreshTokenRequestDto): Promise<RefreshTokenResponse> {
+  async refresh(
+    @Body() dto: RefreshTokenRequestDto,
+  ): Promise<RefreshTokenResponse> {
     const tokens = await this.authService.refreshTokens(dto.refreshToken);
 
     return {

@@ -58,7 +58,10 @@ export class VoteService {
       await this.voteRepository.save(existingVote);
     } else {
       // Yeni oy
-      scoreDelta = voteType === VoteType.UP ? SCORE_CHANGES.NEW_UP : SCORE_CHANGES.NEW_DOWN;
+      scoreDelta =
+        voteType === VoteType.UP
+          ? SCORE_CHANGES.NEW_UP
+          : SCORE_CHANGES.NEW_DOWN;
       voteCountDelta = 1;
 
       // Yeni oy kaydı oluştur
@@ -139,13 +142,25 @@ export class VoteService {
   ): Promise<void> {
     switch (target) {
       case VoteTarget.PRODUCT:
-        await this.productService.updateScore(targetId, scoreDelta, voteCountDelta);
+        await this.productService.updateScore(
+          targetId,
+          scoreDelta,
+          voteCountDelta,
+        );
         break;
       case VoteTarget.CONTENT:
-        await this.contentService.updateScore(targetId, scoreDelta, voteCountDelta);
+        await this.contentService.updateScore(
+          targetId,
+          scoreDelta,
+          voteCountDelta,
+        );
         break;
       case VoteTarget.ANALYSIS:
-        await this.analysisService.updateScore(targetId, scoreDelta, voteCountDelta);
+        await this.analysisService.updateScore(
+          targetId,
+          scoreDelta,
+          voteCountDelta,
+        );
         break;
     }
   }

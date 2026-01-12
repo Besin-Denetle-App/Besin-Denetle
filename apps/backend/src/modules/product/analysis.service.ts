@@ -18,7 +18,9 @@ export class AnalysisService {
   /**
    * Content ID'sine göre en yüksek skorlu analizi getir
    */
-  async findBestByContentId(contentId: string): Promise<ContentAnalysis | null> {
+  async findBestByContentId(
+    contentId: string,
+  ): Promise<ContentAnalysis | null> {
     return this.analysisRepository.findOne({
       where: { product_content_id: contentId },
       order: { score: 'DESC', created_at: 'DESC' },
@@ -99,7 +101,11 @@ export class AnalysisService {
   /**
    * Score güncelle
    */
-  async updateScore(id: string, scoreDelta: number, voteCountDelta: number): Promise<void> {
+  async updateScore(
+    id: string,
+    scoreDelta: number,
+    voteCountDelta: number,
+  ): Promise<void> {
     await this.analysisRepository
       .createQueryBuilder()
       .update(ContentAnalysis)

@@ -1,9 +1,9 @@
 import {
-    CallHandler,
-    ExecutionContext,
-    Inject,
-    Injectable,
-    NestInterceptor,
+  CallHandler,
+  ExecutionContext,
+  Inject,
+  Injectable,
+  NestInterceptor,
 } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Observable } from 'rxjs';
@@ -40,14 +40,17 @@ export class LoggingInterceptor implements NestInterceptor {
         },
         error: (error: Error) => {
           const duration = Date.now() - start;
-          this.logger.error(`${method} ${url} - ${duration}ms - ${error.message}`, {
-            method,
-            url,
-            userId,
-            duration,
-            status: 'error',
-            error: error.message,
-          });
+          this.logger.error(
+            `${method} ${url} - ${duration}ms - ${error.message}`,
+            {
+              method,
+              url,
+              userId,
+              duration,
+              status: 'error',
+              error: error.message,
+            },
+          );
         },
       }),
     );

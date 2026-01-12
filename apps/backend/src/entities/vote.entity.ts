@@ -50,7 +50,10 @@ export class Vote {
   @Index()
   product_id: string | null;
 
-  @ManyToOne(() => Product, (product) => product.votes, { onDelete: 'CASCADE', nullable: true })
+  @ManyToOne(() => Product, (product) => product.votes, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
   @JoinColumn({ name: 'product_id' })
   product: Product | null;
 
@@ -59,7 +62,10 @@ export class Vote {
   @Index()
   product_content_id: string | null;
 
-  @ManyToOne(() => ProductContent, (content) => content.votes, { onDelete: 'CASCADE', nullable: true })
+  @ManyToOne(() => ProductContent, (content) => content.votes, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
   @JoinColumn({ name: 'product_content_id' })
   productContent: ProductContent | null;
 
@@ -68,7 +74,10 @@ export class Vote {
   @Index()
   content_analysis_id: string | null;
 
-  @ManyToOne(() => ContentAnalysis, (analysis) => analysis.votes, { onDelete: 'CASCADE', nullable: true })
+  @ManyToOne(() => ContentAnalysis, (analysis) => analysis.votes, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
   @JoinColumn({ name: 'content_analysis_id' })
   contentAnalysis: ContentAnalysis | null;
 

@@ -6,7 +6,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { WinstonModule } from 'nest-winston';
 
 // Common
-import { HttpExceptionFilter, LastActiveInterceptor, LoggingInterceptor } from './common';
+import {
+  HttpExceptionFilter,
+  LastActiveInterceptor,
+  LoggingInterceptor,
+} from './common';
 
 // Config
 import {
@@ -65,7 +69,14 @@ import { VoteModule } from './modules/vote';
         username: configService.get('database.username'),
         password: configService.get('database.password'),
         database: configService.get('database.database'),
-        entities: [Barcode, Product, ProductContent, ContentAnalysis, User, Vote],
+        entities: [
+          Barcode,
+          Product,
+          ProductContent,
+          ContentAnalysis,
+          User,
+          Vote,
+        ],
         synchronize: configService.get('database.synchronize'),
         logging: ['error'],
       }),

@@ -28,12 +28,12 @@ export default registerAs('throttler', () => ({
   // Normal akış: scan + confirm | 20/dk
   confirm: {
     ttl: 60000,
-    limit: 20, 
+    limit: 20,
   },
 
   // Reject akışı: kötüye kullanımı engelle | 6/dk
   reject: {
     ttl: 60000,
-    limit: 6, 
+    limit: 6,
   },
 }));

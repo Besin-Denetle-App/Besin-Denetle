@@ -1,9 +1,9 @@
 import {
-    AI_RATE_LIMIT_MS,
-    AIAnalysisResult,
-    AIContentResult,
-    AIProductResult,
-    ProductType,
+  AI_RATE_LIMIT_MS,
+  AIAnalysisResult,
+  AIContentResult,
+  AIProductResult,
+  ProductType,
 } from '@besin-denetle/shared';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -31,9 +31,12 @@ export class AiService {
     }
 
     // Her 1 saatte eski rate limit kayıtlarını temizle (bellek sızıntısını önler)
-    setInterval(() => {
-      this.cleanupOldRateLimitEntries();
-    }, 60 * 60 * 1000);
+    setInterval(
+      () => {
+        this.cleanupOldRateLimitEntries();
+      },
+      60 * 60 * 1000,
+    );
   }
 
   /**
@@ -53,7 +56,9 @@ export class AiService {
     }
 
     if (deleted > 0) {
-      this.logger.debug(`Rate limit cleanup: ${deleted} eski kayıt silindi, ${this.lastCallTime.size} kayıt kaldı`);
+      this.logger.debug(
+        `Rate limit cleanup: ${deleted} eski kayıt silindi, ${this.lastCallTime.size} kayıt kaldı`,
+      );
     }
   }
 
@@ -70,7 +75,9 @@ export class AiService {
     const remaining = AI_RATE_LIMIT_MS - elapsed;
 
     if (remaining > 0) {
-      this.logger.warn(`Rate limit active for ${key}. ${Math.ceil(remaining / 1000)}s remaining`);
+      this.logger.warn(
+        `Rate limit active for ${key}. ${Math.ceil(remaining / 1000)}s remaining`,
+      );
       throw new HttpException(
         `Lütfen ${Math.ceil(remaining / 1000)} saniye bekleyin`,
         HttpStatus.TOO_MANY_REQUESTS,
@@ -211,7 +218,8 @@ export class AiService {
     this.logger.debug(`[MOCK] Getting content for: ${brand} - ${name}`);
 
     return {
-      ingredients: 'Su, Şeker, Buğday Unu, Kakao Yağı, Yağsız Süt Tozu, Emülgatör (Lesitin)',
+      ingredients:
+        'Su, Şeker, Buğday Unu, Kakao Yağı, Yağsız Süt Tozu, Emülgatör (Lesitin)',
       allergens: 'Gluten, Süt ürünleri içerir. Fındık izleri içerebilir.',
       nutrition: {
         servingSize: '100g',
@@ -241,7 +249,8 @@ export class AiService {
       healthScore: 4,
       warnings: ['Yüksek şeker içeriği', 'Doymuş yağ oranı yüksek'],
       positives: ['Protein kaynağı', 'Lif içerir'],
-      recommendation: 'Haftada 1-2 kez, küçük porsiyonlar halinde tüketilebilir.',
+      recommendation:
+        'Haftada 1-2 kez, küçük porsiyonlar halinde tüketilebilir.',
     };
   }
 
@@ -255,4 +264,3 @@ export class AiService {
     return ProductType.FOOD; // Varsayılan olarak yiyecek
   }
 }
-

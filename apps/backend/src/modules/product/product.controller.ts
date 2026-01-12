@@ -1,23 +1,28 @@
 import {
-    ConfirmResponse,
-    RejectAnalysisResponse,
-    RejectContentResponse,
-    RejectProductResponse,
-    ScanResponse,
-    VoteTarget,
-    VoteType,
+  ConfirmResponse,
+  RejectAnalysisResponse,
+  RejectContentResponse,
+  RejectProductResponse,
+  ScanResponse,
+  VoteTarget,
+  VoteType,
 } from '@besin-denetle/shared';
 import {
-    BadRequestException,
-    Body,
-    Controller,
-    HttpCode,
-    HttpStatus,
-    NotFoundException,
-    Post,
-    UseGuards,
+  BadRequestException,
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  NotFoundException,
+  Post,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AiService } from '../ai/ai.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -27,12 +32,12 @@ import { AnalysisService } from './analysis.service';
 import { BarcodeService } from './barcode.service';
 import { ContentService } from './content.service';
 import {
-    ConfirmRequestDto,
-    FlagBarcodeRequestDto,
-    RejectAnalysisRequestDto,
-    RejectContentRequestDto,
-    RejectProductRequestDto,
-    ScanRequestDto,
+  ConfirmRequestDto,
+  FlagBarcodeRequestDto,
+  RejectAnalysisRequestDto,
+  RejectContentRequestDto,
+  RejectProductRequestDto,
+  ScanRequestDto,
 } from './dto';
 import { ProductService } from './product.service';
 
@@ -76,7 +81,9 @@ export class ProductController {
 
     if (barcodeEntity) {
       // Barkod mevcut, puanı en yüksek varyantı getiriyoruz.
-      const bestProduct = await this.productService.findBestByBarcodeId(barcodeEntity.id);
+      const bestProduct = await this.productService.findBestByBarcodeId(
+        barcodeEntity.id,
+      );
 
       if (bestProduct) {
         return {
@@ -91,13 +98,19 @@ export class ProductController {
     const aiResult = await this.aiService.identifyProduct(barcode);
 
     if (!aiResult.isFood || !aiResult.product) {
-      throw new NotFoundException('Bu barkodlu ürün bulunamadı veya gıda ürünü değil');
+      throw new NotFoundException(
+        'Bu barkodlu ürün bulunamadı veya gıda ürünü değil',
+      );
     }
 
     // Barkod yoksa oluştur
     if (!barcodeEntity) {
       const productType = this.aiService.getProductType(aiResult.isFood);
-      barcodeEntity = await this.barcodeService.create(barcode, productType, false);
+      barcodeEntity = await this.barcodeService.create(
+        barcode,
+        productType,
+        false,
+      );
     }
 
     // Ürün varyantı oluştur
@@ -143,7 +156,12 @@ export class ProductController {
     }
 
     // Otomatik UPVOTE - kullanıcı ürünü onayladı
-    await this.voteService.vote(userId, VoteTarget.PRODUCT, productId, VoteType.UP);
+    await this.voteService.vote(
+      userId,
+      VoteTarget.PRODUCT,
+      productId,
+      VoteType.UP,
+    );
 
     // Ürüne bağlı en iyi skorlu içerik varyantını buluyoruz
     let content = await this.contentService.findBestByProductId(productId);
@@ -190,8 +208,18 @@ export class ProductController {
     }
 
     // Otomatik UPVOTE - görüntülenen içerik ve analize +1 puan
-    await this.voteService.vote(userId, VoteTarget.CONTENT, content.id, VoteType.UP);
-    await this.voteService.vote(userId, VoteTarget.ANALYSIS, analysis.id, VoteType.UP);
+    await this.voteService.vote(
+      userId,
+      VoteTarget.CONTENT,
+      content.id,
+      VoteType.UP,
+    );
+    await this.voteService.vote(
+      userId,
+      VoteTarget.ANALYSIS,
+      analysis.id,
+      VoteType.UP,
+    );
 
     return {
       content,
@@ -214,7 +242,10 @@ export class ProductController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Ürün reddet, sonraki varyant getir' })
-  @ApiResponse({ status: 200, description: 'Sonraki varyant veya yeni AI ürünü' })
+  @ApiResponse({
+    status: 200,
+    description: 'Sonraki varyant veya yeni AI ürünü',
+  })
   async rejectProduct(
     @CurrentUser('id') userId: string,
     @Body() dto: RejectProductRequestDto,
@@ -228,7 +259,12 @@ export class ProductController {
     }
 
     // Otomatik DOWNVOTE - kullanıcı ürünü reddetti
-    await this.voteService.vote(userId, VoteTarget.PRODUCT, productId, VoteType.DOWN);
+    await this.voteService.vote(
+      userId,
+      VoteTarget.PRODUCT,
+      productId,
+      VoteType.DOWN,
+    );
 
     // Sonraki en yüksek skorlu varyantı bul (bu ürün hariç)
     const nextProduct = await this.productService.findBestExcluding(
@@ -306,7 +342,12 @@ export class ProductController {
     }
 
     // Otomatik DOWNVOTE - kullanıcı içeriği reddetti
-    await this.voteService.vote(userId, VoteTarget.CONTENT, contentId, VoteType.DOWN);
+    await this.voteService.vote(
+      userId,
+      VoteTarget.CONTENT,
+      contentId,
+      VoteType.DOWN,
+    );
 
     // Sonraki en yüksek skorlu içeriği bul
     let nextContent = await this.contentService.findBestExcluding(
@@ -342,7 +383,9 @@ export class ProductController {
     }
 
     // Domino etkisi: Yeni içeriğe bağlı analiz getir veya oluştur
-    let nextAnalysis = await this.analysisService.findBestByContentId(nextContent.id);
+    let nextAnalysis = await this.analysisService.findBestByContentId(
+      nextContent.id,
+    );
     let isAnalysisNew = false;
 
     if (!nextAnalysis) {
@@ -365,8 +408,18 @@ export class ProductController {
     }
 
     // Otomatik UPVOTE - yeni içerik ve analize +1 puan
-    await this.voteService.vote(userId, VoteTarget.CONTENT, nextContent.id, VoteType.UP);
-    await this.voteService.vote(userId, VoteTarget.ANALYSIS, nextAnalysis.id, VoteType.UP);
+    await this.voteService.vote(
+      userId,
+      VoteTarget.CONTENT,
+      nextContent.id,
+      VoteType.UP,
+    );
+    await this.voteService.vote(
+      userId,
+      VoteTarget.ANALYSIS,
+      nextAnalysis.id,
+      VoteType.UP,
+    );
 
     return {
       nextContent,
@@ -404,7 +457,12 @@ export class ProductController {
     }
 
     // Otomatik DOWNVOTE - kullanıcı analizi reddetti
-    await this.voteService.vote(userId, VoteTarget.ANALYSIS, analysisId, VoteType.DOWN);
+    await this.voteService.vote(
+      userId,
+      VoteTarget.ANALYSIS,
+      analysisId,
+      VoteType.DOWN,
+    );
 
     // Sonraki en yüksek skorlu analizi bul
     let nextAnalysis = await this.analysisService.findBestExcluding(
@@ -415,7 +473,9 @@ export class ProductController {
 
     if (!nextAnalysis) {
       // Alternatif yok - AI ile yeni analiz oluştur
-      const content = await this.contentService.findById(analysis.product_content_id);
+      const content = await this.contentService.findById(
+        analysis.product_content_id,
+      );
       if (!content) {
         throw new NotFoundException('İçerik bulunamadı');
       }
@@ -423,7 +483,9 @@ export class ProductController {
       const product = await this.productService.findById(content.product_id);
 
       // Varyant limitini kontrol et
-      await this.analysisService.enforceVariantLimit(analysis.product_content_id);
+      await this.analysisService.enforceVariantLimit(
+        analysis.product_content_id,
+      );
 
       const aiAnalysis = await this.aiService.analyzeContent(
         product?.brand ?? null,
@@ -442,7 +504,12 @@ export class ProductController {
     }
 
     // Otomatik UPVOTE - yeni analize +1 puan
-    await this.voteService.vote(userId, VoteTarget.ANALYSIS, nextAnalysis.id, VoteType.UP);
+    await this.voteService.vote(
+      userId,
+      VoteTarget.ANALYSIS,
+      nextAnalysis.id,
+      VoteType.UP,
+    );
 
     return {
       nextAnalysis,

@@ -1,12 +1,12 @@
 import {
-    Column,
-    CreateDateColumn,
-    Entity,
-    Index,
-    JoinColumn,
-    ManyToOne,
-    OneToMany,
-    PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Barcode } from './barcode.entity';
 import { ProductContent } from './product-content.entity';
@@ -27,7 +27,9 @@ export class Product {
   @Index()
   barcode_id: string;
 
-  @ManyToOne(() => Barcode, (barcode) => barcode.products, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Barcode, (barcode) => barcode.products, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'barcode_id' })
   barcode: Barcode;
 

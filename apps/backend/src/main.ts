@@ -6,7 +6,7 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
-  
+
   app.enableCors();
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
@@ -30,7 +30,7 @@ async function bootstrap() {
       'JWT-auth', // Security scheme adı
     )
     .build();
-  
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
@@ -39,7 +39,7 @@ async function bootstrap() {
   // - PORT=0 ile dinamik port seçilebilir
   const port = process.env.PORT ?? 3200;
   await app.listen(port);
-  
+
   logger.log(`🚀 Server running on port ${port}`);
   logger.log(`📖 Swagger docs: http://localhost:${port}/api/docs`);
 }

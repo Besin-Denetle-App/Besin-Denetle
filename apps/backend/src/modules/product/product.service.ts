@@ -114,7 +114,11 @@ export class ProductService {
   /**
    * Score güncelle
    */
-  async updateScore(id: string, scoreDelta: number, voteCountDelta: number): Promise<void> {
+  async updateScore(
+    id: string,
+    scoreDelta: number,
+    voteCountDelta: number,
+  ): Promise<void> {
     await this.productRepository
       .createQueryBuilder()
       .update(Product)

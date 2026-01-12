@@ -1,10 +1,10 @@
 import {
-    ArgumentsHost,
-    Catch,
-    ExceptionFilter,
-    HttpException,
-    HttpStatus,
-    Logger,
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+  HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -24,7 +24,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     // Hata mesajını çıkar
     let message = exception.message;
-    if (typeof exceptionResponse === 'object' && 'message' in exceptionResponse) {
+    if (
+      typeof exceptionResponse === 'object' &&
+      'message' in exceptionResponse
+    ) {
       const msg = (exceptionResponse as Record<string, unknown>).message;
       message = Array.isArray(msg) ? msg.join(', ') : String(msg);
     }
