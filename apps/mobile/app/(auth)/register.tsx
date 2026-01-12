@@ -130,7 +130,7 @@ export default function RegisterScreen() {
               >
                 Gizlilik Politikası
               </Text>
-              'nı okudum ve kabul ediyorum.
+              {`'nı okudum ve kabul ediyorum.`}
             </Text>
           </View>
 

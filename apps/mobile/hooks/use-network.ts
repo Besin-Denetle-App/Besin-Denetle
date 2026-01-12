@@ -1,5 +1,5 @@
 import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * Network durumunu takip eden hook
@@ -17,6 +17,11 @@ export function useNetwork() {
   const [showOfflineBanner, setShowOfflineBanner] = useState(false);
   const [showOnlineBanner, setShowOnlineBanner] = useState(false);
 
+  // Stale closure'ı önlemek için ref kullan
+  // Event listener callback'i her zaman güncel değeri okur
+  const isConnectedRef = useRef(isConnected);
+  isConnectedRef.current = isConnected;
+
   useEffect(() => {
     // İlk bağlantı durumunu al
     NetInfo.fetch().then((state) => {
@@ -25,7 +30,8 @@ export function useNetwork() {
 
     // Bağlantı değişikliklerini dinle
     const unsubscribe = NetInfo.addEventListener((state: NetInfoState) => {
-      const wasConnected = isConnected;
+      // Ref üzerinden güncel değeri oku (stale closure yok)
+      const wasConnected = isConnectedRef.current;
       const nowConnected = state.isConnected;
 
       setIsConnected(nowConnected);
@@ -48,7 +54,7 @@ export function useNetwork() {
     return () => {
       unsubscribe();
     };
-  }, [isConnected]);
+  }, []); // Artık dependency yok, sadece bir kez subscribe olur
 
   return {
     isConnected,

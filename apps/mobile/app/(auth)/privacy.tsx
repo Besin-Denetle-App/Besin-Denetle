@@ -66,8 +66,7 @@ export default function PrivacyScreen() {
           4. Çerezler ve Takip
         </Text>
         <Text className="text-muted-foreground text-base leading-6 mb-4">
-          Bu uygulama üçüncü taraf izleme araçları kullanmaz. Oturum yönetimi
-          için yalnızca gerekli token'lar cihazınızda saklanır.
+          {`Bu uygulama üçüncü taraf izleme araçları kullanmaz. Oturum yönetimi için yalnızca gerekli token'lar cihazınızda saklanır.`}
         </Text>
 
         <Text className="text-foreground font-bold text-lg mb-2">

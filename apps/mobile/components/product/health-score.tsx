@@ -1,4 +1,3 @@
-import { useColorScheme } from 'nativewind';
 import { Text, View } from 'react-native';
 
 interface HealthScoreProps {
@@ -12,7 +11,6 @@ interface HealthScoreProps {
  * 7-10: Yeşil (Sağlıklı)
  */
 export function HealthScore({ score }: HealthScoreProps) {
-  const { colorScheme } = useColorScheme();
 
   // Skor rengi belirle
   const getScoreColor = () => {

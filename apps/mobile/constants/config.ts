@@ -1,6 +1,8 @@
 /**
  * Uygulama genelinde kullanılan sabit değerler
  */
+import Constants from 'expo-constants';
+
 export const APP_CONFIG = {
   /**
    * Geçmiş ayarları
@@ -55,13 +57,15 @@ export const APP_CONFIG = {
 } as const;
 
 /**
- * Uygulama bilgileri
+ * Uygulama bilgileri - app.config.js'den dinamik olarak okunur
+ * Bu sayede tek kaynak (single source of truth) sağlanır
  */
 export const APP_INFO = {
-  name: 'Besin Denetle',
-  version: '1.0.0',
+  name: Constants.expoConfig?.name || 'Besin Denetle',
+  version: Constants.expoConfig?.version || '2.0.1',
   bundleId: {
-    android: 'app.besindenetle.android',
-    ios: 'app.besindenetle.ios',
+    android: Constants.expoConfig?.android?.package || 'app.besindenetle.android',
+    ios: Constants.expoConfig?.ios?.bundleIdentifier || 'app.besindenetle.ios',
   },
 } as const;
+

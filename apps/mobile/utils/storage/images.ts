@@ -10,8 +10,7 @@ import { APP_CONFIG } from '../../constants';
  */
 function getImageDir(): string {
   // expo-file-system'da documentDirectory nullable olabilir
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const docDir = (FileSystem as any).documentDirectory as string | null;
+  const docDir = (FileSystem as unknown as { documentDirectory: string | null }).documentDirectory;
   if (!docDir) {
     throw new Error('FileSystem.documentDirectory is not available');
   }

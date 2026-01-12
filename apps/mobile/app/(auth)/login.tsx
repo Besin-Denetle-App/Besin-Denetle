@@ -1,55 +1,89 @@
 import { Ionicons } from '@expo/vector-icons';
+import { makeRedirectUri } from 'expo-auth-session';
 import * as Google from 'expo-auth-session/providers/google';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useColorScheme } from 'nativewind';
-import { useState } from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { parseApiError } from '../../services/api';
 import { useAuthStore } from '../../stores/auth.store';
 
+// Expo Go'da ve standalone'da auth session'ı tamamlamak için gerekli
 WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const { colorScheme } = useColorScheme();
   const { loginWithGoogle, isLoading } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const googleConfig = Constants.expoConfig?.extra?.google || {};
+  
+  // Expo Go mu yoksa standalone build mi olduğunu tespit et
+  const isExpoGo = Constants.appOwnership === 'expo';
+  
+  // Redirect URI: Expo Go için proxy, standalone için native scheme
+  const redirectUri = isExpoGo
+    ? 'https://auth.expo.io/@furkanpasa/Besin-Denetle'
+    : makeRedirectUri({
+        scheme: 'besindenetle',
+        path: 'auth',
+      });
+
+  // Debug için redirect URI'yi logla
+  console.log('Auth Config:', { isExpoGo, redirectUri, platform: Platform.OS });
 
   /* 
-    expo-auth-session: Expo Go'da (proxy modunda) çalışması için
-    sadece webClientId kullanılmalı ve native ID'ler verilmemelidir.
-    Native ID verilince kütüphane native redirect (scheme:/...) yapmaya çalışır.
+    Expo Go'da sadece webClientId kullanılmalı.
+    Standalone build'de platform'a göre native client ID kullanılmalı.
   */
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId: googleConfig.webClientId,
-    // androidClientId: googleConfig.androidClientId, // Expo Go için kapatıldı
-    // iosClientId: googleConfig.iosClientId, // Expo Go için kapatıldı
-    redirectUri: 'https://auth.expo.io/@furkanpasa/Besin-Denetle',
+    androidClientId: isExpoGo ? undefined : googleConfig.androidClientId,
+    iosClientId: isExpoGo ? undefined : googleConfig.iosClientId,
+    redirectUri,
   });
 
-  const handleGoogleLogin = async () => {
-    try {
-      const result = await promptAsync();
-      
-      if (result?.type === 'success') {
-        const { authentication } = result;
-        if (authentication?.accessToken) {
+  // Google OAuth response'ını useEffect ile yakala
+  useEffect(() => {
+    async function handleGoogleResponse() {
+      if (response?.type === 'success') {
+        const { authentication } = response;
+        if (authentication?.accessToken && !isProcessing) {
+          setIsProcessing(true);
           setError(null);
-          const loginResult = await loginWithGoogle(authentication.accessToken);
-          
-          if (loginResult.needsRegistration) {
-            router.push('/(auth)/register');
-          } else {
-            router.replace('/(tabs)');
+          try {
+            const loginResult = await loginWithGoogle(authentication.accessToken);
+            
+            if (loginResult.needsRegistration) {
+              router.push('/(auth)/register');
+            } else {
+              router.replace('/(tabs)');
+            }
+          } catch (err) {
+            setError(parseApiError(err));
+          } finally {
+            setIsProcessing(false);
           }
         }
-      } else if (result?.type === 'error') {
+      } else if (response?.type === 'error') {
+        console.error('Google auth error:', response.error);
         setError('Google girişi sırasında bir hata oluştu');
       }
+    }
+
+    handleGoogleResponse();
+  }, [response]);
+
+  // Google giriş butonuna tıklandığında
+  const handleGoogleLogin = async () => {
+    try {
+      setError(null);
+      await promptAsync();
+      // Response useEffect tarafından yakalanacak
     } catch (err) {
       setError(parseApiError(err));
     }
@@ -119,11 +153,11 @@ export default function LoginScreen() {
           {/* Google ile Giriş */}
           <TouchableOpacity
             onPress={() => handleGoogleLogin()}
-            disabled={isLoading || !request}
+            disabled={isLoading || isProcessing || !request}
             className="bg-card border border-border rounded-2xl py-4 flex-row items-center justify-center"
             activeOpacity={0.7}
           >
-            {isLoading ? (
+            {(isLoading || isProcessing) ? (
               <ActivityIndicator color={colorScheme === 'dark' ? '#E0E0E0' : '#212121'} />
             ) : (
               <>
@@ -175,7 +209,7 @@ export default function LoginScreen() {
           >
             Gizlilik Politikası
           </Text>
-          'nı kabul etmiş olursunuz.
+          {`'nı kabul etmiş olursunuz.`}
         </Text>
       </View>
     </SafeAreaView>

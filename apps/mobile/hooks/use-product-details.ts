@@ -42,14 +42,8 @@ export function useProductDetails(
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Sayfa yüklendiğinde ürün detaylarını al
-  useEffect(() => {
-    if (productId) {
-      loadProductDetails();
-    }
-  }, [productId]);
-
-  const loadProductDetails = async () => {
+  // Ürün detaylarını yükle
+  const loadProductDetails = useCallback(async () => {
     // Readonly modda API çağırma (geçmişten geldi, veriler store'da var)
     if (isReadonly) {
       const { currentContent, currentAnalysis } = useProductStore.getState();
@@ -82,7 +76,14 @@ export function useProductDetails(
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [productId, isReadonly, product, barcode, addToHistory]);
+
+  // Sayfa yüklendiğinde ürün detaylarını al
+  useEffect(() => {
+    if (productId) {
+      loadProductDetails();
+    }
+  }, [productId, loadProductDetails]);
 
   // İçerik reddet
   const rejectContent = useCallback(async () => {

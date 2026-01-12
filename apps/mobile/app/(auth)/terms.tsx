@@ -67,9 +67,7 @@ export default function TermsScreen() {
           4. Sorumluluk Reddi
         </Text>
         <Text className="text-muted-foreground text-base leading-6 mb-4">
-          Uygulama "olduğu gibi" sunulmaktadır. Sunulan bilgilerin doğruluğu
-          garanti edilmez. Alerjik reaksiyonlar veya sağlık sorunları için
-          lütfen ürün ambalajını kontrol edin ve bir sağlık uzmanına danışın.
+          {`Uygulama "olduğu gibi" sunulmaktadır. Sunulan bilgilerin doğruluğu garanti edilmez. Alerjik reaksiyonlar veya sağlık sorunları için lütfen ürün ambalajını kontrol edin ve bir sağlık uzmanına danışın.`}
         </Text>
 
         <Text className="text-foreground font-bold text-lg mb-2">
