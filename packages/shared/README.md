@@ -1,5 +1,9 @@
 # @besin-denetle/shared
 
+![Version](https://img.shields.io/badge/version-0.7.0-blue.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178c6.svg)
+![Type](https://img.shields.io/badge/Type-Library-blueviolet.svg)
+
 **Besin Denetle Shared Paketi**, Backend ve Mobil uygulama arasında ortak kullanılan kodları barındıran kritik bir modüldür. "Tek Kaynak, Çok Kullanım" (Single Source of Truth) prensibine dayanır.
 
 Bu kütüphanenin amacı, tip güvenliğini (Type Safety) garanti altına almak ve kod tekrarını önlemektir. Backend'de bir DTO değiştiğinde, Mobil tarafı bunu derleme zamanında (compile-time) fark eder.
@@ -20,9 +24,9 @@ Veritabanı modelleri ve genel tip tanımlarıdır.
 *   **Entities:** Veritabanı tablolarının TypeScript karşılıkları (Örn: `IProduct`, `IUser`).
 *   **Enums:** Sabit değer listeleri (Örn: `UserRole.ADMIN`, `VoteType.UPVOTE`).
 
-### 3. Utilities
-Her iki tarafta da kullanılabilen yardımcı fonksiyonlar.
-*   String formatlama, Tarih hesaplama vb.
+### 3. Constants
+Uygulama genelinde kullanılan sabit değerler.
+*   Regex desenleri, varsayılan yapılandırmalar vb.
 
 ---
 
@@ -85,3 +89,10 @@ pnpm dev
 1.  **İş Mantığı Yok:** Bu pakette asla veritabanı sorgusu, API isteği veya karmaşık iş mantığı bulunmamalıdır. Sadece veri yapıları (Anemic Domain Model) olmalıdır.
 2.  **Bağımlılıklar:** Bu paket `backend` veya `mobile` projelerine bağımlı olmamalıdır. Döngüsel bağımlılık (Circular Dependency) yaratmaktan kaçının.
 3.  **İsimlendirme:** DTO'lar `Dto` ile, Arayüzler `I` ile başlamalı veya bitmelidir.
+
+---
+
+## 🔗 İlgili Dökümanlar
+
+*   ⚙️ [Backend README](../../apps/backend/README.md)
+*   📱 [Mobile README](../../apps/mobile/README.md)

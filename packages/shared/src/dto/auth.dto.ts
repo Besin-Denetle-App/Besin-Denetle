@@ -1,6 +1,13 @@
 import { AuthProvider, IUser } from '../types';
 
 /**
+ * E-posta ile kayıt isteği (Beta test için)
+ */
+export interface EmailAuthRequest {
+  email: string;
+}
+
+/**
  * OAuth isteği
  */
 export interface OAuthRequest {

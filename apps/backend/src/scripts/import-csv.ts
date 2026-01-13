@@ -9,6 +9,16 @@ import { Product } from '../entities/product.entity';
 import { User } from '../entities/user.entity';
 import { Vote } from '../entities/vote.entity';
 
+// CSV row tip tanımı
+interface CsvRow {
+  barcode?: string;
+  name?: string;
+  brand?: string;
+  quantity?: string;
+  image_url?: string;
+  type?: string;
+}
+
 // Simple .env loader
 const envPath = path.resolve(__dirname, '../../.env');
 if (fs.existsSync(envPath)) {
@@ -53,12 +63,12 @@ async function importCsv() {
     return;
   }
 
-  const rows: any[] = [];
+  const rows: CsvRow[] = [];
 
   await new Promise((resolve, reject) => {
     fs.createReadStream(csvFilePath)
       .pipe(csv())
-      .on('data', (data) => rows.push(data))
+      .on('data', (data: CsvRow) => rows.push(data))
       .on('end', resolve)
       .on('error', reject);
   });
@@ -133,4 +143,4 @@ async function importCsv() {
   await dataSource.destroy();
 }
 
-importCsv();
+void importCsv();

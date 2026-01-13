@@ -68,7 +68,7 @@ export class AiService {
    * @param userId - Kullanıcı ID (opsiyonel, yoksa global rate limit)
    * @throws TooManyRequestsException - Bekleme süresi dolmadıysa
    */
-  async enforceRateLimit(userId?: string): Promise<void> {
+  enforceRateLimit(userId?: string): void {
     const key = userId || 'global';
     const lastCall = this.lastCallTime.get(key) || 0;
     const elapsed = Date.now() - lastCall;
@@ -103,24 +103,24 @@ export class AiService {
    * @param userId - Kullanıcı ID (opsiyonel, rate limit için)
    * @param enforceLimit - Rate limit uygulansın mı (ilk taramada false)
    */
-  async identifyProduct(
+  identifyProduct(
     barcode: string,
     userId?: string,
     enforceLimit: boolean = false,
   ): Promise<AIProductResult> {
     if (enforceLimit) {
-      await this.enforceRateLimit(userId);
+      this.enforceRateLimit(userId);
     } else {
       this.updateLastCallTime(userId);
     }
 
     if (this.isMockMode) {
-      return this.mockIdentifyProduct(barcode);
+      return Promise.resolve(this.mockIdentifyProduct(barcode));
     }
 
     // TODO: Gerçek Gemini API çağrısı
     // Search Grounding ile web araması yapılacak
-    return this.mockIdentifyProduct(barcode);
+    return Promise.resolve(this.mockIdentifyProduct(barcode));
   }
 
   /**
@@ -128,7 +128,7 @@ export class AiService {
    * @param userId - Kullanıcı ID (opsiyonel, rate limit için)
    * @param enforceLimit - Rate limit uygulansın mı
    */
-  async getProductContent(
+  getProductContent(
     brand: string | null,
     name: string | null,
     quantity: string | null,
@@ -136,17 +136,17 @@ export class AiService {
     enforceLimit: boolean = false,
   ): Promise<AIContentResult> {
     if (enforceLimit) {
-      await this.enforceRateLimit(userId);
+      this.enforceRateLimit(userId);
     } else {
       this.updateLastCallTime(userId);
     }
 
     if (this.isMockMode) {
-      return this.mockGetProductContent(brand, name);
+      return Promise.resolve(this.mockGetProductContent(brand, name));
     }
 
     // TODO: Gerçek Gemini API çağrısı
-    return this.mockGetProductContent(brand, name);
+    return Promise.resolve(this.mockGetProductContent(brand, name));
   }
 
   /**
@@ -154,7 +154,7 @@ export class AiService {
    * @param userId - Kullanıcı ID (opsiyonel, rate limit için)
    * @param enforceLimit - Rate limit uygulansın mı
    */
-  async analyzeContent(
+  analyzeContent(
     brand: string | null,
     name: string | null,
     ingredients: string | null,
@@ -164,17 +164,17 @@ export class AiService {
     enforceLimit: boolean = false,
   ): Promise<AIAnalysisResult> {
     if (enforceLimit) {
-      await this.enforceRateLimit(userId);
+      this.enforceRateLimit(userId);
     } else {
       this.updateLastCallTime(userId);
     }
 
     if (this.isMockMode) {
-      return this.mockAnalyzeContent(name);
+      return Promise.resolve(this.mockAnalyzeContent(name));
     }
 
     // TODO: Gerçek Gemini API çağrısı
-    return this.mockAnalyzeContent(name);
+    return Promise.resolve(this.mockAnalyzeContent(name));
   }
 
   // ==================== MOCK METHODS ====================

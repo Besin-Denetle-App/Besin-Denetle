@@ -1,32 +1,39 @@
 import {
-  LogoutResponse,
-  OAuthResponse,
-  RefreshTokenResponse,
-  RegisterResponse,
+    OAuthResponse,
+    RefreshTokenResponse,
+    RegisterResponse,
 } from '@besin-denetle/shared';
 import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-  Request,
-  UseGuards,
+    Body,
+    Controller,
+    HttpCode,
+    HttpStatus,
+    Post,
+    Request,
+    UseGuards,
 } from '@nestjs/common';
 import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
+    ApiBearerAuth,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import {
-  OAuthRequestDto,
-  RefreshTokenRequestDto,
-  RegisterRequestDto,
+    EmailSignupRequestDto,
+    OAuthRequestDto,
+    RefreshTokenRequestDto,
+    RegisterRequestDto,
 } from './dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+
+/**
+ * JWT ile doğrulanmış kullanıcı içeren request
+ */
+interface AuthenticatedRequest {
+  user?: { id: string };
+}
 
 /**
  * Auth Controller
@@ -59,6 +66,46 @@ export class AuthController {
       dto.provider,
       dto.token,
     );
+
+    if (result.isNewUser) {
+      return {
+        isNewUser: true,
+        tempToken: result.tempToken!,
+        message: 'Kayıt tamamlanmalı',
+      };
+    }
+
+    return {
+      isNewUser: false,
+      accessToken: result.accessToken!,
+      refreshToken: result.refreshToken!,
+      user: {
+        id: result.user!.id,
+        username: result.user!.username,
+        email: result.user!.email,
+        role: result.user!.role,
+      },
+    };
+  }
+
+  /**
+   * POST /api/auth/email-signup
+   * E-posta ile kayıt/login (Beta test için)
+   * Kayıtlı kullanıcı varsa JWT döner, yoksa tempToken ile kayıt akışı başlatır
+   * Rate Limit: 5/dk (IP bazlı - brute-force koruması)
+   */
+  @Post('email-signup')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @ApiOperation({ summary: 'E-posta ile kayıt/login (Beta)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Login başarılı veya tempToken döner',
+  })
+  async emailSignup(
+    @Body() dto: EmailSignupRequestDto,
+  ): Promise<OAuthResponse> {
+    const result = await this.authService.validateEmailSignup(dto.email);
 
     if (result.isNewUser) {
       return {
@@ -143,7 +190,10 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Çıkış yap' })
   @ApiResponse({ status: 200, description: 'Çıkış başarılı' })
-  async logout(@Request() req: any): Promise<LogoutResponse> {
+  logout(@Request() req: AuthenticatedRequest): {
+    message: string;
+    userId: string;
+  } {
     // Token blacklist uygulanabilir (opsiyonel)
     return {
       message: 'Çıkış başarılı',

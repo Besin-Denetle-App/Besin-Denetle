@@ -82,7 +82,7 @@ function ToastItem({ toast }: { toast: Toast }) {
     }, 2700);
 
     return () => clearTimeout(timeout);
-  }, []);
+  }, [opacity]);
 
   const getStyle = () => {
     switch (toast.type) {

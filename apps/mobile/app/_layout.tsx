@@ -55,7 +55,7 @@ export default function RootLayout() {
   // Uygulama başlangıcında auth durumunu kontrol et
   useEffect(() => {
     initialize();
-  }, []);
+  }, [initialize]);
 
   // Auth durumuna göre yönlendirme
   useEffect(() => {
@@ -70,7 +70,7 @@ export default function RootLayout() {
       // Giriş yapılmış ve auth grubunda -> tabs'a yönlendir
       router.replace('/(tabs)');
     }
-  }, [isAuthenticated, isLoading, segments]);
+  }, [isAuthenticated, isLoading, segments, router]);
 
   // Loading durumunda splash göster
   if (isLoading) {

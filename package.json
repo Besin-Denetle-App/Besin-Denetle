@@ -1,15 +1,15 @@
 {
   "name": "@besin-denetle/root",
-  "version": "2.1.1",
+  "version": "0.7.0",
   "private": true,
   "description": "Besin Denetle - Monorepo with mobile app and backend",
   "scripts": {
-    "mobile": "pnpm --filter @besin-denetle/mobile start",
-    "mobile:android": "pnpm --filter @besin-denetle/mobile android",
-    "mobile:ios": "pnpm --filter @besin-denetle/mobile ios",
-    "backend": "pnpm --filter @besin-denetle/backend dev",
     "install:all": "pnpm install",
-    "clean": "pnpm -r exec rm -rf node_modules && rm -rf node_modules"
+    "clean": "npx rimraf node_modules **/node_modules",
+    "backend": "pnpm --filter @besin-denetle/backend start",
+    "mobile": "pnpm --filter @besin-denetle/mobile start",
+    "mobile:prebuild": "pnpm --filter @besin-denetle/mobile exec npx expo prebuild",
+    "clean:build": "npx rimraf **/dist **/.turbo **/.expo **/android **/ios"
   },
   "devDependencies": {
     "typescript": "^5.7.3"

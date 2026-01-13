@@ -1,8 +1,25 @@
 # Besin Denetle - Mobil Uygulama
 
+![Version](https://img.shields.io/badge/version-0.7.0-blue.svg)
+![Expo](https://img.shields.io/badge/Expo-SDK_54-000020.svg)
+![React Native](https://img.shields.io/badge/React_Native-0.81-61dafb.svg)
+![Platform](https://img.shields.io/badge/Platform-Android-6f42c1.svg)
+![Platform](https://img.shields.io/badge/Platform-iOS-202020.svg)
+
 **Besin Denetle Mobile**, kullanıcıların ürünlerle etkileşime geçtiği arayüzdür. Barkod okuma, sonuçları görüntüleme ve oylama işlemleri burada yapılır.
 
 **React Native** ve **Expo** altyapısı kullanılarak geliştirilmiştir. Tasarım için **Tailwind CSS (NativeWind)** tercih edilmiştir.
+
+## 📑 İçindekiler
+- [Besin Denetle - Mobil Uygulama](#besin-denetle---mobil-uygulama)
+  - [📑 İçindekiler](#-i̇çindekiler)
+  - [📸 Ekran Görüntüleri](#-ekran-görüntüleri)
+  - [📱 Uygulama Akışı (Kullanıcı Deneyimi)](#-uygulama-akışı-kullanıcı-deneyimi)
+  - [🛠️ Kurulum ve Geliştirme](#️-kurulum-ve-geliştirme)
+  - [📦 Build ve Yayınlama (EAS Build)](#-build-ve-yayınlama-eas-build)
+  - [🏗️ Proje Yapısı](#️-proje-yapısı)
+  - [⚠️ Karşılaşılabilecek Sorunlar](#️-karşılaşılabilecek-sorunlar)
+  - [🔗 İlgili Dökümanlar](#-i̇lgili-dökümanlar)
 
 ---
 
@@ -10,7 +27,7 @@
 
 | Ana Sayfa (Kamera) | Sonuç Pop-up | Detay Sayfası |
 |:---:|:---:|:---:|
-| ![Home](https://placehold.co/200x400?text=Kamera+Arayuzu) | ![Popup](https://placehold.co/200x400?text=Sonuc+Ekrani) | ![Detail](https://placehold.co/200x400?text=Detay+Sayfasi) |
+| ![Home](./assets/screenshots/home.png) | ![Popup](./assets/screenshots/popup.png) | ![Detail](./assets/screenshots/detail.png) |
 
 ---
 
@@ -29,96 +46,123 @@ Tarama sonrası iki durum oluşur:
 ### 3. Detay Sayfası
 Kullanıcı ürünü doğruladığında ("Evet, bu ürün" dediğinde) detay sayfası açılır:
 *   **İçindekiler:** Ürünün bileşenleri ve alerjen uyarıları.
-*   **Sağlık Analizi:** AI tarafından ürünün sağlığa etkileri yorumlanır (Örn: "Şeker oranı yüksek, dikkatli tüketin").
+*   **Sağlık Analizi:** AI tarafından ürünün sağlığa etkileri yorumlanır.
 
 ---
 
 ## 🛠️ Kurulum ve Geliştirme
-
-Yerel ortamınızda projeyi ayağa kaldırmak için aşağıdaki adımları izleyin.
 
 ### Gereksinimler
 *   Telefonunuzda **Expo Go** uygulaması (App Store / Play Store'dan indirin).
 *   Bilgisayarınızda Node.js ve PNPM kurulu olmalı.
 
 ### 1. Bağımlılıkları Yükleyin
-Tüm proje bağımlılıklarını kurun:
 ```bash
 pnpm install
 ```
 
-### 2. Environment Variables (.env)
-Mobil uygulamanın backend'e ulaşabilmesi için `.env` dosyası oluşturmalısınız.
-
+### 2. Environment Variables
 ```bash
-# .env.example dosyasını kopyalayın
 cp .env.example .env
+# .env dosyasını kendi değerlerinizle düzenleyin
 ```
 
-### 3. Başlatma
-Geliştirme sunucusunu başlatın:
+### 3. Geliştirme Sunucusunu Başlatın
 ```bash
 pnpm start
-# veya özel olarak mobile klasöründe:
-cd apps/mobile && pnpm start
 ```
-Terminalde çıkan **QR Kodunu** telefonunuzdaki kamera veya Expo Go uygulaması ile taratın.
+Terminalde çıkan **QR Kodunu** Expo Go uygulaması ile taratın.
 
 ---
 
-## 📦 Build ve Yayınlama
+## 📦 Build ve Yayınlama (EAS Build)
 
-Uygulamanın APK (Android) veya IPA (iOS) dosyalarını oluşturmak için iki yöntem vardır.
+Expo Application Services (EAS) kullanarak bulutta build alınır.
 
-### A. EAS Build (Bulut - Önerilen)
-Expo'nun sunucularında build almak için:
-
+### 1. Kurulum
 ```bash
-# EAS CLI kurulumu
 npm install -g eas-cli
-
-# Expo hesabına giriş
 eas login
-
-# Android APK oluştur
-eas build -p android --profile preview
-
-# Temiz build almak için
-npx expo prebuild --clean
 ```
 
-### B. Local Build (Prebuild)
-Kendi bilgisayarınızda build almak için native klasörleri (`android/` ve `ios/`) oluşturmanız gerekir.
+### 2. EAS Secrets Ayarlama
+
+Build sırasında kullanılacak environment değişkenleri EAS Secrets'ta tutulur.
+
+**Preview Build için:**
+```bash
+eas env:create --name API_HOST --value "IP_ADRESI" --type string --visibility secret --environment preview
+eas env:create --name API_PORT --value "3200" --type string --visibility secret --environment preview
+eas env:create --name GOOGLE_WEB_CLIENT_ID --value "XXX" --type string --visibility secret --environment preview
+eas env:create --name GOOGLE_ANDROID_CLIENT_ID --value "XXX" --type string --visibility secret --environment preview
+eas env:create --name GOOGLE_IOS_CLIENT_ID --value "XXX" --type string --visibility secret --environment preview
+```
+
+**Production Build için:**
+```bash
+eas env:create --name API_URL --value "https://api.besindenetle.app/api" --type string --visibility secret --environment production
+eas env:create --name GOOGLE_WEB_CLIENT_ID --value "XXX" --type string --visibility secret --environment production
+eas env:create --name GOOGLE_ANDROID_CLIENT_ID --value "XXX" --type string --visibility secret --environment production
+eas env:create --name GOOGLE_IOS_CLIENT_ID --value "XXX" --type string --visibility secret --environment production
+```
+
+**Secrets'ları listele:**
+```bash
+eas env:list
+```
+
+### 3. Build Alma
+```bash
+# Preview APK (test için)
+eas build -p android --profile preview
+
+# Production AAB (Play Store için)
+eas build -p android --profile production
+```
+
+### 4. Local Build (WSL2)
+
+Bulut yerine kendi bilgisayarınızda build almak için:
+
+👉 **[WSL2 Mobile Build Rehberi](../../docs/wsl2-mobile-build-guide.md)**
 
 ```bash
-# Native klasörleri oluştur
-pnpm prebuild
-
-# Android Studio ile açıp derleyebilirsiniz
+# WSL2 Ubuntu'da
+eas build --local --platform android
 ```
 
 ---
 
 ## 🏗️ Proje Yapısı
 
-Expo Router kullanıldığı için dosya tabanlı yönlendirme (file-based routing) geçerlidir.
-
 ```text
 apps/mobile/
-├── app/            # 📱 Ekranlar ve Sayfalar (Expo Router)
-│   ├── (tabs)/     # Alt menü sekmeleri (Tabs)
-│   ├── result/     # Sonuç detay sayfaları
-│   └── index.tsx   # Giriş sayfası
-├── assets/         # 🖼️ Resimler ve Fontlar
-├── components/     # 🧩 UI Bileşenleri (Button, Card...)
-├── constants/      # ⚙️ Sabitler ve Ayarlar
-└── hooks/          # 🎣 Custom React Hooks
+├── app/            # 📱 Ekranlar (Expo Router)
+├── assets/         # 🖼️ Görseller
+├── components/     # 🧩 UI Bileşenleri
+├── constants/      # 📌 Sabit Değerler
+├── hooks/          # 🎣 Custom Hooks
+├── services/       # 🔌 API Servisleri
+├── stores/         # 📦 State Management (Zustand)
+├── types/          # 🧱 Tip Tanımları
+└── utils/          # 🛠️ Yardımcı Fonksiyonlar
 ```
+
+---
 
 ## ⚠️ Karşılaşılabilecek Sorunlar
 
 **Soru: Kamera açılmıyor.**
-*   Cevap: Telefon ayarlarından Expo Go uygulamasına kamera izni verdiğinizden emin olun.
+*   Cevap: Telefon ayarlarından Expo Go'ya kamera izni verin.
 
-**Soru: "Network Request Failed" hatası alıyorum.**
-*   Cevap: Telefonunuz ve bilgisayarınızın **aynı Wi-Fi** ağında olduğundan emin olun. Ayrıca `EXPO_PUBLIC_API_URL` ayarında `localhost` yerine bilgisayarınızın IP adresini (192.168...) yazdığınızı kontrol edin.
+**Soru: "Network Request Failed" hatası.**
+*   Cevap: Telefon ve bilgisayarın aynı Wi-Fi'da olduğundan emin olun. `.env`'de doğru IP adresini yazdığınızı kontrol edin.
+
+---
+
+## 🔗 İlgili Dökümanlar
+
+*   📱 [Local Build - EAS (Linux/WSL2)](../../docs/local-build-linux-eas.md) - EAS Local Build
+*   🪟 [Local Build - Expo Prebuild (Windows)](../../docs/local-build-windows-native.md) - Expo Prebuild
+*   🐳 [Docker Development Rehberi](../../docs/docker-development.md)
+*   📦 [Shared Paket](../../packages/shared/README.md)

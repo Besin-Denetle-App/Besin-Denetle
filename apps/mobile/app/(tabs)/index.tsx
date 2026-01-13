@@ -23,7 +23,7 @@ export default function HomeScreen() {
   // Uygulama başlangıcında geçmişi yükle
   useEffect(() => {
     loadHistory();
-  }, []);
+  }, [loadHistory]);
 
   // Filtrelenmiş geçmiş (barkod, marka, isim, gramaj üzerinde arama)
   const filteredHistory = useMemo(() => {

@@ -43,7 +43,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     };
 
     // Sadece 500+ hataları logla (sunucu hataları)
-    if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
+    if (status >= Number(HttpStatus.INTERNAL_SERVER_ERROR)) {
       this.logger.error(`[${status}] ${message}`, exception.stack);
     }
 

@@ -1,25 +1,20 @@
 {
   "name": "@besin-denetle/mobile",
   "main": "expo-router/entry",
-  "version": "2.1.0",
+  "version": "0.7.0",
   "scripts": {
     "start": "expo start",
+
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "lint": "expo lint",
-    "build:dev": "eas build --profile development --platform all",
-    "build:dev:android": "eas build --profile development --platform android",
-    "build:dev:ios": "eas build --profile development --platform ios",
-    "build:preview": "eas build --profile preview --platform all",
-    "build:preview:android": "eas build --profile preview --platform android",
-    "build:preview:ios": "eas build --profile preview --platform ios",
-    "build:prod": "eas build --profile production --platform all",
-    "build:prod:android": "eas build --profile production --platform android",
-    "build:prod:ios": "eas build --profile production --platform ios",
+    
+    "build": "eas build",
+    "local": "eas build --local",
+    "la": "eas build --local --platform android",
     "build:status": "eas build:list",
-    "submit:android": "eas submit --platform android",
-    "submit:ios": "eas submit --platform ios"
+    
+    "lint": "expo lint"
   },
   "dependencies": {
     "@besin-denetle/shared": "workspace:*",

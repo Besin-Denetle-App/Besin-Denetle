@@ -9,6 +9,16 @@ import { Product } from '../entities/product.entity';
 import { User } from '../entities/user.entity';
 import { Vote } from '../entities/vote.entity';
 
+// CSV row tip tanımı
+interface CsvRow {
+  barcode?: string;
+  name?: string;
+  brand?: string;
+  quantity?: string;
+  image_url?: string;
+  type?: string;
+}
+
 // Simple .env loader
 const envPath = path.resolve(__dirname, '../../.env');
 if (fs.existsSync(envPath)) {
@@ -45,14 +55,14 @@ async function analyzeCsv() {
     return;
   }
 
-  const results: any[] = [];
+  const results: CsvRow[] = [];
   const barcodes = new Set<string>();
   let duplicateBarcodesInCsv = 0;
 
   await new Promise((resolve, reject) => {
     fs.createReadStream(csvFilePath)
       .pipe(csv())
-      .on('data', (data: any) => {
+      .on('data', (data: CsvRow) => {
         results.push(data);
         if (data.barcode) {
           const trimmed = data.barcode.trim();
@@ -110,4 +120,4 @@ async function analyzeCsv() {
   }
 }
 
-analyzeCsv();
+void analyzeCsv();

@@ -23,8 +23,10 @@ export class LastActiveInterceptor implements NestInterceptor {
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-    const request = context.switchToHttp().getRequest();
-    const user = request.user as { id?: string } | undefined;
+    const request = context
+      .switchToHttp()
+      .getRequest<{ user?: { id?: string } }>();
+    const user = request.user;
 
     // Authenticated kullanıcı varsa last_active güncelle
     if (user?.id) {

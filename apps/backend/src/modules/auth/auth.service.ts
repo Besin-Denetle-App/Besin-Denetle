@@ -127,6 +127,57 @@ export class AuthService {
   }
 
   /**
+   * E-posta ile kayıt/login (Beta test için)
+   * Kayıtlı kullanıcı varsa JWT döner, yoksa tempToken ile kayıt akışı başlatır
+   */
+  async validateEmailSignup(email: string): Promise<{
+    isNewUser: boolean;
+    tempToken?: string;
+    accessToken?: string;
+    refreshToken?: string;
+    user?: User;
+  }> {
+    // E-posta ile kayıtlı kullanıcı var mı kontrol et
+    const existingUser = await this.userRepository.findOne({
+      where: {
+        email: email.toLowerCase(),
+        auth_provider: AuthProvider.EMAIL,
+      },
+    });
+
+    if (existingUser) {
+      // Kullanıcı mevcut - JWT üret ve döndür
+      const tokens = this.generateTokens(existingUser);
+      this.logger.debug(`E-posta ile login başarılı: ${email}`);
+      return {
+        isNewUser: false,
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        user: existingUser,
+      };
+    }
+
+    // Yeni kullanıcı - tempToken oluştur
+    // provider_id olarak e-posta hash'i kullanıyoruz
+    const providerId = `email_${email.toLowerCase()}`;
+    const tempToken = uuidv4();
+
+    tempTokenStore.set(tempToken, {
+      provider: AuthProvider.EMAIL,
+      providerId,
+      email: email.toLowerCase(),
+      expiresAt: Date.now() + TEMP_TOKEN_EXPIRY_MS,
+    });
+
+    this.logger.debug(`E-posta ile yeni kayıt başlatıldı: ${email}`);
+
+    return {
+      isNewUser: true,
+      tempToken,
+    };
+  }
+
+  /**
    * Kayıt tamamla (tempToken ile)
    */
   async completeRegistration(
@@ -193,7 +244,7 @@ export class AuthService {
     refreshToken: string,
   ): Promise<{ accessToken: string; refreshToken: string }> {
     try {
-      const payload = this.jwtService.verify(refreshToken, {
+      const payload = this.jwtService.verify<{ sub: string }>(refreshToken, {
         secret: this.jwtSecret,
       });
 

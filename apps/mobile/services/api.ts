@@ -4,25 +4,47 @@ import { router } from 'expo-router';
 import { clearAuthData, getAccessToken, getRefreshToken, saveTokens } from '../utils/storage';
 
 // Backend API base URL
-// .env dosyasından veya app.config.js'ten okunur
+// Production: API_URL kullan (tam URL)
+// Development: API_HOST + API_PORT kullan (IP:Port)
 const getBaseUrl = (): string => {
-  const extra = Constants.expoConfig?.extra;
+  // Extra config'i al (manifest2, manifest veya expoConfig'den)
+  const extra = Constants.expoConfig?.extra || 
+                (Constants.manifest2 as { extra?: Record<string, unknown> } | null)?.extra ||
+                (Constants.manifest as { extra?: Record<string, unknown> } | null)?.extra;
   
-  // Production URL varsa direkt kullan
-  if (extra?.apiUrl) {
+  // 1. Production: API_URL varsa direkt kullan
+  if (extra?.apiUrl && typeof extra.apiUrl === 'string') {
+    console.log('[API] Using production URL:', extra.apiUrl);
     return extra.apiUrl;
   }
   
-  // Development - Expo debugger host + port
-  const debuggerHost = Constants.expoConfig?.hostUri?.split(':')[0];
-  const apiPort = extra?.apiPort || '3200';
+  // 2. Development: API_HOST + API_PORT kullan
+  const apiHost = extra?.apiHost as string | undefined;
+  const apiPort = (extra?.apiPort as string) || '3200';
   
-  if (debuggerHost) {
-    return `http://${debuggerHost}:${apiPort}/api`;
+  if (apiHost) {
+    const url = `http://${apiHost}:${apiPort}/api`;
+    console.log('[API] Using custom host:', url);
+    return url;
   }
   
-  // Fallback - localhost
-  return `http://localhost:${apiPort}/api`;
+  // 3. Fallback: Expo debugger host kullan (otomatik)
+  const hostUri = Constants.expoConfig?.hostUri || 
+                  (Constants.manifest2 as { extra?: { expoGo?: { debuggerHost?: string } } } | null)?.extra?.expoGo?.debuggerHost ||
+                  (Constants.manifest as { debuggerHost?: string } | null)?.debuggerHost;
+  
+  const debuggerHost = hostUri?.split(':')[0];
+  
+  if (debuggerHost) {
+    const url = `http://${debuggerHost}:${apiPort}/api`;
+    console.log('[API] Using debugger host:', url);
+    return url;
+  }
+  
+  // 4. Son fallback: Android emülatör
+  const fallbackUrl = `http://10.0.2.2:${apiPort}/api`;
+  console.log('[API] Using fallback:', fallbackUrl);
+  return fallbackUrl;
 };
 
 const BASE_URL = getBaseUrl();

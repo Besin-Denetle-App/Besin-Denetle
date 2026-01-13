@@ -1,9 +1,12 @@
 # Besin Denetle Mobil App
 
-![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-0.7.0-blue.svg)
+![Node](https://img.shields.io/badge/Node-v20+-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-GPL--3.0-green.svg)
 ![Status](https://img.shields.io/badge/status-Active_Development-orange.svg)
-![Tech](https://img.shields.io/badge/tech-React_Native_%7C_NestJS_%7C_PostgreSQL-purple.svg)
+![Tech](https://img.shields.io/badge/React_Native-Expo_54-blueviolet.svg)
+![Tech](https://img.shields.io/badge/NestJS-v11-e0234e.svg)
+![Tech](https://img.shields.io/badge/PostgreSQL-18-336791.svg)
 
 **Besin Denetle**, tüketicilerin market alışverişlerinde ürünlerin içeriklerini, besin değerlerini ve sağlık üzerindeki etkilerini şeffaf bir şekilde görmelerini sağlayan, Yapay Zeka (AI) destekli modern bir mobil platformdur.
 
@@ -13,10 +16,7 @@ Bu proje, "Survival of the Fittest" (En Güçlünün Hayatta Kalması) prensibin
 - [Besin Denetle Mobil App](#besin-denetle-mobil-app)
   - [📑 İçindekiler](#-i̇çindekiler)
   - [🏗️ Sistem Mimarisi](#️-sistem-mimarisi)
-    - [📂 Proje Yapısı (Monorepo)](#-proje-yapısı-monorepo)
   - [🚀 Hızlı Başlangıç](#-hızlı-başlangıç)
-    - [Gereksinimler](#gereksinimler)
-    - [Kurulum Adımları](#kurulum-adımları)
   - [🌍 Canlı Ortam (Production) Kurulumu](#-canlı-ortam-production-kurulumu)
   - [📚 Dokümantasyon](#-dokümantasyon)
   - [📄 Lisans](#-lisans)
@@ -48,13 +48,13 @@ Bu proje **PNPM Workspaces** ile yönetilmektedir.
 
 ```text
 Besin-Denetle/
-├── Apps/
+├── apps/
 │   ├── mobile/     # 📱 React Native (Expo) Uygulaması
 │   └── backend/    # ⚙️ NestJS API Servisi
-├── Packages/
+├── packages/
 │   └── shared/     # 📦 Ortak DTO ve Tip Tanımları
 ├── docs/           # 📄 Proje Dokümantasyonu
-├── docker-compose  # 🐳 Veritabanı Konfigürasyonu
+├── docker-compose.yml  # 🐳 Veritabanı Konfigürasyonu
 └── README.md       # 🏠 Ana Dokümantasyon
 ```
 
@@ -69,7 +69,7 @@ Besin-Denetle/
 Projeyi yerel ortamınızda (Localhost) çalıştırmak için aşağıdaki adımları izleyin.
 
 ### Gereksinimler
-*   Node.js (v18+)
+*   Node.js (v20+)
 *   PNPM (`npm install -g pnpm`)
 *   Docker (Veritabanı için)
 
@@ -112,21 +112,28 @@ Projeyi yerel ortamınızda (Localhost) çalıştırmak için aşağıdaki adım
 
 ## 🌍 Canlı Ortam (Production) Kurulumu
 
-Bu projeyi Ubuntu vb. bir sunucuda yayına almak için hazır bir rehber bulunmaktadır.
+Bu projeyi Ubuntu sunucuda Docker ile yayına almak için hazır bir rehber bulunmaktadır:
 
-*   Backend API'yi PM2 ile çalıştırmak
-*   Veritabanı bağlantılarını ayarlamak
-*   Build süreçlerini yönetmek
+👉 **[Server Ubuntu Deployment Rehberi](./docs/server-ubuntu-deployment.md)**
 
-Detaylar için lütfen **[Backend Dokümantasyonu](./apps/backend/README.md)** dosyasını inceleyiniz.
+İçerik:
+*   Docker ve Docker Compose kurulumu
+*   Güvenlik ayarları (Firewall, SSL)
+*   Systemd ile otomatik başlatma
+*   Yedekleme stratejileri
 
 ## 📚 Dokümantasyon
 
-Her modülün kendi özel teknik dokümantasyonu mevcuttur:
+### Geliştirme Rehberleri
+*   📱 **Mobil Uygulama:** Ekranlar, Navigasyon ve Build işlemleri → [Mobile README](./apps/mobile/README.md)
+*   ⚙️ **Backend API:** Veritabanı Şeması, AI ve API Endpoint'leri → [Backend README](./apps/backend/README.md)
+*   📦 **Shared Kütüphane:** Ortak veri tipleri ve kullanım rehberi → [Shared README](./packages/shared/README.md)
 
-*   📱 **Mobil Uygulama:** Ekranlar, Navigasyon ve Build işlemleri için → [Mobile README](./apps/mobile/README.md)
-*   ⚙️ **Backend API:** Veritabanı Şeması, AI Prompt Mantığı ve API Endpoint'leri için → [Backend README](./apps/backend/README.md)
-*   📦 **Shared Kütüphane:** Ortak veri tipleri ve kullanım rehberi için → [Shared README](./packages/shared/README.md)
+### Deployment Rehberleri
+*   🐳 **Docker Development:** Komutlar ve troubleshooting → [Docker Development Rehberi](./docs/docker-development.md)
+*   🖥️ **Server Deployment:** Ubuntu'da production kurulumu → [Server Deployment](./docs/server-ubuntu-deployment.md)
+*   📱 **WSL2 Mobile Build:** EAS Local Build (Linux) → [Local Build - EAS (Linux/WSL2)](./docs/local-build-linux-eas.md)
+*   🪟 **Windows Native Build:** Expo Prebuild (Windows) → [Local Build - Expo Prebuild (Windows)](./docs/local-build-windows-native.md)
 
 ## 📄 Lisans
 

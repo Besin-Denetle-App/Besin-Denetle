@@ -13,6 +13,7 @@ interface AuthState {
   // Actions
   initialize: () => Promise<void>;
   loginWithGoogle: (accessToken: string) => Promise<{ needsRegistration: boolean }>;
+  signupWithEmail: (email: string) => Promise<{ needsRegistration: boolean }>;
   completeRegistration: (username: string) => Promise<void>;
   logout: () => Promise<void>;
   setTempToken: (token: string | null) => void;
@@ -77,6 +78,32 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
+  // E-posta ile kayıt/login (Beta test için)
+  signupWithEmail: async (email: string) => {
+    set({ isLoading: true });
+    try {
+      const response = await authService.emailSignup({
+        email,
+      });
+
+      if (response.isNewUser) {
+        // Yeni kullanıcı, kayıt gerekli
+        set({ tempToken: response.tempToken, isLoading: false });
+        return { needsRegistration: true };
+      }
+
+      // Mevcut kullanıcı, giriş başarılı
+      set({
+        user: response.user,
+        isAuthenticated: true,
+        isLoading: false,
+      });
+      return { needsRegistration: false };
+    } catch (error) {
+      set({ isLoading: false });
+      throw error;
+    }
+  },
   // Apple ile giriş - İleride aktif edilecek
   // Aktif etmek için: pnpm --filter mobile add expo-apple-authentication
   // AuthState interface'ine loginWithApple tipini ekle

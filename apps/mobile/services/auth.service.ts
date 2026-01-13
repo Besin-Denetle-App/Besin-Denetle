@@ -1,13 +1,31 @@
 import {
-  type LogoutResponse,
-  type OAuthRequest,
-  type OAuthResponse,
-  type RefreshTokenResponse,
-  type RegisterRequest,
-  type RegisterResponse
+    type LogoutResponse,
+    type OAuthRequest,
+    type OAuthResponse,
+    type RefreshTokenResponse,
+    type RegisterRequest,
+    type RegisterResponse
 } from '@besin-denetle/shared';
 import { clearAuthData, getRefreshToken, saveTokens, saveUser } from '../utils/storage';
 import { api } from './api';
+
+/**
+ * E-posta ile kayıt/login (Beta test için)
+ */
+export const emailSignup = async (request: {
+  email: string;
+}): Promise<OAuthResponse> => {
+  const response = await api.post<OAuthResponse>('/auth/email-signup', request);
+  const data = response.data;
+
+  // Mevcut kullanıcı ise token'ları kaydet
+  if (!data.isNewUser) {
+    await saveTokens(data.accessToken, data.refreshToken);
+    await saveUser(data.user);
+  }
+
+  return data;
+};
 
 /**
  * OAuth ile giriş yap (Google/Apple)

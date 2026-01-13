@@ -5,7 +5,7 @@ import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useColorScheme } from 'nativewind';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { parseApiError } from '../../services/api';
@@ -19,6 +19,8 @@ export default function LoginScreen() {
   const { loginWithGoogle, isLoading } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const isProcessingRef = useRef(false); // Sonsuz döngü önleme için
+  const isNavigatingRef = useRef(false); // Çift tıklama navigasyon koruması
 
   const googleConfig = Constants.expoConfig?.extra?.google || {};
   
@@ -45,14 +47,32 @@ export default function LoginScreen() {
     androidClientId: isExpoGo ? undefined : googleConfig.androidClientId,
     iosClientId: isExpoGo ? undefined : googleConfig.iosClientId,
     redirectUri,
+    scopes: ['openid', 'email'],
   });
+
+  // Request hazır olduğunda logla
+  useEffect(() => {
+    if (request) {
+      console.log('Google Auth Request Ready:', {
+        url: request.url,
+        codeVerifier: request.codeVerifier ? 'exists' : 'missing',
+        state: request.state,
+      });
+    }
+  }, [request]);
 
   // Google OAuth response'ını useEffect ile yakala
   useEffect(() => {
+    // Response değiştiğinde logla (debug için)
+    if (response) {
+      console.log('Google OAuth Response:', JSON.stringify(response, null, 2));
+    }
+
     async function handleGoogleResponse() {
       if (response?.type === 'success') {
         const { authentication } = response;
-        if (authentication?.accessToken && !isProcessing) {
+        if (authentication?.accessToken && !isProcessingRef.current) {
+          isProcessingRef.current = true;
           setIsProcessing(true);
           setError(null);
           try {
@@ -66,27 +86,78 @@ export default function LoginScreen() {
           } catch (err) {
             setError(parseApiError(err));
           } finally {
+            isProcessingRef.current = false;
             setIsProcessing(false);
           }
         }
       } else if (response?.type === 'error') {
         console.error('Google auth error:', response.error);
         setError('Google girişi sırasında bir hata oluştu');
+      } else if (response?.type === 'dismiss') {
+        console.log('Google auth dismissed by user');
       }
     }
 
     handleGoogleResponse();
-  }, [response]);
+  }, [response, loginWithGoogle]);
 
   // Google giriş butonuna tıklandığında
   const handleGoogleLogin = async () => {
     try {
       setError(null);
-      await promptAsync();
-      // Response useEffect tarafından yakalanacak
+      console.log('Starting Google auth flow...');
+      
+      // showInRecents: true - Android'de callback'in düzgün çalışmasını sağlar
+      const result = await promptAsync({ showInRecents: true });
+      console.log('promptAsync result:', JSON.stringify(result, null, 2));
+      
+      if (result?.type === 'success') {
+        const { authentication } = result;
+        console.log('Auth success, accessToken:', authentication?.accessToken ? 'exists' : 'missing');
+        
+        if (authentication?.accessToken) {
+          setIsProcessing(true);
+          try {
+            const loginResult = await loginWithGoogle(authentication.accessToken);
+            
+            if (loginResult.needsRegistration) {
+              router.push('/(auth)/register');
+            } else {
+              router.replace('/(tabs)');
+            }
+          } catch (err) {
+            console.error('Backend login error:', err);
+            setError(parseApiError(err));
+          } finally {
+            setIsProcessing(false);
+          }
+        }
+      } else if (result?.type === 'error') {
+        console.error('Google auth error:', result.error);
+        setError('Google girişi sırasında bir hata oluştu: ' + (result.error?.message || 'Bilinmeyen hata'));
+      } else if (result?.type === 'dismiss' || result?.type === 'cancel') {
+        console.log('Google auth dismissed/cancelled by user');
+      }
     } catch (err) {
+      console.error('promptAsync error:', err);
       setError(parseApiError(err));
     }
+  };
+
+  // E-posta butonuna tıklandığında - çift tıklama korumalı
+  const handleEmailNavigation = () => {
+    // Zaten navigate ediliyorsa, tekrar yapma
+    if (isNavigatingRef.current || isLoading || isProcessing) {
+      return;
+    }
+    
+    isNavigatingRef.current = true;
+    router.push('/(auth)/email-signup' as any);
+    
+    // 1 saniye sonra tekrar tıklamaya izin ver
+    setTimeout(() => {
+      isNavigatingRef.current = false;
+    }, 1000);
   };
 
   // @disabled Apple Sign In
@@ -171,6 +242,23 @@ export default function LoginScreen() {
                 </Text>
               </>
             )}
+          </TouchableOpacity>
+
+          {/* E-posta ile Giriş (Beta) */}
+          <TouchableOpacity
+            onPress={handleEmailNavigation}
+            disabled={isLoading || isProcessing}
+            className="bg-card border border-border rounded-2xl py-4 flex-row items-center justify-center"
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name="mail-outline"
+              size={24}
+              color={colorScheme === 'dark' ? '#E0E0E0' : '#212121'}
+            />
+            <Text className="text-foreground font-semibold text-base ml-3">
+              E-posta ile Giriş
+            </Text>
           </TouchableOpacity>
 
           {/* @disabled Apple Sign In */}

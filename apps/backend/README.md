@@ -1,5 +1,10 @@
 # Besin Denetle - Backend API
 
+![Version](https://img.shields.io/badge/version-0.7.0-blue.svg)
+![NestJS](https://img.shields.io/badge/NestJS-v11-e0234e.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178c6.svg)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-336791.svg)
+
 **Besin Denetle Backend**, projenin beynidir. Ürün verilerini yönetir, veritabanı işlemlerini gerçekleştirir ve Google Gemini AI servisi ile iletişim kurarak olmayan ürünleri analiz eder.
 
 **NestJS (v11)** framework'ü ile geliştirilmiş, modüler ve mikroservis mimarisine uygun tasarlanmıştır.
@@ -11,14 +16,10 @@
   - [🏗️ Veritabanı Mimarisi](#️-veritabanı-mimarisi)
   - [🧠 Yapay Zeka (AI) Akışı](#-yapay-zeka-ai-akışı)
   - [⚙️ Kurulum ve Yapılandırma](#️-kurulum-ve-yapılandırma)
-    - [1. Ortam Değişkenleri (.env)](#1-ortam-değişkenleri-env)
-    - [2. Veritabanını Başlatma](#2-veritabanını-başlatma)
-    - [3. Uygulamayı Başlatma](#3-uygulamayı-başlatma)
   - [🚀 Canlı Ortam (Production) Deployment](#-canlı-ortam-production-deployment)
-    - [Build ve Çalıştırma](#build-ve-çalıştırma)
-    - [Logları İzleme](#logları-i̇zleme)
   - [📡 API Endpointleri](#-api-endpointleri)
   - [🧪 Test](#-test)
+  - [🔗 İlgili Dökümanlar](#-i̇lgili-dökümanlar)
 
 ---
 
@@ -29,43 +30,32 @@ apps/backend/src/
 ├── common/         # 🛠️ Interceptor, Filter ve Guard'lar
 ├── config/         # ⚙️ Env ve konfigürasyon dosyaları
 ├── entities/       # 🗄️ Veritabanı tablo modelleri (TypeORM)
-├── modules/        # 📦 İş mantığı modülleri (Auth, Product, Vote...)
+├── modules/        # 📦 İş mantığı modülleri
+│   ├── ai/         # 🤖 Gemini AI servisleri
+│   ├── auth/       # 🔐 Kimlik doğrulama (OAuth, JWT)
+│   ├── health/     # 💚 Sağlık kontrolü
+│   ├── product/    # 📦 Ürün işlemleri
+│   ├── tasks/      # ⏰ Zamanlanmış görevler
+│   └── vote/       # 👍 Oylama sistemi
+├── scripts/        # 📜 Veritabanı seed ve migration scriptleri
 ├── app.module.ts   # 🌳 Ana modül
 └── main.ts         # 🚀 Uygulama giriş noktası
 ```
 
 ## 🏗️ Veritabanı Mimarisi
 
-Sistem, ilişkisel bütünlüğü (referential integrity) koruyan 6 ana PostgreSQL tablosundan oluşur.
+Sistem, ilişkisel bütünlüğü koruyan **6 ana PostgreSQL tablosundan** oluşur.
 
-```mermaid
-erDiagram
-    barcode ||--o{ product : "has"
-    product ||--o{ product_content : "has"
-    product_content ||--o{ content_analysis : "has"
-    
-    barcode {
-        uuid id PK
-        string code "Barkod No"
-        int type "1=Yiyecek"
-    }
-    product {
-        uuid id PK
-        string name "Ürün Adı"
-        string brand "Marka"
-    }
-    product_content {
-        uuid id PK
-        jsonb nutrition "Besin Değerleri"
-    }
-    content_analysis {
-        uuid id PK
-        jsonb analysis "AI Yorumu"
-    }
-```
+| Tablo | Açıklama | İlişki |
+|-------|----------|--------|
+| `barcode` | Taranmış barkod numaraları (tekil) | → product |
+| `product` | Ürün varyantları (ad, marka, gramaj) | → product_content |
+| `product_content` | İçindekiler ve besin değerleri | → content_analysis |
+| `content_analysis` | AI sağlık yorumu ve puan | - |
+| `user` | Kullanıcı bilgileri | → vote |
+| `vote` | Ürün oylamaları (up/down) | - |
 
-*   **Barcode:** Sisteme giren her barkod tekildir (Unique).
-*   **Varyant Sistemi:** AI farklı zamanlarda farklı sonuçlar üretebileceği için, her barkodun altında birden fazla `Product` (Varyant) olabilir. Kullanıcılar oylamalarla en doğru varyantı seçer.
+> **Varyant Sistemi:** AI farklı zamanlarda farklı sonuçlar üretebileceği için, her barkodun altında birden fazla `Product` olabilir. Kullanıcılar oylamalarla en doğru varyantı seçer.
 
 ---
 
@@ -104,9 +94,17 @@ DB_NAME=besindenetle
 # JWT token üretimi için güçlü bir şifre belirleyin
 JWT_SECRET=super-gizli-anahtar-buraya
 
-# --- GOOGLE AI (Opsiyonel) ---
-# Boş bırakılırsa Mock Servis çalışır (Ücret yazmaz)
+# --- GOOGLE OAUTH ---
+# Google Cloud Console'dan alınır
+GOOGLE_WEB_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+
+# --- GOOGLE AI ---
+# Boş bırakılırsa Mock Servis çalışır
 GEMINI_API_KEY=google-ai-studio-key-buraya
+
+# --- TEST MODU ---
+# true yapılırsa OAuth doğrulaması atlanır (sadece geliştirme için)
+MOCK_AUTH=false
 ```
 
 ### 2. Veritabanını Başlatma
@@ -128,11 +126,13 @@ pnpm dev
 
 ## 🚀 Canlı Ortam (Production) Deployment
 
-Uygulamayı Ubuntu sunucuda yayına almak için aşağıdaki adımları izleyin.
+Production deployment için Docker kullanılması önerilir.
 
-### Build ve Çalıştırma
+👉 **[Server Ubuntu Deployment Rehberi](../../docs/server-ubuntu-deployment.md)**
 
-TypeScript kodlarını JavaScript'e derlemeniz gerekir. **Önemli:** Backend, Shared paketine bağımlı olduğu için önce shared derlenmelidir.
+### Alternatif: PM2 ile Çalıştırma
+
+Docker kullanmadan doğrudan çalıştırmak için:
 
 ```bash
 # 1. Bağımlılıkları yükleyin
@@ -148,11 +148,6 @@ pnpm build
 pm2 start dist/main.js --name "besin-backend"
 ```
 
-### Logları İzleme
-```bash
-pm2 logs besin-backend
-```
-
 ---
 
 ## 📡 API Endpointleri
@@ -160,12 +155,33 @@ pm2 logs besin-backend
 Uygulama çalıştığında Swagger dokümantasyonuna erişebilirsiniz:
 👉 **URL:** `http://localhost:3200/api/docs`
 
+### Auth Endpoints
+
 | Metot | Endpoint | Açıklama |
 | :--- | :--- | :--- |
-| `POST` | `/auth/oauth` | Google/Apple ile giriş yap |
+| `POST` | `/auth/oauth` | Google/Apple OAuth ile giriş |
+| `POST` | `/auth/email-signup` | E-posta ile kayıt/giriş (Beta) |
+| `POST` | `/auth/register` | Kayıt tamamla (username seç) |
+| `POST` | `/auth/refresh` | Access token yenile |
+| `POST` | `/auth/logout` | Çıkış yap |
+
+### Product Endpoints
+
+| Metot | Endpoint | Açıklama |
+| :--- | :--- | :--- |
 | `POST` | `/products/scan` | Barkod tara (AI tetikler) |
-| `POST` | `/products/confirm` | Ürünü onaylayıp içeriği getir |
-| `POST` | `/vote` | Bir veriye UP/DOWN oy ver |
+| `POST` | `/products/confirm` | Ürünü onayla, içerik getir |
+| `POST` | `/products/reject` | Ürün varyantını reddet |
+| `POST` | `/content/reject` | İçerik bilgisini reddet |
+| `POST` | `/analysis/reject` | AI analizini reddet |
+| `POST` | `/barcodes/flag` | Barkodu yiyecek değil olarak işaretle |
+
+### Health Check
+
+| Metot | Endpoint | Açıklama |
+| :--- | :--- | :--- |
+| `GET` | `/health` | Sunucu sağlık durumu |
+
 
 ---
 
@@ -180,3 +196,11 @@ pnpm test
 # Test coverage raporu
 pnpm test:cov
 ```
+
+---
+
+## 🔗 İlgili Dökümanlar
+
+*   🐳 [Docker Development Rehberi](../../docs/docker-development.md)
+*   🖥️ [Server Deployment Rehberi](../../docs/server-ubuntu-deployment.md)
+*   📦 [Shared Paket](../../packages/shared/README.md)
