@@ -14,7 +14,8 @@
     "la": "eas build --local --platform android",
     "build:status": "eas build:list",
     
-    "lint": "expo lint"
+    "lint": "expo lint",
+	"clean": "npx rimraf --glob \"**/dist\" \"**/.turbo\" \"**/.expo\" \"**/android\" \"**/ios\""
   },
   "dependencies": {
     "@besin-denetle/shared": "workspace:*",
