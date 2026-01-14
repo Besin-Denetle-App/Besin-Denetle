@@ -19,6 +19,9 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "typeorm": "typeorm-ts-node-commonjs",
+
+    "analyze-csv": "npx tsx src/scripts/analyze-csv.ts",
+    "import-csv": "npx tsx src/scripts/import-csv.ts",
     "recalculate-scores": "npx tsx src/scripts/recalculate-scores.ts"
   },
   "dependencies": {
@@ -31,9 +34,11 @@
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.1.0",
+    "@nestjs/schedule": "^6.1.0",
     "@nestjs/swagger": "^11.2.3",
     "@nestjs/throttler": "^6.3.0",
     "@nestjs/typeorm": "^11.0.0",
+    "dotenv": "^16.5.0",
     "apple-signin-auth": "^2.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
