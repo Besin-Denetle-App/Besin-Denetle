@@ -160,7 +160,7 @@ Android Studio'yu açıp SDK Manager'a gidin:
 **NDK (Side by side)** altında:
 | Versiyon | Gereklilik |
 |----------|------------|
-| ☐ 29.0.13113456 (veya en son) | ✅ Önerilen |
+| ☐ 27.1.12297006 (veya en son) | ✅ Önerilen |
 
 **CMake** altında:
 | Versiyon | Gereklilik |
