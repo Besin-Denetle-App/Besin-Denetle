@@ -6,10 +6,10 @@
   "scripts": {
     "install:all": "pnpm install",
     "clean": "npx rimraf node_modules **/node_modules",
+    "clean:build": "npx rimraf **/dist **/.turbo **/.expo **/android **/ios",
     "backend": "pnpm --filter @besin-denetle/backend start",
     "mobile": "pnpm --filter @besin-denetle/mobile start",
-    "mobile:prebuild": "pnpm --filter @besin-denetle/mobile exec npx expo prebuild",
-    "clean:build": "npx rimraf **/dist **/.turbo **/.expo **/android **/ios"
+    "mobile:prebuild": "pnpm --filter @besin-denetle/mobile exec npx expo prebuild"
   },
   "devDependencies": {
     "typescript": "^5.7.3"
