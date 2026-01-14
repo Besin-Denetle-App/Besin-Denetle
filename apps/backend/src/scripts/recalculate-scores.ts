@@ -23,12 +23,6 @@ const dataSource = new DataSource({
   database: process.env.DB_NAME || 'besindenetle',
 });
 
-// VoteType enum değerleri
-enum VoteType {
-  UP = 'UP',
-  DOWN = 'DOWN',
-}
-
 async function recalculateScores() {
   console.log('🔄 Skor yeniden hesaplama başlatıldı...');
   console.log(
@@ -44,7 +38,7 @@ async function recalculateScores() {
 
     // 1. Product skorlarını yeniden hesapla
     console.log('\n📊 Product skorları hesaplanıyor...');
-    const productResult = await dataSource.query(`
+    const productResult = await dataSource.query<{ id: string }[]>(`
       UPDATE product p
       SET 
         score = COALESCE((
@@ -59,11 +53,13 @@ async function recalculateScores() {
         ), 0)
       RETURNING id
     `);
-    console.log(`   → ${productResult.length} ürün güncellendi`);
+    console.log(
+      `   → ${(productResult as { id: string }[]).length} ürün güncellendi`,
+    );
 
     // 2. ProductContent skorlarını yeniden hesapla
     console.log('\n📊 ProductContent skorları hesaplanıyor...');
-    const contentResult = await dataSource.query(`
+    const contentResult = await dataSource.query<{ id: string }[]>(`
       UPDATE product_content pc
       SET 
         score = COALESCE((
@@ -78,11 +74,13 @@ async function recalculateScores() {
         ), 0)
       RETURNING id
     `);
-    console.log(`   → ${contentResult.length} içerik güncellendi`);
+    console.log(
+      `   → ${(contentResult as { id: string }[]).length} içerik güncellendi`,
+    );
 
     // 3. ContentAnalysis skorlarını yeniden hesapla
     console.log('\n📊 ContentAnalysis skorları hesaplanıyor...');
-    const analysisResult = await dataSource.query(`
+    const analysisResult = await dataSource.query<{ id: string }[]>(`
       UPDATE content_analysis ca
       SET 
         score = COALESCE((
@@ -97,16 +95,24 @@ async function recalculateScores() {
         ), 0)
       RETURNING id
     `);
-    console.log(`   → ${analysisResult.length} analiz güncellendi`);
+    console.log(
+      `   → ${(analysisResult as { id: string }[]).length} analiz güncellendi`,
+    );
 
     // Özet
     const duration = Date.now() - startTime;
     console.log('\n' + '='.repeat(50));
     console.log('✅ SKOR YENİDEN HESAPLAMA TAMAMLANDI!');
     console.log('='.repeat(50));
-    console.log(`   Product:         ${productResult.length} kayıt`);
-    console.log(`   ProductContent:  ${contentResult.length} kayıt`);
-    console.log(`   ContentAnalysis: ${analysisResult.length} kayıt`);
+    console.log(
+      `   Product:         ${(productResult as { id: string }[]).length} kayıt`,
+    );
+    console.log(
+      `   ProductContent:  ${(contentResult as { id: string }[]).length} kayıt`,
+    );
+    console.log(
+      `   ContentAnalysis: ${(analysisResult as { id: string }[]).length} kayıt`,
+    );
     console.log(`   Süre:            ${duration}ms`);
     console.log('='.repeat(50));
   } catch (error) {
@@ -122,4 +128,7 @@ async function recalculateScores() {
 }
 
 // Scripti çalıştır
-recalculateScores();
+recalculateScores().catch((error) => {
+  console.error('Fatal error:', error);
+  process.exit(1);
+});

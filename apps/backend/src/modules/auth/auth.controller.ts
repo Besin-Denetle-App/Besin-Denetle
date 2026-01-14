@@ -1,30 +1,30 @@
 import {
-    OAuthResponse,
-    RefreshTokenResponse,
-    RegisterResponse,
+  OAuthResponse,
+  RefreshTokenResponse,
+  RegisterResponse,
 } from '@besin-denetle/shared';
 import {
-    Body,
-    Controller,
-    HttpCode,
-    HttpStatus,
-    Post,
-    Request,
-    UseGuards,
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import {
-    ApiBearerAuth,
-    ApiOperation,
-    ApiResponse,
-    ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import {
-    EmailSignupRequestDto,
-    OAuthRequestDto,
-    RefreshTokenRequestDto,
-    RegisterRequestDto,
+  EmailSignupRequestDto,
+  OAuthRequestDto,
+  RefreshTokenRequestDto,
+  RegisterRequestDto,
 } from './dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 

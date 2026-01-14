@@ -1,3 +1,4 @@
+import { VoteType } from '@besin-denetle/shared';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -74,7 +75,7 @@ export class ScoreRecalculationService {
 
       // Skoru hesapla: UP = +1, DOWN = -1
       const score = votes.reduce((sum, vote) => {
-        return sum + (vote.vote_type === 'UP' ? 1 : -1);
+        return sum + (vote.vote_type === VoteType.UP ? 1 : -1);
       }, 0);
 
       const voteCount = votes.length;
@@ -105,7 +106,7 @@ export class ScoreRecalculationService {
       });
 
       const score = votes.reduce((sum, vote) => {
-        return sum + (vote.vote_type === 'UP' ? 1 : -1);
+        return sum + (vote.vote_type === VoteType.UP ? 1 : -1);
       }, 0);
 
       const voteCount = votes.length;
@@ -135,7 +136,7 @@ export class ScoreRecalculationService {
       });
 
       const score = votes.reduce((sum, vote) => {
-        return sum + (vote.vote_type === 'UP' ? 1 : -1);
+        return sum + (vote.vote_type === VoteType.UP ? 1 : -1);
       }, 0);
 
       const voteCount = votes.length;

@@ -54,11 +54,7 @@ const getGoogleConfig = () => ({
   iosClientId: process.env.GOOGLE_IOS_CLIENT_ID || null,
 });
 
-// Debug log (sadece development'ta)
-if (APP_ENV === 'development') {
-  console.log(`[Config] APP_ENV: ${APP_ENV}`);
-  console.log(`[Config] API:`, getApiConfig());
-}
+
 
 // ============================================================
 // Expo Konfigürasyonu
