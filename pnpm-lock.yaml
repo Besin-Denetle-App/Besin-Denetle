@@ -65,6 +65,9 @@ importers:
       csv-parser:
         specifier: ^3.2.0
         version: 3.2.0
+      dotenv:
+        specifier: ^16.5.0
+        version: 16.6.1
       google-auth-library:
         specifier: ^10.5.0
         version: 10.5.0
@@ -9479,11 +9482,11 @@ snapshots:
 
   dotenv-expand@11.0.7:
     dependencies:
-      dotenv: 16.4.7
+      dotenv: 16.6.1
 
   dotenv-expand@12.0.1:
     dependencies:
-      dotenv: 16.4.7
+      dotenv: 16.6.1
 
   dotenv@16.4.7: {}
 
