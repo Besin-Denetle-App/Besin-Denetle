@@ -96,16 +96,20 @@ Projeyi yerel ortamınızda (Localhost) çalıştırmak için aşağıdaki adım
     
     **Backend:**
     ```bash
-    # Yeni bir terminalde:
-    cd apps/backend
-    pnpm dev
+    # Root dizinde:
+    pnpm dev:backend
+    
+    # veya apps/backend içinde:
+    # pnpm start:dev
     ```
     
     **Mobile:**
     ```bash
-    # Yeni bir terminalde:
-    cd apps/mobile
-    pnpm start
+    # Root dizinde:
+    pnpm dev:mobile
+    
+    # veya apps/mobile içinde:
+    # pnpm start
     ```
 
 ---

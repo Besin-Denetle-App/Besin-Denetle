@@ -119,7 +119,7 @@ docker compose up -d
 
 ```bash
 # Geliştirme modu (Hot reload aktif)
-pnpm dev
+pnpm start:dev
 ```
 
 ---
@@ -135,17 +135,19 @@ Production deployment için PM2 kullanılması önerilir.
 Docker kullanmadan doğrudan çalıştırmak için:
 
 ```bash
+# Root dizinde:
+cd /opt/besin-denetle
+
 # 1. Bağımlılıkları yükleyin
 pnpm install
 
-# 2. Önce Shared kütüphanesini derleyin
-pnpm --filter @besin-denetle/shared build
+# 2. Shared + Backend'i derleyin
+# (pnpm build:shared && pnpm build:backend)
+pnpm build:all
 
-# 3. Backend uygulamasını derleyin
-pnpm build
-
-# 4. PM2 ile servisi başlatın
-pm2 start dist/main.js --name "besin-backend"
+# 3. PM2 ile servisi başlatın
+# (pm2 start apps/backend/dist/main.js --name besin-backend)
+pnpm start:prod
 ```
 
 ---

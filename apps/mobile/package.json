@@ -1,7 +1,7 @@
 {
   "name": "@besin-denetle/mobile",
   "main": "expo-router/entry",
-  "version": "0.7.7",
+  "version": "0.7.8",
   "scripts": {
     "start": "expo start",
 
@@ -10,12 +10,12 @@
     "web": "expo start --web",
     
     "build": "eas build",
-    "local": "eas build --local",
-    "la": "eas build --local --platform android",
+    "build:local": "eas build --local",
+    "build:android-local": "eas build --local --platform android",
     "build:status": "eas build:list",
     
     "lint": "expo lint",
-	"clean": "npx rimraf --glob \"**/dist\" \"**/.turbo\" \"**/.expo\" \"**/android\" \"**/ios\""
+	  "clean": "npx rimraf --glob \"**/dist\" \"**/.turbo\" \"**/.expo\" \"**/android\" \"**/ios\""
   },
   "dependencies": {
     "@besin-denetle/shared": "workspace:*",

@@ -747,7 +747,7 @@ cat apps/mobile/eas.json
 | `pnpm install` | Bağımlılıkları yükle |
 | `pnpm -F mobile start` | Mobile uygulamayı başlat |
 | `pnpm -F mobile run android` | Android'de çalıştır |
-| `pnpm clean` | Tüm build cache temizle |
+| `pnpm -F mobile clean` | Tüm build cache temizle |
 
 ---
 

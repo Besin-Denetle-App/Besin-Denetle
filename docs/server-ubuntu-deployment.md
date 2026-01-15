@@ -120,19 +120,19 @@ docker compose ps
 # Tüm bağımlılıkları yükle
 pnpm install
 
-# Shared paketini build et
-pnpm --filter @besin-denetle/shared build
-
-# Backend'i build et
-cd apps/backend
-pnpm build
+# Shared + Backend'i build et
+# (pnpm build:shared && pnpm build:backend)
+pnpm build:all
 ```
 
 ### 8. Backend'i PM2 ile Başlat
 
 ```bash
-cd /opt/besin-denetle/apps/backend
-pm2 start dist/main.js --name "besin-backend"
+cd /opt/besin-denetle
+
+# PM2 ile başlat
+# (pm2 start apps/backend/dist/main.js --name besin-backend)
+pnpm start:prod
 
 # Durumu kontrol et
 pm2 status
@@ -271,13 +271,11 @@ git pull origin main
 # Bağımlılıkları güncelle
 pnpm install
 
-# Shared paketini yeniden build et
-pnpm --filter @besin-denetle/shared build
+# Projeyi yeniden build et
+pnpm build:all
 
-# Backend'i yeniden build et ve başlat
-cd apps/backend
-pnpm build
-pm2 restart besin-backend
+# PM2'yi yeniden başlat
+pnpm restart:prod
 ```
 
 ---

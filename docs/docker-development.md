@@ -46,12 +46,11 @@ docker compose up -d db
 # Bağımlılıkları yükle (ilk kez)
 pnpm install
 
-# Shared paketini build et (ilk kez veya değişiklik sonrası)
-pnpm --filter @besin-denetle/shared build
+# Shared + Backend'i build et (ilk kez veya değişiklik sonrası)
+pnpm build:all
 
-# Backend'i başlat
-cd apps/backend
-pnpm start
+# Backend'i başlat (root dizinden)
+pnpm dev:backend
 ```
 
 ### 4. Durumu Kontrol Et
@@ -82,9 +81,10 @@ curl http://localhost:3200/health
 
 | Komut | Açıklama |
 |-------|----------|
-| `pnpm start` | Backend'i başlat |
-| `pnpm dev` | Hot reload ile başlat |
-| `pnpm build` | Production build |
+| `pnpm dev:backend` | Hot reload ile başlat (root) |
+| `pnpm build:all` | Shared + Backend build (root) |
+| `pnpm start` | Backend'i başlat (apps/backend) |
+| `pnpm start:dev` | Hot reload ile başlat (apps/backend) |
 
 ---
 
@@ -125,7 +125,8 @@ docker compose restart db
 Backend'de `@besin-denetle/shared` hataları alıyorsanız:
 
 ```bash
-pnpm --filter @besin-denetle/shared build
+pnpm build:shared
+# veya: pnpm --filter @besin-denetle/shared build
 ```
 
 ---

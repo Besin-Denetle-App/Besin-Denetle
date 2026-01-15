@@ -121,7 +121,8 @@ Bulut yerine kendi bilgisayarınızda build almak için:
 
 ```bash
 # WSL2 Ubuntu'da
-eas build --local --platform android
+pnpm build:android-local
+# (eas build --local --platform android)
 ```
 
 ---
