@@ -1,7 +1,7 @@
 import {
-  AuthProvider,
-  TEMP_TOKEN_EXPIRY_MS,
-  UserRole,
+    AuthProvider,
+    TEMP_TOKEN_EXPIRY_MS,
+    UserRole,
 } from '@besin-denetle/shared';
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -32,7 +32,6 @@ const tempTokenStore = new Map<string, TempTokenData>();
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
-  private readonly isMockMode: boolean;
   private readonly jwtSecret: string;
   private readonly jwtExpiresIn: number;
   private readonly googleClientId: string;
@@ -45,7 +44,6 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {
-    this.isMockMode = this.configService.get<string>('MOCK_AUTH') === 'true';
     this.jwtSecret =
       this.configService.get<string>('JWT_SECRET') || 'dev-secret-key';
     this.jwtExpiresIn = 60 * 60 * 24 * 7; // 7 gün (saniye)
@@ -53,12 +51,8 @@ export class AuthService {
       this.configService.get<string>('oauth.google.clientId') || '';
     // this.appleClientId = this.configService.get<string>('oauth.apple.clientId') || '';
 
-    // Google OAuth client (sadece gerçek modda kullanılır)
+    // Google OAuth client
     this.googleClient = new OAuth2Client(this.googleClientId);
-
-    if (this.isMockMode) {
-      this.logger.warn('Auth Service running in MOCK MODE');
-    }
 
     // Production uyarısı: JWT_SECRET set edilmemişse
     if (!this.configService.get<string>('JWT_SECRET')) {
@@ -68,7 +62,7 @@ export class AuthService {
     }
 
     // OAuth client ID kontrolü
-    if (!this.isMockMode && !this.googleClientId /* && !this.appleClientId */) {
+    if (!this.googleClientId /* && !this.appleClientId */) {
       this.logger.warn(
         '⚠️ OAuth client IDs not configured. Real OAuth will fail!',
       );
@@ -298,18 +292,12 @@ export class AuthService {
   }
 
   /**
-   * OAuth token doğrulama (mock veya gerçek)
+   * OAuth token doğrulama
    */
   private async verifyOAuthToken(
     provider: AuthProvider,
     token: string,
   ): Promise<{ providerId: string; email: string }> {
-    // Mock mod aktifse, her zaman mock kullan
-    if (this.isMockMode) {
-      return this.mockVerifyOAuthToken(provider, token);
-    }
-
-    // Gerçek OAuth doğrulama
     switch (provider) {
       case AuthProvider.GOOGLE:
         return this.verifyGoogleToken(token);
@@ -389,22 +377,4 @@ export class AuthService {
   }
   */
 
-  /**
-   * Mock OAuth doğrulama
-   */
-  private mockVerifyOAuthToken(
-    provider: AuthProvider,
-    token: string,
-  ): { providerId: string; email: string } {
-    this.logger.debug(`[MOCK] Verifying OAuth token for provider: ${provider}`);
-
-    // Token'dan mock kullanıcı bilgisi oluştur
-    const mockId = `mock_${provider}_${token.slice(0, 8)}`;
-    const mockEmail = `${token.slice(0, 8)}@mock.${provider}.com`;
-
-    return {
-      providerId: mockId,
-      email: mockEmail,
-    };
-  }
 }

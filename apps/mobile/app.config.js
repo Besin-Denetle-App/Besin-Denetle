@@ -54,7 +54,10 @@ const getGoogleConfig = () => ({
   iosClientId: process.env.GOOGLE_IOS_CLIENT_ID || null,
 });
 
-
+console.log('=== BUILD CONFIG ===');
+console.log('APP_ENV:', APP_ENV);
+console.log('API Config:', getApiConfig());
+console.log('====================');
 
 // ============================================================
 // Expo Konfigürasyonu
@@ -138,3 +141,4 @@ module.exports = {
     },
   },
 };
+

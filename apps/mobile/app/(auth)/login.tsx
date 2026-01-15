@@ -24,30 +24,31 @@ export default function LoginScreen() {
 
   const googleConfig = Constants.expoConfig?.extra?.google || {};
   
-  // Expo Go mu yoksa standalone build mi olduğunu tespit et
+  // Expo Go mu yoksa native build mi?
   const isExpoGo = Constants.appOwnership === 'expo';
   
-  // Redirect URI: Expo Go için proxy, standalone için native scheme
+  // Redirect URI: Expo Go için proxy, native build için scheme
   const redirectUri = isExpoGo
     ? 'https://auth.expo.io/@furkanpasa/Besin-Denetle'
-    : makeRedirectUri({
-        scheme: 'besindenetle',
-        path: 'auth',
-      });
+    : makeRedirectUri({ scheme: 'besindenetle', path: 'auth' });
 
-  // Debug için redirect URI'yi logla
-  console.log('Auth Config:', { isExpoGo, redirectUri, platform: Platform.OS });
+  // Debug için config'i logla
+  console.log('Google Auth Config:', {
+    isExpoGo,
+    platform: Platform.OS,
+    redirectUri,
+    webClientId: googleConfig.webClientId ? 'set' : 'missing',
+    androidClientId: googleConfig.androidClientId ? 'set' : 'missing',
+  });
 
-  /* 
-    Expo Go'da sadece webClientId kullanılmalı.
-    Standalone build'de platform'a göre native client ID kullanılmalı.
-  */
+  // Google OAuth request
+  // Expo Go'da sadece webClientId kullanılır, native build'de platform'a göre seçilir
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId: googleConfig.webClientId,
     androidClientId: isExpoGo ? undefined : googleConfig.androidClientId,
     iosClientId: isExpoGo ? undefined : googleConfig.iosClientId,
     redirectUri,
-    scopes: ['openid', 'email'],
+    scopes: ['openid', 'email', 'profile'],
   });
 
   // Request hazır olduğunda logla
@@ -71,12 +72,13 @@ export default function LoginScreen() {
     async function handleGoogleResponse() {
       if (response?.type === 'success') {
         const { authentication } = response;
-        if (authentication?.accessToken && !isProcessingRef.current) {
+        // Backend Google verifyIdToken API'si idToken bekliyor, accessToken değil
+        if (authentication?.idToken && !isProcessingRef.current) {
           isProcessingRef.current = true;
           setIsProcessing(true);
           setError(null);
           try {
-            const loginResult = await loginWithGoogle(authentication.accessToken);
+            const loginResult = await loginWithGoogle(authentication.idToken);
             
             if (loginResult.needsRegistration) {
               router.push('/(auth)/register');
@@ -113,12 +115,13 @@ export default function LoginScreen() {
       
       if (result?.type === 'success') {
         const { authentication } = result;
-        console.log('Auth success, accessToken:', authentication?.accessToken ? 'exists' : 'missing');
+        // Backend Google verifyIdToken API'si idToken bekliyor, accessToken değil
+        console.log('Auth success, idToken:', authentication?.idToken ? 'exists' : 'missing');
         
-        if (authentication?.accessToken) {
+        if (authentication?.idToken) {
           setIsProcessing(true);
           try {
-            const loginResult = await loginWithGoogle(authentication.accessToken);
+            const loginResult = await loginWithGoogle(authentication.idToken);
             
             if (loginResult.needsRegistration) {
               router.push('/(auth)/register');
@@ -131,6 +134,9 @@ export default function LoginScreen() {
           } finally {
             setIsProcessing(false);
           }
+        } else {
+          console.error('idToken missing in response');
+          setError('Google girişi başarısız: idToken alınamadı');
         }
       } else if (result?.type === 'error') {
         console.error('Google auth error:', result.error);
