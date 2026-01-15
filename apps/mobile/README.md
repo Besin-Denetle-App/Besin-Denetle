@@ -89,14 +89,7 @@ eas login
 
 Build sırasında kullanılacak environment değişkenleri EAS Secrets'ta tutulur.
 
-**Preview Build için:**
-```bash
-eas env:create --name API_HOST --value "IP_ADRESI" --type string --visibility secret --environment preview
-eas env:create --name API_PORT --value "3200" --type string --visibility secret --environment preview
-eas env:create --name GOOGLE_WEB_CLIENT_ID --value "XXX" --type string --visibility secret --environment preview
-eas env:create --name GOOGLE_ANDROID_CLIENT_ID --value "XXX" --type string --visibility secret --environment preview
-eas env:create --name GOOGLE_IOS_CLIENT_ID --value "XXX" --type string --visibility secret --environment preview
-```
+> **Not:** Local build için preview değişkenleri `eas.json` dosyasında tanımlı. Aşağıdaki komutlar cloud build için geçerlidir.
 
 **Production Build için:**
 ```bash

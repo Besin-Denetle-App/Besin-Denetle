@@ -356,23 +356,56 @@ Packages: +xxxx
 Progress: resolved xxxx, reused xxxx, downloaded xx, added xxxx, done
 ```
 
-### 3️⃣ Environment Dosyasını Yapılandır
+### 3️⃣ Environment Konfigürasyonu
 
-```bash
-# Örnek .env dosyasını kopyala
-cp .env.example .env
+#### 📋 Kapsamlı Env Kaynağı Tablosu
 
-# Düzenle (nano veya vim)
-nano .env
+```
+┌─────────────────┬─────────────────┬────────────────────────────┐
+│ Senaryo         │ Env Kaynağı     │ API Değişkenleri           │
+├─────────────────┼─────────────────┼────────────────────────────┤
+│ expo start      │ .env dosyası    │ DEV_API_HOST:DEV_API_PORT  │
+│ local preview   │ eas.json        │ API_HOST:API_PORT          │
+│ local prod      │ eas.json        │ API_URL                    │
+│ cloud preview   │ eas.json        │ API_HOST:API_PORT          │
+│ cloud prod      │ EAS Secrets     │ API_URL                    │
+└─────────────────┴─────────────────┴────────────────────────────┘
 ```
 
-#### `.env` Kullanım Stratejisi
+#### Development (.env dosyası)
 
-| Build Profili | APP_ENV | API Kullanımı | Kullanım Amacı |
-|---------------|---------|---------------|----------------|
-| development | development | DEV_API_HOST:DEV_API_PORT | Local geliştirme |
-| preview | preview | API_HOST:API_PORT | Staging/test ortamı |
-| production | production | API_URL | Play Store yayını |
+```bash
+# Sadece expo start için kullanılır
+cp apps/mobile/.env.example apps/mobile/.env
+nano apps/mobile/.env
+```
+
+#### Preview/Production (eas.json)
+
+Local build için değişkenler `apps/mobile/eas.json` dosyasındaki `env` bloğunda tanımlıdır:
+
+```json
+{
+  "build": {
+    "preview": {
+      "env": {
+        "APP_ENV": "preview",
+        "API_HOST": "192.168.1.100",
+        "API_PORT": "3200"
+      }
+    },
+    "production": {
+      "env": {
+        "APP_ENV": "production",
+        "API_URL": "https://api.besindenetle.app/api"
+      }
+    }
+  }
+}
+```
+
+> [!IMPORTANT]
+> **Local build için:** `.env` dosyası OKUNMAZ! Değişkenler `eas.json`'dan gelir.
 
 ### 4️⃣ Expo Bağımlılıklarını Düzelt
 

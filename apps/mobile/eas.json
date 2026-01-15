@@ -17,7 +17,9 @@
         "buildType": "apk"
       },
       "env": {
-        "APP_ENV": "preview"
+        "APP_ENV": "preview",
+        "API_HOST": "192.168.1.106",
+        "API_PORT": "3200"
       }
     },
     "production": {
@@ -25,7 +27,8 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "APP_ENV": "production"
+        "APP_ENV": "production",
+        "API_URL": "https://api.besindenetle.app/api"
       }
     }
   },

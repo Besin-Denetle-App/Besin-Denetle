@@ -269,14 +269,38 @@ graph LR
 
 ---
 
-#### `.env` Kullanım Stratejisi
+#### 📋 Kapsamlı Env Kaynağı Tablosu
 
-| Build Profili | APP_ENV | API Kullanımı | Kullanım Amacı |
-|---------------|---------|---------------|----------------|
-| `expo start` | development | DEV_API_HOST:DEV_API_PORT | Local geliştirme |
-| Debug APK | development | DEV_API_HOST:DEV_API_PORT | Fiziksel cihazda test |
-| Preview Build | preview | API_HOST:API_PORT | Staging/test ortamı |
-| Production | production | API_URL | Play Store yayını |
+```
+┌─────────────────┬─────────────────┬────────────────────────────┐
+│ Senaryo         │ Env Kaynağı     │ API Değişkenleri           │
+├─────────────────┼─────────────────┼────────────────────────────┤
+│ expo start      │ .env dosyası    │ DEV_API_HOST:DEV_API_PORT  │
+│ local preview   │ eas.json        │ API_HOST:API_PORT          │
+│ local prod      │ eas.json        │ API_URL                    │
+│ cloud preview   │ eas.json        │ API_HOST:API_PORT          │
+│ cloud prod      │ EAS Secrets     │ API_URL                    │
+└─────────────────┴─────────────────┴────────────────────────────┘
+```
+
+> [!IMPORTANT]
+> **Local build için:** `.env` dosyası OKUNMAZ! Değişkenler `eas.json`'dan gelir.
+
+**eas.json env bloğu örneği:**
+
+```json
+{
+  "build": {
+    "preview": {
+      "env": {
+        "APP_ENV": "preview",
+        "API_HOST": "192.168.1.100",
+        "API_PORT": "3200"
+      }
+    }
+  }
+}
+```
 
 ---
 

@@ -4,12 +4,24 @@ require('dotenv').config();
 // ============================================================
 // Environment Konfigürasyonu
 // ============================================================
+//
+// ┌─────────────────┬─────────────────┬────────────────────────────┐
+// │ Senaryo         │ Env Kaynağı     │ API Değişkenleri           │
+// ├─────────────────┼─────────────────┼────────────────────────────┤
+// │ expo start      │ .env dosyası    │ DEV_API_HOST:DEV_API_PORT  │
+// │ local preview   │ eas.json        │ API_HOST:API_PORT          │
+// │ local prod      │ eas.json        │ API_URL                    │
+// │ cloud preview   │ eas.json        │ API_HOST:API_PORT          │
+// │ cloud prod      │ EAS Secrets     │ API_URL                    │
+// └─────────────────┴─────────────────┴────────────────────────────┘
+//
+// ============================================================
 
 /**
  * Build profile (eas.json'dan geliyor)
- * - development: expo start
- * - preview: eas build --profile preview
- * - production: eas build --profile production
+ * - development: expo start → .env'den DEV_API_* kullanır
+ * - preview: eas build --profile preview → eas.json'dan API_HOST:PORT kullanır
+ * - production: eas build --profile production → eas.json veya EAS Secrets'tan API_URL kullanır
  */
 const APP_ENV = process.env.APP_ENV || 'development';
 
@@ -54,10 +66,14 @@ const getGoogleConfig = () => ({
   iosClientId: process.env.GOOGLE_IOS_CLIENT_ID || null,
 });
 
-console.log('=== BUILD CONFIG ===');
-console.log('APP_ENV:', APP_ENV);
-console.log('API Config:', getApiConfig());
-console.log('====================');
+// Debug logları
+if (!global.__BUILD_CONFIG_LOGGED__) {
+  global.__BUILD_CONFIG_LOGGED__ = true;
+  console.log('=== BUILD CONFIG ===');
+  console.log('APP_ENV:', APP_ENV);
+  console.log('API Config:', getApiConfig());
+  console.log('====================');
+}
 
 // ============================================================
 // Expo Konfigürasyonu
