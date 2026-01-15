@@ -63,7 +63,6 @@ Mobil uygulamada API istekleri atarken dönüş tiplerini belirlemek için kulla
 import { ProductResponseDto } from '@besin-denetle/shared';
 
 const response = await axios.get<ProductResponseDto>('/api/products/1');
-// response.data artık ProductResponseDto tipindedir.
 ```
 
 ---

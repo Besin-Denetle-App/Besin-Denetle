@@ -316,12 +316,12 @@ Yanıt formatı:
       const text = response.text || '';
       this.logger.debug(`Gemini analyzeContent response: ${text.substring(0, 200)}...`);
 
-      // JSON parse et ve model bilgisini backend'de ekle
+      // JSON yanıtını parse et ve model adını ekle
       const parsed = this.parseJsonResponse<Omit<AIAnalysisResult, 'model'>>(text);
       if (parsed) {
         return {
           ...parsed,
-          model: GEMINI_MODEL_SMART, // Model bilgisini backend'de ekle
+          model: GEMINI_MODEL_SMART, // Kullanılan model
         };
       }
       return this.mockAnalyzeContent(name);

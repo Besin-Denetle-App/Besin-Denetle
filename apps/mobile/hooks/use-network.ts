@@ -54,7 +54,7 @@ export function useNetwork() {
     return () => {
       unsubscribe();
     };
-  }, []); // Artık dependency yok, sadece bir kez subscribe olur
+  }, []);
 
   return {
     isConnected,
