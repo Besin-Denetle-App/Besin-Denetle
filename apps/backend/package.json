@@ -19,9 +19,9 @@
     "test:cov": "jest --coverage",
     "typeorm": "typeorm-ts-node-commonjs",
 
-    "analyze-csv": "npx tsx src/scripts/analyze-csv.ts",
-    "import-csv": "npx tsx src/scripts/import-csv.ts",
-    "recalculate-scores": "npx tsx src/scripts/recalculate-scores.ts"
+    "analyze": "npx ts-node --transpile-only src/scripts/analyze-csv.ts",
+    "import": "npx ts-node --transpile-only src/scripts/import-csv.ts",
+    "recalculate": "npx ts-node --transpile-only src/scripts/recalculate-scores.ts"
   },
   "dependencies": {
     "@arendajaelu/nestjs-passport-apple": "^2.0.0",

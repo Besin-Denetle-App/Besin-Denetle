@@ -46,12 +46,12 @@ async function analyzeCsv() {
   // Correct path to the CSV file in the root directory
   const csvFilePath = path.resolve(
     __dirname,
-    '../../../../Ürün Listesi (14.442) .csv',
+    '../../../../ÜrünListesi(14.442).csv',
   );
-  console.log(`Reading CSV from: ${csvFilePath}`);
+  console.log(`CSV okunuyor: ${csvFilePath}`);
 
   if (!fs.existsSync(csvFilePath)) {
-    console.error('CSV file not found!');
+    console.error('CSV dosyası bulunamadı!');
     return;
   }
 
@@ -69,7 +69,7 @@ async function analyzeCsv() {
           if (barcodes.has(trimmed)) {
             duplicateBarcodesInCsv++;
             console.log(
-              `[Duplicate] Barcode: ${trimmed} | Name: ${data.name} | Row: ${JSON.stringify(data)}`,
+              `[Tekrar] Barkod: ${trimmed} | Ad: ${data.name} | Satır: ${JSON.stringify(data)}`,
             );
           }
           barcodes.add(trimmed);
@@ -80,14 +80,14 @@ async function analyzeCsv() {
   });
 
   console.log('------------------------------------------------');
-  console.log(`Total Rows in CSV: ${results.length}`);
-  console.log(`Unique Barcodes in CSV: ${barcodes.size}`);
-  console.log(`Duplicate Barcodes in CSV: ${duplicateBarcodesInCsv}`);
+  console.log(`CSV'deki Toplam Satır: ${results.length}`);
+  console.log(`CSV'deki Tekil Barkod: ${barcodes.size}`);
+  console.log(`CSV'deki Tekrarlı Barkod: ${duplicateBarcodesInCsv}`);
 
   // Connect to DB
   try {
     await dataSource.initialize();
-    console.log('Database connected.');
+    console.log('Veritabanına bağlanıldı.');
 
     const barcodeList = Array.from(barcodes);
     const chunkSize = 1000;
@@ -106,13 +106,13 @@ async function analyzeCsv() {
     }
 
     console.log(
-      `Existing Barcodes in DB (out of CSV unique ones): ${existingCount}`,
+      `Veritabanında Mevcut Barkod (CSV'dekilerden): ${existingCount}`,
     );
     console.log(
-      `New Barcodes to be created: ${barcodeList.length - existingCount}`,
+      `Oluşturulacak Yeni Barkod: ${barcodeList.length - existingCount}`,
     );
   } catch (error) {
-    console.error('Database error:', error);
+    console.error('Veritabanı hatası:', error);
   } finally {
     if (dataSource.isInitialized) {
       await dataSource.destroy();
