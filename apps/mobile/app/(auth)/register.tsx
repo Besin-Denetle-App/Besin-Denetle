@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useColorScheme } from 'nativewind';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     KeyboardAvoidingView,
@@ -21,11 +21,31 @@ export default function RegisterScreen() {
   const [username, setUsername] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isReady, setIsReady] = useState(false);
 
-  // tempToken yoksa login'e yönlendir
-  if (!tempToken) {
-    router.replace('/(auth)/login');
-    return null;
+  // tempToken kontrolünü useEffect içinde yap (race condition önleme)
+  useEffect(() => {
+    // Kısa bir gecikme ile tempToken'ın set edilmesini bekle
+    const timer = setTimeout(() => {
+      if (!tempToken) {
+        console.log('[Register] No tempToken found, redirecting to login');
+        router.replace('/(auth)/login');
+      } else {
+        console.log('[Register] tempToken found, ready to register');
+        setIsReady(true);
+      }
+    }, 100); // 100ms bekle
+
+    return () => clearTimeout(timer);
+  }, [tempToken]);
+
+  // Henüz hazır değilse loading göster
+  if (!isReady) {
+    return (
+      <SafeAreaView className="flex-1 bg-background items-center justify-center">
+        <ActivityIndicator size="large" color="#8B5CF6" />
+      </SafeAreaView>
+    );
   }
 
   const isValid = username.trim().length >= 3 && termsAccepted;

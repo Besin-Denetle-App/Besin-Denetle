@@ -1,6 +1,6 @@
 {
   "name": "@besin-denetle/root",
-  "version": "0.7.0",
+  "version": "0.7.7",
   "private": true,
   "description": "Besin Denetle - Monorepo with mobile app and backend",
   "scripts": {
