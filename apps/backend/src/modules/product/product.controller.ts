@@ -24,6 +24,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
+import {
+  THROTTLE_CONFIRM,
+  THROTTLE_FLAG,
+  THROTTLE_REJECT,
+} from '../../config';
 import { AiService } from '../ai/ai.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -66,7 +71,9 @@ export class ProductController {
    */
   @Post('products/scan')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  @Throttle(THROTTLE_CONFIRM)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Barkod tara' })
   @ApiResponse({ status: 200, description: 'Ürün bulundu veya oluşturuldu' })
   async scan(@Body() dto: ScanRequestDto): Promise<ScanResponse> {
@@ -138,7 +145,7 @@ export class ProductController {
    */
   @Post('products/confirm')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  @Throttle(THROTTLE_CONFIRM)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Ürün onayla, içerik ve analiz getir' })
@@ -238,7 +245,7 @@ export class ProductController {
    */
   @Post('products/reject')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 6, ttl: 60000 } })
+  @Throttle(THROTTLE_REJECT)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Ürün reddet, sonraki varyant getir' })
@@ -324,7 +331,7 @@ export class ProductController {
    */
   @Post('content/reject')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 6, ttl: 60000 } })
+  @Throttle(THROTTLE_REJECT)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'İçerik reddet (domino etkisi)' })
@@ -439,7 +446,7 @@ export class ProductController {
    */
   @Post('analysis/reject')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 6, ttl: 60000 } })
+  @Throttle(THROTTLE_REJECT)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Analiz reddet' })
@@ -525,7 +532,7 @@ export class ProductController {
    */
   @Post('barcodes/flag')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Throttle(THROTTLE_FLAG)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Barkodu bildir (non-food)' })

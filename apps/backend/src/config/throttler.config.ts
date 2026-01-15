@@ -3,37 +3,38 @@ import { registerAs } from '@nestjs/config';
 /**
  * Rate Limiting (Throttler) konfigürasyonu.
  * IP ve User bazlı limitler ile endpoint grubu limitlerini tanımlar.
+ *
+ * Kullanım: Controller'larda @Throttle decorator'ı ile
+ * import { THROTTLE_CONFIRM, THROTTLE_REJECT } from '../../config';
+ * @Throttle(THROTTLE_CONFIRM)
  */
+
+// ============== SABIT DEĞERLER (Controller'larda kullanılır) ==============
+
+/** Genel istek limiti - scan, confirm gibi normal akışlar için */
+export const THROTTLE_CONFIRM = { default: { limit: 20, ttl: 60000 } };
+
+/** Reject akışı - AI maliyeti yüksek, kötüye kullanımı engelle */
+export const THROTTLE_REJECT = { default: { limit: 6, ttl: 60000 } };
+
+/** Auth işlemleri - brute-force koruması */
+export const THROTTLE_AUTH = { default: { limit: 5, ttl: 60000 } };
+
+/** Normal auth işlemleri - refresh, logout */
+export const THROTTLE_AUTH_NORMAL = { default: { limit: 20, ttl: 60000 } };
+
+/** Flag işlemi */
+export const THROTTLE_FLAG = { default: { limit: 5, ttl: 60000 } };
+
+/** Health check - Halka açık olduğu için kısıtlı (50sn'de 1) */
+export const THROTTLE_HEALTH = { default: { limit: 1, ttl: 50000 } };
+
+// ============== CONFIG SERVICE İÇİN (app.module.ts) ==============
+
 export default registerAs('throttler', () => ({
-  // Katman 1: IP bazlı (DDoS/CGNAT koruması)
+  // Katman 1: IP bazlı global limit (DDoS/CGNAT koruması)
   global: {
     ttl: 60000, // 1 dakika
     limit: 1000, // IP başına 1000 istek/dk
-  },
-
-  // Katman 2: User bazlı (genel üst sınır)
-  user: {
-    ttl: 60000,
-    limit: 60, // User başına 60 istek/dk
-  },
-
-  // Endpoint bazlı limitler
-  auth: {
-    // Brute-force koruması için login/register
-    login: { ttl: 60000, limit: 5 }, // 5/dk (IP bazlı)
-    // Normal auth işlemleri
-    other: { ttl: 60000, limit: 20 }, // 20/dk (User bazlı)
-  },
-
-  // Normal akış: scan + confirm | 20/dk
-  confirm: {
-    ttl: 60000,
-    limit: 20,
-  },
-
-  // Reject akışı: kötüye kullanımı engelle | 6/dk
-  reject: {
-    ttl: 60000,
-    limit: 6,
   },
 }));

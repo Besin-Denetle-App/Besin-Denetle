@@ -1,34 +1,34 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WinstonModule } from 'nest-winston';
 
-// Common
 import {
-  HttpExceptionFilter,
-  LastActiveInterceptor,
-  LoggingInterceptor,
+    HttpExceptionFilter,
+    LastActiveInterceptor,
+    LoggingInterceptor,
+    UserThrottlerGuard,
 } from './common';
 
 // Config
 import {
-  createLoggerConfig,
-  databaseConfig,
-  jwtConfig,
-  oauthConfig,
-  throttlerConfig,
+    createLoggerConfig,
+    databaseConfig,
+    jwtConfig,
+    oauthConfig,
+    throttlerConfig,
 } from './config';
 
 // Entity'ler
 import {
-  Barcode,
-  ContentAnalysis,
-  Product,
-  ProductContent,
-  User,
-  Vote,
+    Barcode,
+    ContentAnalysis,
+    Product,
+    ProductContent,
+    User,
+    Vote,
 } from './entities';
 
 // Modüller
@@ -106,10 +106,11 @@ import { VoteModule } from './modules/vote';
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
     },
-    // Global rate limiting guard - brute-force koruması (IP bazlı)
+    // Global rate limiting guard - brute-force koruması
+    // Authenticated: user ID bazlı, Anonymous: IP bazlı
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: UserThrottlerGuard,
     },
   ],
 })

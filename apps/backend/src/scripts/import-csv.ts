@@ -1,13 +1,21 @@
+/**
+ * CSV Import Scripti
+ *
+ * Kullanım: pnpm import-csv [csv-dosyası]
+ * Örnek: pnpm import-csv ./data/urunler.csv
+ *
+ * CSV dosyasından ürün verilerini veritabanına aktarır.
+ */
+
 import csv from 'csv-parser';
+import { config } from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
 import { DataSource } from 'typeorm';
-import { Barcode } from '../entities/barcode.entity';
-import { ContentAnalysis } from '../entities/content-analysis.entity';
-import { ProductContent } from '../entities/product-content.entity';
-import { Product } from '../entities/product.entity';
-import { User } from '../entities/user.entity';
-import { Vote } from '../entities/vote.entity';
+import { Barcode, ContentAnalysis, Product, ProductContent, User, Vote } from '../entities';
+
+// .env dosyasını yükle
+config();
 
 // CSV row tip tanımı
 interface CsvRow {
@@ -17,18 +25,6 @@ interface CsvRow {
   quantity?: string;
   image_url?: string;
   type?: string;
-}
-
-// Simple .env loader
-const envPath = path.resolve(__dirname, '../../.env');
-if (fs.existsSync(envPath)) {
-  const envConfig = fs.readFileSync(envPath).toString();
-  envConfig.split('\n').forEach((line) => {
-    const [key, value] = line.split('=');
-    if (key && value) {
-      process.env[key.trim()] = value.trim();
-    }
-  });
 }
 
 const dataSource = new DataSource({
@@ -42,29 +38,38 @@ const dataSource = new DataSource({
   synchronize: false,
 });
 
+/** Boş string'i null'a çevir */
+const clean = (val: string | undefined): string | null => {
+  if (!val) return null;
+  const trimmed = val.trim();
+  return trimmed === '' ? null : trimmed;
+};
+
 async function importCsv() {
-  const csvFilePath = path.resolve(
-    __dirname,
-    '../../../../Ürün Listesi (14.442) .csv',
-  );
-  console.log(`Starting Import from: ${csvFilePath}`);
+  // CSV dosya yolunu argümandan al veya default kullan
+  const csvFilePath = process.argv[2]
+    ? path.resolve(process.argv[2])
+    : path.resolve(__dirname, '../../../../UrunListesi.csv');
+
+  console.log(`📄 CSV okunuyor: ${csvFilePath}`);
 
   if (!fs.existsSync(csvFilePath)) {
-    console.error('CSV file not found!');
-    return;
+    console.error('❌ CSV dosyası bulunamadı!');
+    console.log('Kullanım: pnpm import-csv [csv-dosyası]');
+    process.exit(1);
   }
 
-  // Connect to DB
+  // Veritabanına bağlan
   try {
     await dataSource.initialize();
-    console.log('Database connected.');
+    console.log('✅ Veritabanı bağlantısı kuruldu\n');
   } catch (error) {
-    console.error('Database connection failed:', error);
-    return;
+    console.error('❌ Veritabanı bağlantısı başarısız:', error);
+    process.exit(1);
   }
 
+  // CSV'yi oku
   const rows: CsvRow[] = [];
-
   await new Promise((resolve, reject) => {
     fs.createReadStream(csvFilePath)
       .pipe(csv())
@@ -73,15 +78,7 @@ async function importCsv() {
       .on('error', reject);
   });
 
-  console.log(`Read ${rows.length} rows from CSV.`);
-
-  // Helper to clean CSV values (trim whitespace, convert empty strings to null)
-  const clean = (val: string | undefined): string | null => {
-    if (!val) return null;
-    // csv-parser handles quotes automatically, but we trim extra whitespace
-    const trimmed = val.trim();
-    return trimmed === '' ? null : trimmed;
-  };
+  console.log(`📊 ${rows.length} satır okundu\n`);
 
   const batchSize = 100;
   let processedCount = 0;
@@ -91,56 +88,62 @@ async function importCsv() {
   for (let i = 0; i < rows.length; i += batchSize) {
     const batch = rows.slice(i, i + batchSize);
 
-    await dataSource.manager.transaction(async (transactionalEntityManager) => {
+    await dataSource.manager.transaction(async (manager) => {
       for (const row of batch) {
         if (!row.barcode) continue;
         const barcodeCode = row.barcode.trim();
 
-        // 1. Check if Barcode exists
-        let barcode = await transactionalEntityManager.findOne(Barcode, {
+        // 1. Barkod var mı kontrol et
+        let barcode = await manager.findOne(Barcode, {
           where: { code: barcodeCode },
         });
 
         if (!barcode) {
-          // Create new Barcode
-          barcode = transactionalEntityManager.create(Barcode, {
+          // Yeni barkod oluştur
+          barcode = manager.create(Barcode, {
             code: barcodeCode,
-            type: row.type ? parseInt(row.type, 10) : 0, // Default to 0 if missing
-            is_manual: false, // Imported data is NOT manual
+            type: row.type ? parseInt(row.type, 10) : 0,
+            is_manual: false,
           });
-          await transactionalEntityManager.save(Barcode, barcode);
+          await manager.save(Barcode, barcode);
           createdBarcodeCount++;
         }
 
-        // 2. Create Product (Variant)
-        const product = transactionalEntityManager.create(Product, {
+        // 2. Ürün varyantı oluştur
+        const product = manager.create(Product, {
           barcode: barcode,
           barcode_id: barcode.id,
           brand: clean(row.brand),
           name: clean(row.name),
           quantity: clean(row.quantity),
           image_url: clean(row.image_url),
-          is_manual: false, // Imported data is NOT manual
+          is_manual: false,
         });
-
-        await transactionalEntityManager.save(Product, product);
+        await manager.save(Product, product);
         createdProductCount++;
       }
     });
 
     processedCount += batch.length;
     if (processedCount % 1000 === 0) {
-      console.log(`Processed ${processedCount} / ${rows.length} rows...`);
+      console.log(`   İşlenen: ${processedCount} / ${rows.length}`);
     }
   }
 
-  console.log('------------------------------------------------');
-  console.log('Import Completed Successfully!');
-  console.log(`Total Rows Processed: ${processedCount}`);
-  console.log(`Created Barcodes: ${createdBarcodeCount}`);
-  console.log(`Created Products: ${createdProductCount}`);
+  // Özet
+  console.log('\n' + '─'.repeat(50));
+  console.log('✅ İMPORT TAMAMLANDI!');
+  console.log('─'.repeat(50));
+  console.log(`   İşlenen Satır:    ${processedCount}`);
+  console.log(`   Yeni Barkod:      ${createdBarcodeCount}`);
+  console.log(`   Yeni Ürün:        ${createdProductCount}`);
+  console.log('─'.repeat(50));
 
   await dataSource.destroy();
+  console.log('\n📤 Veritabanı bağlantısı kapatıldı');
 }
 
-void importCsv();
+importCsv().catch((error) => {
+  console.error('Fatal error:', error);
+  process.exit(1);
+});

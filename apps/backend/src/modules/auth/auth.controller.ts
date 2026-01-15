@@ -19,6 +19,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
+import { THROTTLE_AUTH, THROTTLE_AUTH_NORMAL } from '../../config';
 import { AuthService } from './auth.service';
 import {
   EmailSignupRequestDto,
@@ -55,7 +56,7 @@ export class AuthController {
    */
   @Post('oauth')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Throttle(THROTTLE_AUTH)
   @ApiOperation({ summary: 'OAuth ile giriş' })
   @ApiResponse({
     status: 200,
@@ -96,7 +97,7 @@ export class AuthController {
    */
   @Post('email-signup')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Throttle(THROTTLE_AUTH)
   @ApiOperation({ summary: 'E-posta ile kayıt/login (Beta)' })
   @ApiResponse({
     status: 200,
@@ -135,7 +136,7 @@ export class AuthController {
    */
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Throttle(THROTTLE_AUTH)
   @ApiOperation({ summary: 'Kayıt tamamla' })
   @ApiResponse({ status: 201, description: 'Kayıt başarılı' })
   async register(@Body() dto: RegisterRequestDto): Promise<RegisterResponse> {
@@ -164,7 +165,7 @@ export class AuthController {
    */
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  @Throttle(THROTTLE_AUTH_NORMAL)
   @ApiOperation({ summary: 'Token yenile' })
   @ApiResponse({ status: 200, description: 'Yeni token döner' })
   async refresh(
@@ -185,7 +186,7 @@ export class AuthController {
    */
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  @Throttle(THROTTLE_AUTH_NORMAL)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Çıkış yap' })

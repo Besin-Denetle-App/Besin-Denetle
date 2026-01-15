@@ -81,7 +81,7 @@ export class AiService {
    * @param userId - Kullanıcı ID (opsiyonel, yoksa global rate limit)
    * @throws TooManyRequestsException - Bekleme süresi dolmadıysa
    */
-  enforceRateLimit(userId?: string): void {
+  private enforceRateLimit(userId?: string): void {
     const key = userId || 'global';
     const lastCall = this.lastCallTime.get(key) || 0;
     const elapsed = Date.now() - lastCall;
@@ -162,19 +162,51 @@ Yanıt formatı:
       });
 
       const text = response.text || '';
+      if (!text.trim()) {
+        this.logger.warn('Gemini identifyProduct: Boş yanıt alındı');
+        throw new HttpException(
+          'AI yanıtı boş döndü',
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
       this.logger.debug(
         `Gemini identifyProduct response: ${text.substring(0, 200)}...`,
       );
 
       // JSON parse et
       const result = this.parseJsonResponse<AIProductResult>(text);
-      return result || this.mockIdentifyProduct(barcode);
+      if (!result) {
+        throw new HttpException(
+          'AI yanıtı işlenemedi',
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
+      return result;
     } catch (error) {
-      this.logger.error(
-        `Gemini identifyProduct error: ${(error as Error).message}`,
+      const errorMessage = (error as Error).message || 'Bilinmeyen AI hatası';
+      this.logger.error(`Gemini identifyProduct error: ${errorMessage}`);
+
+      // HttpException ise tekrar fırlat (kendi fırlattığımız exception'lar)
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // 429 Rate Limit hatası
+      if (
+        errorMessage.includes('429') ||
+        errorMessage.includes('RESOURCE_EXHAUSTED')
+      ) {
+        throw new HttpException(
+          'AI servisi şu an yoğun, lütfen biraz sonra tekrar deneyin',
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
+
+      // Diğer hatalar
+      throw new HttpException(
+        'AI servisi şu an kullanılamıyor',
+        HttpStatus.SERVICE_UNAVAILABLE,
       );
-      // Hata durumunda mock veri döndür
-      return this.mockIdentifyProduct(barcode);
     }
   }
 
@@ -243,18 +275,51 @@ Yanıt formatı:
       });
 
       const text = response.text || '';
+      if (!text.trim()) {
+        this.logger.warn('Gemini getProductContent: Boş yanıt alındı');
+        throw new HttpException(
+          'AI yanıtı boş döndü',
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
       this.logger.debug(
         `Gemini getProductContent response: ${text.substring(0, 200)}...`,
       );
 
       // JSON parse et
       const result = this.parseJsonResponse<AIContentResult>(text);
-      return result || this.mockGetProductContent(brand, name);
+      if (!result) {
+        throw new HttpException(
+          'AI yanıtı işlenemedi',
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
+      return result;
     } catch (error) {
-      this.logger.error(
-        `Gemini getProductContent error: ${(error as Error).message}`,
+      const errorMessage = (error as Error).message || 'Bilinmeyen AI hatası';
+      this.logger.error(`Gemini getProductContent error: ${errorMessage}`);
+
+      // HttpException ise tekrar fırlat
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // 429 Rate Limit hatası
+      if (
+        errorMessage.includes('429') ||
+        errorMessage.includes('RESOURCE_EXHAUSTED')
+      ) {
+        throw new HttpException(
+          'AI servisi şu an yoğun, lütfen biraz sonra tekrar deneyin',
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
+
+      // Diğer hatalar
+      throw new HttpException(
+        'AI servisi şu an kullanılamıyor',
+        HttpStatus.SERVICE_UNAVAILABLE,
       );
-      return this.mockGetProductContent(brand, name);
     }
   }
 
@@ -326,6 +391,13 @@ Yanıt formatı:
       });
 
       const text = response.text || '';
+      if (!text.trim()) {
+        this.logger.warn('Gemini analyzeContent: Boş yanıt alındı');
+        throw new HttpException(
+          'AI yanıtı boş döndü',
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
       this.logger.debug(
         `Gemini analyzeContent response: ${text.substring(0, 200)}...`,
       );
@@ -333,18 +405,41 @@ Yanıt formatı:
       // JSON yanıtını parse et ve model adını ekle
       const parsed =
         this.parseJsonResponse<Omit<AIAnalysisResult, 'model'>>(text);
-      if (parsed) {
-        return {
-          ...parsed,
-          model: GEMINI_MODEL_SMART, // Kullanılan model
-        };
+      if (!parsed) {
+        throw new HttpException(
+          'AI yanıtı işlenemedi',
+          HttpStatus.BAD_GATEWAY,
+        );
       }
-      return this.mockAnalyzeContent(name);
+      return {
+        ...parsed,
+        model: GEMINI_MODEL_SMART, // Kullanılan model
+      };
     } catch (error) {
-      this.logger.error(
-        `Gemini analyzeContent error: ${(error as Error).message}`,
+      const errorMessage = (error as Error).message || 'Bilinmeyen AI hatası';
+      this.logger.error(`Gemini analyzeContent error: ${errorMessage}`);
+
+      // HttpException ise tekrar fırlat
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // 429 Rate Limit hatası
+      if (
+        errorMessage.includes('429') ||
+        errorMessage.includes('RESOURCE_EXHAUSTED')
+      ) {
+        throw new HttpException(
+          'AI servisi şu an yoğun, lütfen biraz sonra tekrar deneyin',
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
+
+      // Diğer hatalar
+      throw new HttpException(
+        'AI servisi şu an kullanılamıyor',
+        HttpStatus.SERVICE_UNAVAILABLE,
       );
-      return this.mockAnalyzeContent(name);
     }
   }
 

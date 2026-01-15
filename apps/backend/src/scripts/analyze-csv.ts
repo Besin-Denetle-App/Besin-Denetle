@@ -1,13 +1,21 @@
+/**
+ * CSV Analiz Scripti
+ *
+ * Kullanım: pnpm analyze-csv [csv-dosyası]
+ * Örnek: pnpm analyze-csv ./data/urunler.csv
+ *
+ * CSV dosyasındaki barkodları analiz eder ve veritabanıyla karşılaştırır.
+ */
+
 import csv from 'csv-parser';
+import { config } from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
 import { DataSource } from 'typeorm';
-import { Barcode } from '../entities/barcode.entity';
-import { ContentAnalysis } from '../entities/content-analysis.entity';
-import { ProductContent } from '../entities/product-content.entity';
-import { Product } from '../entities/product.entity';
-import { User } from '../entities/user.entity';
-import { Vote } from '../entities/vote.entity';
+import { Barcode, ContentAnalysis, Product, ProductContent, User, Vote } from '../entities';
+
+// .env dosyasını yükle
+config();
 
 // CSV row tip tanımı
 interface CsvRow {
@@ -17,18 +25,6 @@ interface CsvRow {
   quantity?: string;
   image_url?: string;
   type?: string;
-}
-
-// Simple .env loader
-const envPath = path.resolve(__dirname, '../../.env');
-if (fs.existsSync(envPath)) {
-  const envConfig = fs.readFileSync(envPath).toString();
-  envConfig.split('\n').forEach((line) => {
-    const [key, value] = line.split('=');
-    if (key && value) {
-      process.env[key.trim()] = value.trim();
-    }
-  });
 }
 
 const dataSource = new DataSource({
@@ -43,21 +39,22 @@ const dataSource = new DataSource({
 });
 
 async function analyzeCsv() {
-  // Correct path to the CSV file in the root directory
-  const csvFilePath = path.resolve(
-    __dirname,
-    '../../../../ÜrünListesi(14.442).csv',
-  );
-  console.log(`CSV okunuyor: ${csvFilePath}`);
+  // CSV dosya yolunu argümandan al veya default kullan
+  const csvFilePath = process.argv[2]
+    ? path.resolve(process.argv[2])
+    : path.resolve(__dirname, '../../../../UrunListesi.csv');
+
+  console.log(`📄 CSV okunuyor: ${csvFilePath}`);
 
   if (!fs.existsSync(csvFilePath)) {
-    console.error('CSV dosyası bulunamadı!');
-    return;
+    console.error('❌ CSV dosyası bulunamadı!');
+    console.log('Kullanım: pnpm analyze-csv [csv-dosyası]');
+    process.exit(1);
   }
 
   const results: CsvRow[] = [];
   const barcodes = new Set<string>();
-  let duplicateBarcodesInCsv = 0;
+  let duplicateCount = 0;
 
   await new Promise((resolve, reject) => {
     fs.createReadStream(csvFilePath)
@@ -67,10 +64,7 @@ async function analyzeCsv() {
         if (data.barcode) {
           const trimmed = data.barcode.trim();
           if (barcodes.has(trimmed)) {
-            duplicateBarcodesInCsv++;
-            console.log(
-              `[Tekrar] Barkod: ${trimmed} | Ad: ${data.name} | Satır: ${JSON.stringify(data)}`,
-            );
+            duplicateCount++;
           }
           barcodes.add(trimmed);
         }
@@ -79,15 +73,16 @@ async function analyzeCsv() {
       .on('error', reject);
   });
 
-  console.log('------------------------------------------------');
-  console.log(`CSV'deki Toplam Satır: ${results.length}`);
-  console.log(`CSV'deki Tekil Barkod: ${barcodes.size}`);
-  console.log(`CSV'deki Tekrarlı Barkod: ${duplicateBarcodesInCsv}`);
+  console.log('─'.repeat(50));
+  console.log(`📊 CSV Özeti:`);
+  console.log(`   Toplam Satır:     ${results.length}`);
+  console.log(`   Tekil Barkod:     ${barcodes.size}`);
+  console.log(`   Tekrarlı Barkod:  ${duplicateCount}`);
 
-  // Connect to DB
+  // Veritabanı karşılaştırması
   try {
     await dataSource.initialize();
-    console.log('Veritabanına bağlanıldı.');
+    console.log('\n✅ Veritabanı bağlantısı kuruldu');
 
     const barcodeList = Array.from(barcodes);
     const chunkSize = 1000;
@@ -105,19 +100,22 @@ async function analyzeCsv() {
       existingCount += count;
     }
 
-    console.log(
-      `Veritabanında Mevcut Barkod (CSV'dekilerden): ${existingCount}`,
-    );
-    console.log(
-      `Oluşturulacak Yeni Barkod: ${barcodeList.length - existingCount}`,
-    );
+    console.log('─'.repeat(50));
+    console.log(`📊 Veritabanı Karşılaştırması:`);
+    console.log(`   Mevcut Barkod:    ${existingCount}`);
+    console.log(`   Yeni Barkod:      ${barcodeList.length - existingCount}`);
+    console.log('─'.repeat(50));
   } catch (error) {
-    console.error('Veritabanı hatası:', error);
+    console.error('❌ Veritabanı hatası:', error);
   } finally {
     if (dataSource.isInitialized) {
       await dataSource.destroy();
+      console.log('📤 Veritabanı bağlantısı kapatıldı');
     }
   }
 }
 
-void analyzeCsv();
+analyzeCsv().catch((error) => {
+  console.error('Fatal error:', error);
+  process.exit(1);
+});

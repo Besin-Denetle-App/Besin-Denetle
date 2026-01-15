@@ -40,6 +40,7 @@ export class Barcode {
 
   // Kullanıcılar tarafından "hatalı barkod" olarak raporlandı mı?
   @Column({ default: false })
+  @Index()
   is_flagged: boolean;
 
   // Kaç kez bildirildi (önceliklendirme için)
