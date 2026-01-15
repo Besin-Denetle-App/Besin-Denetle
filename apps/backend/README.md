@@ -126,7 +126,7 @@ pnpm dev
 
 ## 🚀 Canlı Ortam (Production) Deployment
 
-Production deployment için Docker kullanılması önerilir.
+Production deployment için PM2 kullanılması önerilir.
 
 👉 **[Server Ubuntu Deployment Rehberi](../../docs/server-ubuntu-deployment.md)**
 
@@ -182,6 +182,32 @@ Uygulama çalıştığında Swagger dokümantasyonuna erişebilirsiniz:
 | :--- | :--- | :--- |
 | `GET` | `/health` | Sunucu sağlık durumu |
 
+
+---
+
+## 🛠️ Yardımcı Scriptler
+
+Backend, veritabanı yönetimi için çeşitli CLI scriptleri içerir:
+
+```bash
+# Skorları yeniden hesapla (User silinince oluşan tutarsızlıkları düzeltir)
+pnpm recalculate-scores
+
+# CSV dosyasını analiz et (import öncesi kontrol)
+pnpm analyze-csv
+
+# CSV'den veritabanına toplu veri yükle
+pnpm import-csv
+```
+
+### ⏰ Otomatik Skor Hesaplama
+
+Sistem her gece **02:00** (Türkiye saati) otomatik olarak tüm skorları yeniden hesaplar:
+- `Product`, `ProductContent` ve `ContentAnalysis` tabloları
+- `Vote` tablosundaki oylardan güncel skorlar hesaplanır
+- User silme sonrası oluşan tutarsızlıklar düzeltilir
+
+> **Not:** Manuel tetikleme için `pnpm recalculate-scores` komutu kullanılabilir.
 
 ---
 

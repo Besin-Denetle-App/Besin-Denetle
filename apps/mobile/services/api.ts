@@ -1,4 +1,4 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, InternalAxiosRequestConfig, isAxiosError } from 'axios';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { clearAuthData, getAccessToken, getRefreshToken, saveTokens } from '../utils/storage';
@@ -179,7 +179,7 @@ export type ApiResponse<T> = ApiSuccess<T> | ApiError;
  * Rate limit hatası mı kontrol et
  */
 export const isRateLimitError = (error: unknown): boolean => {
-  if (axios.isAxiosError(error)) {
+  if (isAxiosError(error)) {
     return error.response?.status === 429;
   }
   return false;
@@ -189,7 +189,7 @@ export const isRateLimitError = (error: unknown): boolean => {
  * API hatalarını parse et
  */
 export const parseApiError = (error: unknown): string => {
-  if (axios.isAxiosError(error)) {
+  if (isAxiosError(error)) {
     // Rate limit hatası
     if (error.response?.status === 429) {
       return 'Çok fazla istek! Lütfen birkaç saniye bekleyin.';

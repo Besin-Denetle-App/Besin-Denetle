@@ -112,14 +112,15 @@ Projeyi yerel ortamınızda (Localhost) çalıştırmak için aşağıdaki adım
 
 ## 🌍 Canlı Ortam (Production) Kurulumu
 
-Bu projeyi Ubuntu sunucuda Docker ile yayına almak için hazır bir rehber bulunmaktadır:
+Bu projeyi Ubuntu sunucuda yayına almak için hazır bir rehber bulunmaktadır:
 
 👉 **[Server Ubuntu Deployment Rehberi](./docs/server-ubuntu-deployment.md)**
 
 İçerik:
-*   Docker ve Docker Compose kurulumu
+*   PostgreSQL Docker container'da çalışır
+*   Backend PM2 ile yönetilir
+*   Node.js ve PNPM kurulumu
 *   Güvenlik ayarları (Firewall, SSL)
-*   Systemd ile otomatik başlatma
 *   Yedekleme stratejileri
 
 ## 📚 Dokümantasyon

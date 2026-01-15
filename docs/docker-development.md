@@ -6,6 +6,8 @@
 
 Bu rehber, Besin-Denetle projesini **local development** ortamında Docker ile nasıl çalıştıracağınızı açıklar.
 
+**Mimari:** Sadece PostgreSQL Docker container'da çalışır. Backend ise doğrudan `pnpm start` ile çalıştırılır.
+
 > **Production deployment için:** [Server Ubuntu Deployment Rehberi](./server-ubuntu-deployment.md)
 
 ---
@@ -14,6 +16,8 @@ Bu rehber, Besin-Denetle projesini **local development** ortamında Docker ile n
 
 - Docker Engine 24+
 - Docker Compose v2+
+- Node.js 20+
+- PNPM 8+
 
 ---
 
@@ -21,45 +25,66 @@ Bu rehber, Besin-Denetle projesini **local development** ortamında Docker ile n
 
 ### 1. Environment Dosyasını Hazırla
 
-Proje root dizininde `.env` dosyası oluştur:
+Backend klasöründe `.env` dosyası oluştur:
 
 ```bash
-cp apps/backend/.env.example .env
+cp apps/backend/.env.example apps/backend/.env
 ```
-
-Tüm değişkenlerin açıklaması için:
-👉 **[Backend README - Ortam Değişkenleri](../apps/backend/README.md#1-ortam-değişkenleri-env)**
 
 > [!IMPORTANT]
 > En azından `JWT_SECRET` ve `DB_PASSWORD` değerlerini değiştirmeyi unutmayın!
 
-### 2. Servisleri Başlat
+### 2. PostgreSQL'i Başlat
 
 ```bash
-docker compose up -d
+docker compose up -d db
 ```
 
-### 3. Durumu Kontrol Et
+### 3. Backend'i Başlat
 
 ```bash
+# Bağımlılıkları yükle (ilk kez)
+pnpm install
+
+# Shared paketini build et (ilk kez veya değişiklik sonrası)
+pnpm --filter @besin-denetle/shared build
+
+# Backend'i başlat
+cd apps/backend
+pnpm start
+```
+
+### 4. Durumu Kontrol Et
+
+```bash
+# PostgreSQL durumu
 docker compose ps
-docker compose logs -f backend
+
+# Health check
+curl http://localhost:3200/health
 ```
 
 ---
 
 ## 📦 Kullanım Komutları
 
+### Docker (PostgreSQL)
+
 | Komut | Açıklama |
 |-------|----------|
-| `docker compose up -d` | Servisleri başlat (arka planda) |
-| `docker compose down` | Servisleri durdur |
-| `docker compose down -v` | Servisleri ve verileri sil |
-| `docker compose logs -f` | Logları takip et |
-| `docker compose logs backend` | Sadece backend logları |
+| `docker compose up -d db` | PostgreSQL'i başlat |
+| `docker compose down` | PostgreSQL'i durdur |
+| `docker compose down -v` | PostgreSQL'i ve verileri sil |
+| `docker compose logs -f db` | PostgreSQL logları |
 | `docker compose ps` | Servis durumları |
-| `docker compose restart backend` | Backend'i yeniden başlat |
-| `docker compose build --no-cache` | Image'ı sıfırdan build et |
+
+### Backend
+
+| Komut | Açıklama |
+|-------|----------|
+| `pnpm start` | Backend'i başlat |
+| `pnpm dev` | Hot reload ile başlat |
+| `pnpm build` | Production build |
 
 ---
 
@@ -78,48 +103,35 @@ docker compose exec db psql -U myuser -d besindenetle
 
 ### Backend API
 
-- **Port:** 3200
-- **Container:** `besin_denetle_backend`
+- **Port:** 3200 (doğrudan Node.js)
 - **Health endpoint:** `http://localhost:3200/health`
 
 ---
 
 ## 🩺 Troubleshooting
 
-### Backend başlamıyor
-
-```bash
-# Logları kontrol et
-docker compose logs backend
-
-# Container'a gir
-docker compose exec backend sh
-```
-
 ### Veritabanı bağlantı hatası
-
-Backend, veritabanının hazır olmasını bekler. Eğer hâlâ sorun varsa:
 
 ```bash
 # Veritabanı durumunu kontrol et
 docker compose exec db pg_isready -U myuser
 
-# Servisleri yeniden başlat
-docker compose restart
+# Container'ı yeniden başlat
+docker compose restart db
 ```
 
-### Image güncelleme
+### Shared paketi güncel değil
 
-Kod değişikliği sonrası:
+Backend'de `@besin-denetle/shared` hataları alıyorsanız:
 
 ```bash
-docker compose build backend
-docker compose up -d backend
+pnpm --filter @besin-denetle/shared build
 ```
 
 ---
 
 ## 🔗 İlgili Dökümanlar
 
-- [Server Ubuntu Deployment Rehberi](./server-ubuntu-deployment.md) - Production güvenlik ayarları, SSL, yedekleme
+- [Server Ubuntu Deployment Rehberi](./server-ubuntu-deployment.md) - Production: PM2, SSL, yedekleme
 - [Local Build - EAS (Linux/WSL2)](./local-build-linux-eas.md)
+- [Backend README](../apps/backend/README.md)

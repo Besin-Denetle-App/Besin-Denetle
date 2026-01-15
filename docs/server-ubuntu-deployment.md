@@ -1,10 +1,13 @@
 # Server Ubuntu Deployment Rehberi
 
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04+-e95420.svg)
-![Docker](https://img.shields.io/badge/Docker-24+-2496ed.svg)
+![Node.js](https://img.shields.io/badge/Node.js-20+-brightgreen.svg)
+![PM2](https://img.shields.io/badge/PM2-Process_Manager-2B037A.svg)
 ![Environment](https://img.shields.io/badge/Environment-Production-brightgreen.svg)
 
 Bu rehber, Besin-Denetle backend'ini Ubuntu Server üzerinde production ortamında çalıştırmayı açıklar.
+
+**Mimari:** PostgreSQL Docker container'da, Backend ise PM2 ile doğrudan çalışır.
 
 ---
 
@@ -16,6 +19,12 @@ Bu rehber, Besin-Denetle backend'ini Ubuntu Server üzerinde production ortamın
 | RAM | 1 GB | 2 GB |
 | CPU | 1 vCPU | 2 vCPU |
 | Disk | 20 GB | 40 GB |
+
+**Yazılım Gereksinimleri:**
+- Docker Engine 24+
+- Node.js 20+
+- PNPM 8+
+- PM2
 
 ---
 
@@ -55,7 +64,26 @@ docker --version
 docker compose version
 ```
 
-### 3. Projeyi Klonla
+### 3. Node.js + PNPM + PM2 Kurulumu
+
+```bash
+# Node.js 20 LTS kur
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# PNPM kur
+npm install -g pnpm
+
+# PM2 kur
+npm install -g pm2
+
+# Doğrula
+node --version
+pnpm --version
+pm2 --version
+```
+
+### 4. Projeyi Klonla
 
 ```bash
 cd /opt
@@ -66,62 +94,61 @@ cd besin-denetle
 git clone https://github.com/Furkan-Pasa/Besin-Denetle.git .
 ```
 
-### 4. Environment Dosyasını Hazırla
+### 5. Environment Dosyasını Hazırla
 
 ```bash
-cp apps/backend/.env.example .env
-nano .env
+cp apps/backend/.env.example apps/backend/.env
+nano apps/backend/.env
 ```
-
-Tüm değişkenlerin açıklaması için:
-👉 **[Backend README - Ortam Değişkenleri](../apps/backend/README.md#1-ortam-değişkenleri-env)**
 
 > [!IMPORTANT]
 > Production için **mutlaka** şunları değiştirin:
 > - `JWT_SECRET`: Min 32 karakterlik rastgele değer
 > - `DB_PASSWORD`: Güçlü veritabanı şifresi
+> - `DB_HOST`: `localhost` olarak bırakın (PostgreSQL aynı makinede)
 
-### 5. Servisleri Başlat
+### 6. PostgreSQL Container'ını Başlat
 
 ```bash
-docker compose up -d
+docker compose up -d db
 docker compose ps
 ```
 
----
-
-## 🔄 Systemd Servisi (Otomatik Başlatma)
-
-Sunucu yeniden başladığında Docker Compose'un otomatik çalışması için:
+### 7. Bağımlılıkları Yükle ve Build Et
 
 ```bash
-sudo nano /etc/systemd/system/besin-denetle.service
+# Tüm bağımlılıkları yükle
+pnpm install
+
+# Shared paketini build et
+pnpm --filter @besin-denetle/shared build
+
+# Backend'i build et
+cd apps/backend
+pnpm build
 ```
 
-İçerik:
-```ini
-[Unit]
-Description=Besin Denetle Docker Compose
-Requires=docker.service
-After=docker.service
+### 8. Backend'i PM2 ile Başlat
 
-[Service]
-Type=oneshot
-RemainAfterExit=yes
-WorkingDirectory=/opt/besin-denetle
-ExecStart=/usr/bin/docker compose up -d
-ExecStop=/usr/bin/docker compose down
-TimeoutStartSec=0
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Servisi etkinleştir:
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl enable besin-denetle.service
-sudo systemctl start besin-denetle.service
+cd /opt/besin-denetle/apps/backend
+pm2 start dist/main.js --name "besin-backend"
+
+# Durumu kontrol et
+pm2 status
+
+# Logları izle
+pm2 logs besin-backend
+```
+
+### 9. PM2 Otomatik Başlatma
+
+```bash
+# Startup script oluştur
+pm2 startup
+
+# Mevcut process listesini kaydet
+pm2 save
 ```
 
 ---
@@ -154,7 +181,7 @@ sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
 
 # PostgreSQL portunu KAPATILI tut (dışarıdan erişim yok)
-# 5432 portu sadece Docker network içinde erişilebilir
+# 5432 portu sadece localhost'tan erişilebilir
 
 # Durumu kontrol et
 sudo ufw status
@@ -220,6 +247,9 @@ cat backup_20240101.sql | docker compose exec -T db psql -U myuser besindenetle
 ### Otomatik Yedekleme (Cron)
 
 ```bash
+# Backup klasörü oluştur
+sudo mkdir -p /opt/backups
+
 crontab -e
 ```
 
@@ -238,42 +268,52 @@ cd /opt/besin-denetle
 # En son kodu çek
 git pull origin main
 
-# Image'ı yeniden build et
-docker compose build --no-cache backend
+# Bağımlılıkları güncelle
+pnpm install
 
-# Servisleri yeniden başlat
-docker compose up -d
+# Shared paketini yeniden build et
+pnpm --filter @besin-denetle/shared build
+
+# Backend'i yeniden build et ve başlat
+cd apps/backend
+pnpm build
+pm2 restart besin-backend
 ```
 
 ---
 
 ## 🩺 Monitoring
 
-### Basit Health Check
+### Health Check
 
 ```bash
 curl http://localhost:3200/health
 ```
 
-### Logları İzleme
+### PM2 Monitoring
 
 ```bash
-# Tüm loglar
-docker compose logs -f
+# Process durumu
+pm2 status
 
-# Sadece backend
-docker compose logs -f backend
+# Canlı log akışı
+pm2 logs besin-backend
 
-# Son 100 satır
-docker compose logs --tail 100 backend
+# Son 100 satır log
+pm2 logs besin-backend --lines 100
+
+# Gerçek zamanlı dashboard
+pm2 monit
+
+# Kaynak kullanımı
+pm2 show besin-backend
 ```
 
----
-
-## 📊 Kaynak Kullanımı
+### PostgreSQL Durumu
 
 ```bash
-docker stats
+docker compose ps
+docker compose logs db
 ```
 
 ---
@@ -282,3 +322,4 @@ docker stats
 
 - [Docker Development Rehberi](./docker-development.md)
 - [Local Build - EAS (Linux/WSL2)](./local-build-linux-eas.md)
+- [Backend README](../apps/backend/README.md)

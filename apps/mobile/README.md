@@ -124,7 +124,7 @@ eas build -p android --profile production
 
 Bulut yerine kendi bilgisayarınızda build almak için:
 
-👉 **[WSL2 Mobile Build Rehberi](../../docs/wsl2-mobile-build-guide.md)**
+👉 **[WSL2 Mobile Build Rehberi](../../docs/local-build-linux-eas.md)**
 
 ```bash
 # WSL2 Ubuntu'da

@@ -227,13 +227,9 @@ export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 export PATH=$PATH:$JAVA_HOME/bin
 ```
 
-**Değişiklikleri uygula:**
-```bash
-source ~/.bashrc
-```
-
 **Doğrulama:**
 ```bash
+source ~/.bashrc
 echo $ANDROID_HOME  # ~/android-sdk
 echo $JAVA_HOME     # /usr/lib/jvm/java-17-openjdk-amd64
 ```
@@ -360,19 +356,7 @@ Packages: +xxxx
 Progress: resolved xxxx, reused xxxx, downloaded xx, added xxxx, done
 ```
 
-### 3️⃣ Expo Bağımlılıklarını Düzelt
-
-```bash
-cd apps/mobile
-
-# Expo SDK ile uyumlu olmayan paketleri otomatik düzelt
-npx expo install --fix
-```
-
-> [!TIP]
-> Bu komut, Expo SDK versiyonuyla uyumsuz paketleri tespit edip doğru versiyonlarına günceller.
-
-### 4️⃣ Environment Dosyasını Yapılandır
+### 3️⃣ Environment Dosyasını Yapılandır
 
 ```bash
 # Örnek .env dosyasını kopyala
@@ -389,6 +373,20 @@ nano .env
 | development | development | DEV_API_HOST:DEV_API_PORT | Local geliştirme |
 | preview | preview | API_HOST:API_PORT | Staging/test ortamı |
 | production | production | API_URL | Play Store yayını |
+
+### 4️⃣ Expo Bağımlılıklarını Düzelt
+
+```bash
+cd apps/mobile
+
+# Expo SDK ile uyumlu olmayan paketleri otomatik düzelt
+npx expo install --fix
+```
+
+> [!TIP]
+> Bu komut, Expo SDK versiyonuyla uyumsuz paketleri tespit edip doğru versiyonlarına günceller.
+
+
 
 ### 5️⃣ Build Al
 

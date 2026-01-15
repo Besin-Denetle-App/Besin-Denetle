@@ -1,11 +1,15 @@
 # Besin-Denetle Docker Compose
-# Production yapılandırması - Sunucuda kullanım için
+# Sadece PostgreSQL veritabanı için kullanılır
+# Backend artık PM2 ile doğrudan çalıştırılır (bkz: docs/server-ubuntu-deployment.md)
 #
 # Kullanım:
-#   docker compose up -d          # Tüm servisleri başlat
-#   docker compose logs -f        # Logları takip et
-#   docker compose down           # Servisleri durdur
-#   docker compose down -v        # Servisleri ve volumeleri sil
+#   docker compose up -d db        # Veritabanını başlat
+#   docker compose logs -f db      # DB logları
+#   docker compose down            # Servisleri durdur
+#   docker compose down -v         # Servisleri ve volumeleri sil
+
+# Backend .env dosyası PostgreSQL değişkenlerini içerir
+# Not: Bu dosya apps/backend/.env yolunda olmalı
 
 services:
   # ============================================
@@ -15,6 +19,8 @@ services:
     image: postgres:18-alpine
     container_name: besin_denetle_db
     restart: unless-stopped
+    env_file:
+      - apps/backend/.env
     environment:
       POSTGRES_USER: ${DB_USER:-myuser}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-mypassword}
@@ -29,48 +35,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-    networks:
-      - besin_network
-
-  # ============================================
-  # Backend API (NestJS)
-  # ============================================
-  backend:
-    build:
-      context: .
-      dockerfile: apps/backend/Dockerfile
-    container_name: besin_denetle_backend
-    restart: unless-stopped
-    ports:
-      - "${PORT:-3200}:3200"
-    environment:
-      NODE_ENV: production
-      PORT: 3200
-      # Veritabanı
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_USER: ${DB_USER:-myuser}
-      DB_PASSWORD: ${DB_PASSWORD:-mypassword}
-      DB_NAME: ${DB_NAME:-besindenetle}
-      # JWT
-      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
-      # Google OAuth
-      GOOGLE_WEB_CLIENT_ID: ${GOOGLE_WEB_CLIENT_ID:-}
-      # Gemini AI
-      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      # Auth
-      MOCK_AUTH: ${MOCK_AUTH:-false}
-    depends_on:
-      db:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3200/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    networks:
-      - besin_network
 
 # ============================================
 # Volumes
@@ -78,10 +42,3 @@ services:
 volumes:
   postgres_data:
     driver: local
-
-# ============================================
-# Networks
-# ============================================
-networks:
-  besin_network:
-    driver: bridge
