@@ -1,7 +1,7 @@
 import {
-    AuthProvider,
-    TEMP_TOKEN_EXPIRY_MS,
-    UserRole,
+  AuthProvider,
+  TEMP_TOKEN_EXPIRY_MS,
+  UserRole,
 } from '@besin-denetle/shared';
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -376,5 +376,4 @@ export class AuthService {
     }
   }
   */
-
 }

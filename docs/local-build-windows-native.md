@@ -582,6 +582,41 @@ android {
 
 ---
 
+> - ⚠️ Keystore kaybedilirse **Play Store güncellemeleri imkansız** olur
+
+---
+
+### 6. Local Keystore Kurulumu (EAS CLI ile)
+
+Google Login gibi servislerin çalışması için uygulamanın **Production Keystore** ile imzalanması şarttır.
+
+1.  **Keystore'u İndir:**
+    ```powershell
+    cd apps/mobile
+    eas credentials
+    # Android > Production > Download Keystore yolunu izleyin
+    ```
+
+2.  **Dosyayı Yerleştir:**
+    İndirdiğiniz `.jks` dosyasını `apps/mobile/.credentials/` klasörüne taşıyın.
+
+3.  **credentials.json Ayarla:**
+    `apps/mobile` dizininde `credentials.json` oluşturun:
+    ```json
+    {
+      "android": {
+        "keystore": {
+          "keystorePath": "./.credentials/DOSYA_ADINIZ.jks",
+          "keystorePassword": "ŞİFRENİZ",
+          "keyAlias": "ALIAS_ADINIZ",
+          "keyPassword": "KEY_ŞİFRENİZ"
+        }
+      }
+    }
+    ```
+
+---
+
 #### Release Build Komutları
 
 ##### APK Oluşturma (Direkt Kurulum)

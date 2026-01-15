@@ -138,6 +138,14 @@ module.exports = {
           resizeMode: 'contain',
         },
       ],
+      [
+        'expo-build-properties',
+        {
+          android: {
+            usesCleartextTraffic: true,
+          },
+        },
+      ],
     ],
 
     // Deneysel Özellikler

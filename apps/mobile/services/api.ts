@@ -3,22 +3,21 @@ import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { clearAuthData, getAccessToken, getRefreshToken, saveTokens } from '../utils/storage';
 
-// Backend API base URL
-// Production: API_URL kullan (tam URL)
-// Development: API_HOST + API_PORT kullan (IP:Port)
+// API URL'ini belirliyoruz
 const getBaseUrl = (): string => {
-  // Extra config'i al (manifest2, manifest veya expoConfig'den)
-  const extra = Constants.expoConfig?.extra || 
-                (Constants.manifest2 as { extra?: Record<string, unknown> } | null)?.extra ||
-                (Constants.manifest as { extra?: Record<string, unknown> } | null)?.extra;
+  // expo config'den extra'yı çek (eski SDK'lar için fallback'ler var)
+  const extra =
+    Constants.expoConfig?.extra ||
+    (Constants.manifest2 as { extra?: Record<string, unknown> } | null)?.extra ||
+    (Constants.manifest as { extra?: Record<string, unknown> } | null)?.extra;
   
-  // 1. Production: API_URL varsa direkt kullan
+  // prod'da tam URL varsa onu kullan
   if (extra?.apiUrl && typeof extra.apiUrl === 'string') {
     console.log('[API] Using production URL:', extra.apiUrl);
     return extra.apiUrl;
   }
   
-  // 2. Development: API_HOST + API_PORT kullan
+  // dev'de host:port kullan
   const apiHost = extra?.apiHost as string | undefined;
   const apiPort = (extra?.apiPort as string) || '3200';
   
@@ -28,10 +27,11 @@ const getBaseUrl = (): string => {
     return url;
   }
   
-  // 3. Fallback: Expo debugger host kullan (otomatik)
-  const hostUri = Constants.expoConfig?.hostUri || 
-                  (Constants.manifest2 as { extra?: { expoGo?: { debuggerHost?: string } } } | null)?.extra?.expoGo?.debuggerHost ||
-                  (Constants.manifest as { debuggerHost?: string } | null)?.debuggerHost;
+  // expo'nun debugger host'unu dene
+  const hostUri =
+    Constants.expoConfig?.hostUri ||
+    (Constants.manifest2 as { extra?: { expoGo?: { debuggerHost?: string } } } | null)?.extra?.expoGo?.debuggerHost ||
+    (Constants.manifest as { debuggerHost?: string } | null)?.debuggerHost;
   
   const debuggerHost = hostUri?.split(':')[0];
   
@@ -39,30 +39,30 @@ const getBaseUrl = (): string => {
     const url = `http://${debuggerHost}:${apiPort}/api`;
     console.log('[API] Using debugger host:', url);
     return url;
-  }
+  }  
   
-  // 4. Son fallback: Android emülatör
+  // hiçbiri yoksa android emülatör IP'si
   const fallbackUrl = `http://10.0.2.2:${apiPort}/api`;
-  console.log('[API] Using fallback:', fallbackUrl);
+  console.log('[API] Using emulator fallback:', fallbackUrl);
   return fallbackUrl;
 };
 
 const BASE_URL = getBaseUrl();
 console.log('API Base URL:', BASE_URL);
 
-// Retry yapılandırması
+// retry ayarları
 const RETRY_CONFIG = {
   maxRetries: 3,
-  baseDelay: 1000, // 1 saniye
-  maxDelay: 8000, // 8 saniye
+  baseDelay: 1000, // 1sn
+  maxDelay: 8000, // max 8sn
 };
 
-// Retry durumu için interface
+// retry count tutmak için
 interface RetryConfig extends InternalAxiosRequestConfig {
   _retryCount?: number;
 }
 
-// Axios instance oluştur
+// axios instance
 export const api = axios.create({
   baseURL: BASE_URL,
   timeout: 30000, // 30 saniye (AI işlemleri uzun sürebilir)
@@ -71,7 +71,7 @@ export const api = axios.create({
   },
 });
 
-// İstek gönderilmeden önce token ekle
+// her istekte token ekle
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     const token = await getAccessToken();
@@ -83,7 +83,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Yanıt alındıktan sonra hata yönetimi + Retry Logic
+// hata yönetimi ve retry
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
@@ -92,10 +92,10 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Retry sayacını başlat
+    // retry sayacı
     config._retryCount = config._retryCount ?? 0;
 
-    // 401 hatası - Token refresh
+    // 401: token'ı yenilemeyi dene
     if (error.response?.status === 401) {
       try {
         const refreshToken = await getRefreshToken();
@@ -112,25 +112,21 @@ api.interceptors.response.use(
           }
           return api(config);
         }
-      } catch {
+      } catch (refreshError) {
+        // refresh olmadı, login'e at
+        console.warn('[API] Token refresh failed:', refreshError);
         await clearAuthData();
         router.replace('/(auth)/login');
       }
       return Promise.reject(error);
     }
 
-    // 429 hatası - Rate Limiting (tekrar deneme YAPMA)
-    if (error.response?.status === 429) {
-      // Rate limit hatası, retry yapma, direkt hata döndür
-      return Promise.reject(error);
-    }
-
-    // 4xx hataları - Client hatası (tekrar deneme YAPMA)
+    // 4xx client hataları - retry yapma
     if (error.response?.status && error.response.status >= 400 && error.response.status < 500) {
       return Promise.reject(error);
     }
 
-    // 5xx hataları veya network hatası - Retry yap
+    // 5xx veya network hatası - retry yap
     const shouldRetry = 
       (error.response?.status && error.response.status >= 500) ||
       error.code === 'ECONNABORTED' ||
@@ -139,7 +135,7 @@ api.interceptors.response.use(
     if (shouldRetry && config._retryCount < RETRY_CONFIG.maxRetries) {
       config._retryCount += 1;
 
-      // Exponential backoff hesapla (1s, 2s, 4s)
+      // exponential backoff hesapla (1s, 2s, 4s)
       const delay = Math.min(
         RETRY_CONFIG.baseDelay * Math.pow(2, config._retryCount - 1),
         RETRY_CONFIG.maxDelay
@@ -147,7 +143,7 @@ api.interceptors.response.use(
 
       console.log(`Retry ${config._retryCount}/${RETRY_CONFIG.maxRetries} - ${delay}ms sonra tekrar denenecek`);
 
-      // Bekle ve tekrar dene
+      // bekle vetekrar dene
       await new Promise((resolve) => setTimeout(resolve, delay));
       return api(config);
     }
@@ -156,7 +152,7 @@ api.interceptors.response.use(
   }
 );
 
-// API hata tipi
+// hata response tipi
 export interface ApiError {
   success: false;
   error: {
@@ -166,18 +162,16 @@ export interface ApiError {
   };
 }
 
-// API başarı tipi
+// başarılı response tipi
 export interface ApiSuccess<T> {
   success: true;
   data: T;
 }
 
-// Genel API yanıt tipi
+// genel response tipi
 export type ApiResponse<T> = ApiSuccess<T> | ApiError;
 
-/**
- * Rate limit hatası mı kontrol et
- */
+// 429 rate limit hatası mı diye bak
 export const isRateLimitError = (error: unknown): boolean => {
   if (isAxiosError(error)) {
     return error.response?.status === 429;
@@ -190,17 +184,17 @@ export const isRateLimitError = (error: unknown): boolean => {
  */
 export const parseApiError = (error: unknown): string => {
   if (isAxiosError(error)) {
-    // Rate limit hatası
+    // rate limit
     if (error.response?.status === 429) {
       return 'Çok fazla istek! Lütfen birkaç saniye bekleyin.';
     }
 
-    // Backend'den gelen hata mesajı
+    // backend'den gelen hata
     const apiError = error.response?.data as ApiError | undefined;
     const errorCode = apiError?.error?.code;
     const errorMessage = apiError?.error?.message;
 
-    // Özel hata kodlarına göre mesaj
+    // bilinen hata kodları
     if (errorCode) {
       switch (errorCode) {
         case 'PRODUCT_NOT_FOUND':
@@ -218,22 +212,22 @@ export const parseApiError = (error: unknown): string => {
       }
     }
 
-    // Backend'den gelen message varsa
+    // backend mesajı varsa onu göster
     if (errorMessage) {
       return errorMessage;
     }
 
-    // Network hatası
+    // network hatası
     if (error.message === 'Network Error') {
       return 'Sunucuya bağlanılamadı. İnternet bağlantınızı ve backend\'in çalıştığını kontrol edin.';
     }
 
-    // Timeout
+    // timeout
     if (error.code === 'ECONNABORTED') {
       return 'İstek zaman aşımına uğradı. Lütfen tekrar deneyin.';
     }
 
-    // 5xx server hataları
+    // 5xx hatası
     if (error.response?.status && error.response.status >= 500) {
       return 'Sunucu hatası oluştu. Lütfen daha sonra tekrar deneyin.';
     }

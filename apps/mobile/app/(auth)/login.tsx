@@ -6,7 +6,7 @@ import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useColorScheme } from 'nativewind';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Platform, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { parseApiError } from '../../services/api';
 import { useAuthStore } from '../../stores/auth.store';
@@ -32,15 +32,6 @@ export default function LoginScreen() {
     ? 'https://auth.expo.io/@furkanpasa/Besin-Denetle'
     : makeRedirectUri({ scheme: 'besindenetle', path: 'auth' });
 
-  // Debug için config'i logla
-  console.log('Google Auth Config:', {
-    isExpoGo,
-    platform: Platform.OS,
-    redirectUri,
-    webClientId: googleConfig.webClientId ? 'set' : 'missing',
-    androidClientId: googleConfig.androidClientId ? 'set' : 'missing',
-  });
-
   // Google OAuth request
   // Expo Go'da sadece webClientId kullanılır, native build'de platform'a göre seçilir
   const [request, response, promptAsync] = Google.useAuthRequest({
@@ -51,22 +42,11 @@ export default function LoginScreen() {
     scopes: ['openid', 'email', 'profile'],
   });
 
-  // Request hazır olduğunda logla
-  useEffect(() => {
-    if (request) {
-      console.log('Google Auth Request Ready:', {
-        url: request.url,
-        codeVerifier: request.codeVerifier ? 'exists' : 'missing',
-        state: request.state,
-      });
-    }
-  }, [request]);
-
   // Google OAuth response'ını useEffect ile yakala
   useEffect(() => {
     // Response değiştiğinde logla (debug için)
-    if (response) {
-      console.log('Google OAuth Response:', JSON.stringify(response, null, 2));
+    if (response?.type === 'error') {
+      console.error('Google OAuth Error:', response.error);
     }
 
     async function handleGoogleResponse() {
@@ -107,17 +87,11 @@ export default function LoginScreen() {
   const handleGoogleLogin = async () => {
     try {
       setError(null);
-      console.log('Starting Google auth flow...');
-      
       // showInRecents: true - Android'de callback'in düzgün çalışmasını sağlar
       const result = await promptAsync({ showInRecents: true });
-      console.log('promptAsync result:', JSON.stringify(result, null, 2));
       
       if (result?.type === 'success') {
-        const { authentication } = result;
-        // Backend Google verifyIdToken API'si idToken bekliyor, accessToken değil
-        console.log('Auth success, idToken:', authentication?.idToken ? 'exists' : 'missing');
-        
+        const { authentication } = result;        
         if (authentication?.idToken) {
           setIsProcessing(true);
           try {

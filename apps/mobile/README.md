@@ -56,6 +56,29 @@ Kullanıcı ürünü doğruladığında ("Evet, bu ürün" dediğinde) detay say
 *   Telefonunuzda **Expo Go** uygulaması (App Store / Play Store'dan indirin).
 *   Bilgisayarınızda Node.js ve PNPM kurulu olmalı.
 
+## 🔑 Local Build Credentials (Android)
+
+Local build (Android) alırken Google Login gibi özelliklerin çalışması için **Production Keystore**'u kullanmanız gerekir.
+
+1.  Expo'dan keystore'u indirin: `eas credentials`
+2.  `.jks` dosyasını `apps/mobile/.credentials/` klasörüne taşıyın.
+3.  `apps/mobile/credentials.json` dosyasını oluşturun/düzenleyin:
+
+```json
+{
+  "android": {
+    "keystore": {
+      "keystorePath": "./.credentials/YOUR_FILENAME.jks",
+      "keystorePassword": "...",
+      "keyAlias": "...",
+      "keyPassword": "..."
+    }
+  }
+}
+```
+
+> **Not:** `.credentials` klasörü ve `credentials.json` git'e yüklemediğinizden emin olun.
+
 ### 1. Bağımlılıkları Yükleyin
 ```bash
 pnpm install

@@ -35,7 +35,9 @@ export class AiService {
     // Gemini client oluştur (API key varsa)
     if (!this.isMockMode && this.apiKey) {
       this.genai = new GoogleGenAI({ apiKey: this.apiKey });
-      this.logger.log(`AI Service initialized with models: ${GEMINI_MODEL_FAST} (fast), ${GEMINI_MODEL_SMART} (smart)`);
+      this.logger.log(
+        `AI Service initialized with models: ${GEMINI_MODEL_FAST} (fast), ${GEMINI_MODEL_SMART} (smart)`,
+      );
     } else {
       this.genai = null;
       this.logger.warn('AI Service running in MOCK MODE - no API key provided');
@@ -160,13 +162,17 @@ Yanıt formatı:
       });
 
       const text = response.text || '';
-      this.logger.debug(`Gemini identifyProduct response: ${text.substring(0, 200)}...`);
+      this.logger.debug(
+        `Gemini identifyProduct response: ${text.substring(0, 200)}...`,
+      );
 
       // JSON parse et
       const result = this.parseJsonResponse<AIProductResult>(text);
       return result || this.mockIdentifyProduct(barcode);
     } catch (error) {
-      this.logger.error(`Gemini identifyProduct error: ${(error as Error).message}`);
+      this.logger.error(
+        `Gemini identifyProduct error: ${(error as Error).message}`,
+      );
       // Hata durumunda mock veri döndür
       return this.mockIdentifyProduct(barcode);
     }
@@ -237,13 +243,17 @@ Yanıt formatı:
       });
 
       const text = response.text || '';
-      this.logger.debug(`Gemini getProductContent response: ${text.substring(0, 200)}...`);
+      this.logger.debug(
+        `Gemini getProductContent response: ${text.substring(0, 200)}...`,
+      );
 
       // JSON parse et
       const result = this.parseJsonResponse<AIContentResult>(text);
       return result || this.mockGetProductContent(brand, name);
     } catch (error) {
-      this.logger.error(`Gemini getProductContent error: ${(error as Error).message}`);
+      this.logger.error(
+        `Gemini getProductContent error: ${(error as Error).message}`,
+      );
       return this.mockGetProductContent(brand, name);
     }
   }
@@ -275,7 +285,9 @@ Yanıt formatı:
     }
 
     try {
-      const nutritionStr = nutrition ? JSON.stringify(nutrition, null, 2) : 'Bilinmiyor';
+      const nutritionStr = nutrition
+        ? JSON.stringify(nutrition, null, 2)
+        : 'Bilinmiyor';
 
       const prompt = `Sen bir beslenme uzmanısın. Aşağıdaki gıda ürününü sağlık açısından değerlendir.
 Yanıtını TÜRKÇE olarak ver.
@@ -314,10 +326,13 @@ Yanıt formatı:
       });
 
       const text = response.text || '';
-      this.logger.debug(`Gemini analyzeContent response: ${text.substring(0, 200)}...`);
+      this.logger.debug(
+        `Gemini analyzeContent response: ${text.substring(0, 200)}...`,
+      );
 
       // JSON yanıtını parse et ve model adını ekle
-      const parsed = this.parseJsonResponse<Omit<AIAnalysisResult, 'model'>>(text);
+      const parsed =
+        this.parseJsonResponse<Omit<AIAnalysisResult, 'model'>>(text);
       if (parsed) {
         return {
           ...parsed,
@@ -326,7 +341,9 @@ Yanıt formatı:
       }
       return this.mockAnalyzeContent(name);
     } catch (error) {
-      this.logger.error(`Gemini analyzeContent error: ${(error as Error).message}`);
+      this.logger.error(
+        `Gemini analyzeContent error: ${(error as Error).message}`,
+      );
       return this.mockAnalyzeContent(name);
     }
   }
@@ -341,10 +358,12 @@ Yanıt formatı:
     try {
       // Markdown code block temizle
       let cleaned = text.trim();
-      
+
       // ```json ... ``` formatını temizle
       if (cleaned.startsWith('```')) {
-        cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+        cleaned = cleaned
+          .replace(/^```(?:json)?\n?/, '')
+          .replace(/\n?```$/, '');
       }
 
       return JSON.parse(cleaned) as T;
