@@ -1,14 +1,12 @@
 import { HistoryCard } from '@/components/product';
-import { ThemeToggle } from '@/components/ui';
 import { Skeleton } from '@/components/ui/skeleton';
-import { SHADOWS } from '@/constants';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import { useEffect, useMemo, useState } from 'react';
 import { FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuthStore } from '../../stores/auth.store';
+import { useDebouncedNavigation } from '../../hooks/use-debounce';
+import { useHapticsStore } from '../../stores/haptics.store';
 import { useHistoryStore, type HistoryItem } from '../../stores/history.store';
 import { useProductStore } from '../../stores/product.store';
 
@@ -16,6 +14,8 @@ export default function HomeScreen() {
   const { colorScheme } = useColorScheme();
   const { history, isLoading, loadHistory } = useHistoryStore();
   const { setProduct, setBarcode, setContent, setAnalysis } = useProductStore();
+  const selection = useHapticsStore((state) => state.selection);
+  const { navigate } = useDebouncedNavigation();
 
   // Arama state
   const [searchQuery, setSearchQuery] = useState('');
@@ -41,8 +41,9 @@ export default function HomeScreen() {
     });
   }, [history, searchQuery]);
 
-  // Geçmiş kartına tıklandığında
+  // Geçmiş kartına tıklandığında (debounced - çift tıklama engellenir)
   const handleHistoryPress = (item: HistoryItem) => {
+    selection(); // Hafif titreşim
     // Store'a verileri yükle
     setProduct(item.product);
     setBarcode(item.barcode);
@@ -50,7 +51,7 @@ export default function HomeScreen() {
     setAnalysis(item.analysis);
 
     // Salt okunur modda detay sayfasına git
-    router.push(`/product/${item.id}?readonly=true` as any);
+    navigate(`/product/${item.id}?readonly=true`);
   };
 
   // Boş liste komponenti
@@ -97,7 +98,7 @@ export default function HomeScreen() {
 
       {/* Arama Çubuğu */}
       <View className="px-4 py-2">
-        <View className="flex-row items-center bg-secondary/50 rounded-2xl px-4 py-3 border border-border">
+        <View className="flex-row items-center bg-secondary/50 rounded-2xl px-4 py-3 border border-primary/50">
           <Ionicons
             name="search"
             size={20}
@@ -157,22 +158,6 @@ export default function HomeScreen() {
           showsVerticalScrollIndicator={false}
         />
       )}
-
-      {/* Tema Değiştirme Butonu */}
-      <ThemeToggle />
-
-      {/* Geçici Çıkış Yap Butonu */}
-      <TouchableOpacity
-        onPress={() => useAuthStore.getState().logout()}
-        className="absolute bottom-6 left-6 bg-destructive w-14 h-14 rounded-full items-center justify-center"
-        style={SHADOWS.md}
-      >
-        <Ionicons
-          name="log-out-outline"
-          size={24}
-          color="#FFFFFF"
-        />
-      </TouchableOpacity>
     </SafeAreaView>
   );
 }

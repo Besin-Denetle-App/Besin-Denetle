@@ -11,6 +11,8 @@ import { ActivityIndicator, LogBox, Text, View } from 'react-native';
 import { ErrorBoundary, ToastContainer } from '../components/feedback';
 import { useNetwork } from '../hooks/use-network';
 import { useAuthStore } from '../stores/auth.store';
+import { useHapticsStore } from '../stores/haptics.store';
+import { useThemeStore } from '../stores/theme.store';
 
 // Gereksiz uyarıları gizle
 LogBox.ignoreLogs([
@@ -47,15 +49,28 @@ function NetworkBanner() {
 }
 
 export default function RootLayout() {
-  const { colorScheme } = useColorScheme();
+  const { colorScheme, setColorScheme } = useColorScheme();
   const { isAuthenticated, isLoading, initialize } = useAuthStore();
+  const { initialize: initializeHaptics } = useHapticsStore();
+  const { mode: themeMode, initialize: initializeTheme } = useThemeStore();
   const segments = useSegments();
   const router = useRouter();
 
-  // Uygulama başlangıcında auth durumunu kontrol et
+  // Uygulama başlangıcında store'ları initialize et
   useEffect(() => {
     initialize();
-  }, [initialize]);
+    initializeHaptics();
+    initializeTheme();
+  }, [initialize, initializeHaptics, initializeTheme]);
+
+  // Tema moduna göre colorScheme ayarla
+  useEffect(() => {
+    if (themeMode === 'system') {
+      setColorScheme('system'); // Cihaz varsayılanını kullan
+    } else {
+      setColorScheme(themeMode);
+    }
+  }, [themeMode, setColorScheme]);
 
   // Auth durumuna göre yönlendirme
   useEffect(() => {

@@ -3,21 +3,23 @@ import { router } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import { useState } from 'react';
 import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    KeyboardAvoidingView,
+    Platform,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDebouncedNavigation } from '../../hooks/use-debounce';
 import { parseApiError } from '../../services/api';
 import { useAuthStore } from '../../stores/auth.store';
 
 export default function EmailSignupScreen() {
   const { colorScheme } = useColorScheme();
   const { signupWithEmail, isLoading } = useAuthStore();
+  const { navigate } = useDebouncedNavigation();
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -41,7 +43,7 @@ export default function EmailSignupScreen() {
       if (result.needsRegistration) {
         // Yeni kullanıcı - username belirleme ekranına yönlendir
         console.log('[EmailSignup] Navigating to register screen');
-        router.push('/(auth)/register');
+        navigate('/(auth)/register');
       } else {
         // Mevcut kullanıcı - ana ekrana yönlendir
         console.log('[EmailSignup] Navigating to tabs (existing user)');

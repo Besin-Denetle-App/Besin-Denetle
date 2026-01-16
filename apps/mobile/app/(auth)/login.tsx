@@ -8,6 +8,7 @@ import { useColorScheme } from 'nativewind';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDebouncedNavigation } from '../../hooks/use-debounce';
 import { parseApiError } from '../../services/api';
 import { useAuthStore } from '../../stores/auth.store';
 
@@ -17,10 +18,10 @@ WebBrowser.maybeCompleteAuthSession();
 export default function LoginScreen() {
   const { colorScheme } = useColorScheme();
   const { loginWithGoogle, isLoading } = useAuthStore();
+  const { navigate } = useDebouncedNavigation();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const isProcessingRef = useRef(false); // Sonsuz döngü önleme için
-  const isNavigatingRef = useRef(false); // Çift tıklama navigasyon koruması
 
   const googleConfig = Constants.expoConfig?.extra?.google || {};
   
@@ -61,7 +62,7 @@ export default function LoginScreen() {
             const loginResult = await loginWithGoogle(authentication.idToken);
             
             if (loginResult.needsRegistration) {
-              router.push('/(auth)/register');
+              navigate('/(auth)/register');
             } else {
               router.replace('/(tabs)');
             }
@@ -81,7 +82,7 @@ export default function LoginScreen() {
     }
 
     handleGoogleResponse();
-  }, [response, loginWithGoogle]);
+  }, [response, loginWithGoogle, navigate]);
 
   // Google giriş butonuna tıklandığında
   const handleGoogleLogin = async () => {
@@ -98,7 +99,7 @@ export default function LoginScreen() {
             const loginResult = await loginWithGoogle(authentication.idToken);
             
             if (loginResult.needsRegistration) {
-              router.push('/(auth)/register');
+              navigate('/(auth)/register');
             } else {
               router.replace('/(tabs)');
             }
@@ -124,20 +125,10 @@ export default function LoginScreen() {
     }
   };
 
-  // E-posta butonuna tıklandığında - çift tıklama korumalı
+  // E-posta butonuna tıklandığında (debounced - çift tıklama engellenir)
   const handleEmailNavigation = () => {
-    // Zaten navigate ediliyorsa, tekrar yapma
-    if (isNavigatingRef.current || isLoading || isProcessing) {
-      return;
-    }
-    
-    isNavigatingRef.current = true;
-    router.push('/(auth)/email-signup' as any);
-    
-    // 1 saniye sonra tekrar tıklamaya izin ver
-    setTimeout(() => {
-      isNavigatingRef.current = false;
-    }, 1000);
+    if (isLoading || isProcessing) return;
+    navigate('/(auth)/email-signup');
   };
 
   // @disabled Apple Sign In
@@ -157,7 +148,7 @@ export default function LoginScreen() {
         const loginResult = await loginWithApple(credential.identityToken);
         
         if (loginResult.needsRegistration) {
-          router.push('/(auth)/register');
+          navigate('/(auth)/register');
         } else {
           router.replace('/(tabs)');
         }

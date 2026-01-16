@@ -1,15 +1,17 @@
 /**
  * Ürün detay sayfası için custom hook
- * API çağrıları ve state yönetimini merkezileştirir
+ * 
+ * API çağrıları ve state yönetimini merkezileştirir.
+ * İçerik veya analiz reddedildiğinde geçmiş otomatik güncellenir.
  */
 import { showInfoToast } from '@/components/feedback';
 import type { IContentAnalysis, IProductContent } from '@besin-denetle/shared';
 import { useCallback, useEffect, useState } from 'react';
 import { parseApiError } from '../services/api';
 import * as productService from '../services/product.service';
+import { useHapticsStore } from '../stores/haptics.store';
 import { useHistoryStore } from '../stores/history.store';
 import { useProductStore } from '../stores/product.store';
-import { lightImpact } from '../utils/haptics';
 
 interface UseProductDetailsResult {
   // State
@@ -35,6 +37,8 @@ export function useProductDetails(
   // Store'dan product ve barcode al
   const { currentProduct: product, currentBarcode: barcode } = useProductStore();
   const addToHistory = useHistoryStore((state) => state.addToHistory);
+  const medium = useHapticsStore((state) => state.medium);
+  const hapticError = useHapticsStore((state) => state.error);
 
   // State
   const [content, setContent] = useState<IProductContent | null>(null);
@@ -61,7 +65,8 @@ export function useProductDetails(
       setContent(response.content);
       setAnalysis(response.analysis);
 
-      // Geçmişe kaydet (readonly değilse)
+      // İlk yüklemede geçmişe kaydet
+      // productId bazlı: aynı ürün varsa güncellenir, yoksa yeni kayıt oluşur
       if (product && barcode) {
         addToHistory({
           id: product.id,
@@ -72,6 +77,7 @@ export function useProductDetails(
         });
       }
     } catch (err) {
+      hapticError(); // Hata titreşimi
       setError(parseApiError(err));
     } finally {
       setIsLoading(false);
@@ -85,12 +91,11 @@ export function useProductDetails(
     }
   }, [productId, loadProductDetails]);
 
-  // İçerik reddet
+  // İçerik reddet (domino etkisi: yeni content → yeni analysis)
   const rejectContent = useCallback(async () => {
     if (!content) return;
 
-    // Haptic feedback
-    lightImpact();
+    medium();
 
     setIsLoading(true);
     try {
@@ -99,20 +104,32 @@ export function useProductDetails(
         setContent(response.nextContent);
         setAnalysis(response.nextAnalysis);
         showInfoToast('Sonraki içerik yüklendi');
+
+        // Geçmişi son content ve analysis ile güncelle
+        // Aynı productId olduğu için mevcut kayıt güncellenir ve başa taşınır
+        if (product && barcode && !isReadonly) {
+          addToHistory({
+            id: product.id,
+            barcode,
+            product,
+            content: response.nextContent,
+            analysis: response.nextAnalysis,
+          });
+        }
       }
     } catch (err) {
+      hapticError(); // Hata titreşimi
       setError(parseApiError(err));
     } finally {
       setIsLoading(false);
     }
-  }, [content]);
+  }, [content, product, barcode, isReadonly, addToHistory]);
 
-  // Analiz reddet
+  // Analiz reddet (sadece analysis değişir, content aynı kalır)
   const rejectAnalysis = useCallback(async () => {
     if (!analysis) return;
 
-    // Haptic feedback
-    lightImpact();
+    medium();
 
     setIsLoading(true);
     try {
@@ -120,13 +137,26 @@ export function useProductDetails(
       if (response.nextAnalysis) {
         setAnalysis(response.nextAnalysis);
         showInfoToast('Sonraki analiz yüklendi');
+
+        // Geçmişi mevcut content ve yeni analysis ile güncelle
+        // Content değişmedi, sadece analysis yenilendi
+        if (product && barcode && !isReadonly) {
+          addToHistory({
+            id: product.id,
+            barcode,
+            product,
+            content,
+            analysis: response.nextAnalysis,
+          });
+        }
       }
     } catch (err) {
+      hapticError(); // Hata titreşimi
       setError(parseApiError(err));
     } finally {
       setIsLoading(false);
     }
-  }, [analysis]);
+  }, [analysis, content, product, barcode, isReadonly, addToHistory]);
 
   return {
     content,

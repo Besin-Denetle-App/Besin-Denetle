@@ -1,7 +1,11 @@
 {
   "name": "@besin-denetle/mobile",
+  "version": "0.8.3",
+  "description": "Besin Denetle Mobile App",
+  "author": "Furkan Çelik",
+  "license": "UNLICENSED",
+  "private": true,
   "main": "expo-router/entry",
-  "version": "0.7.9",
   "scripts": {
     "start": "expo start",
 
@@ -59,6 +63,5 @@
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
     "typescript": "^5.7.3"
-  },
-  "private": true
+  }
 }

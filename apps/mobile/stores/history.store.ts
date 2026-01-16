@@ -9,15 +9,20 @@ const HISTORY_KEY = APP_CONFIG.storageKeys.scanHistory;
 const MAX_HISTORY_DAYS = APP_CONFIG.history.maxDays;
 const MAX_HISTORY_COUNT = APP_CONFIG.history.maxCount;
 
-// Geçmiş kaydı tipi
+/**
+ * Geçmiş kaydı tipi
+ * 
+ * Her kayıt productId bazlı saklanır.
+ * Aynı barkod için farklı ürün varyantları ayrı kayıt olarak tutulur.
+ */
 export interface HistoryItem {
-  id: string; // productId
-  barcode: string;
-  product: IProduct;
-  content: IProductContent | null;
-  analysis: IContentAnalysis | null;
-  viewedAt: string; // ISO date string
-  localImagePath?: string; // Telefona indirilmiş resim yolu
+  id: string; // productId - benzersiz tanımlayıcı
+  barcode: string; // Barkod numarası
+  product: IProduct; // Ürün bilgileri (değişmez)
+  content: IProductContent | null; // Son görüntülenen içerik
+  analysis: IContentAnalysis | null; // Son görüntülenen AI analizi
+  viewedAt: string; // Son görüntülenme tarihi (ISO)
+  localImagePath?: string; // İndirilmiş ürün resmi yolu
 }
 
 interface HistoryState {
@@ -92,7 +97,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
         localImagePath,
       };
 
-      // Aynı ürün varsa güncelle, yoksa başa ekle
+      // productId bazlı kontrol: aynı ürün varsa güncelle, yoksa yeni ekle
       const existingIndex = history.findIndex((h) => h.id === item.id);
       let newHistory: HistoryItem[];
 
@@ -103,14 +108,14 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
           await deleteImage(oldItem.localImagePath);
         }
         
-        // Mevcut kaydı güncelle ve başa taşı
+        // Mevcut kaydı güncelle ve başa taşı (en son görülen üstüne gelsin)
         newHistory = [
           newItem,
           ...history.slice(0, existingIndex),
           ...history.slice(existingIndex + 1),
         ];
       } else {
-        // Yeni kayıt ekle
+        // Yeni ürün varyantı, başa ekle
         newHistory = [newItem, ...history];
       }
 

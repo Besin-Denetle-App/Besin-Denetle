@@ -1,22 +1,24 @@
 import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 import { PlatformPressable } from '@react-navigation/elements';
-import * as Haptics from 'expo-haptics';
+import { useHapticsStore } from '../../stores/haptics.store';
 
 /**
  * Haptic feedback'li tab butonu
- * iOS'ta basıldığında hafif titreşim verir
+ * Selection titreşimi - çok hafif, sadece hissettiren
  */
 export function HapticTab(props: BottomTabBarButtonProps) {
+  const selection = useHapticsStore((state) => state.selection);
+
   return (
     <PlatformPressable
       {...props}
       onPressIn={(ev) => {
-        if (process.env.EXPO_OS === 'ios') {
-          // Hafif haptic feedback
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        }
+        // Çok hafif selection titreşimi
+        selection();
         props.onPressIn?.(ev);
       }}
     />
   );
 }
+
+

@@ -11,13 +11,16 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colorScheme === 'dark' ? '#FFFFFF' : '#10B981', // Dark: Beyaz, Light: Yeşil
+        tabBarActiveTintColor: '#8B5CF6', // Her iki modda da mor
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: {
           backgroundColor: colorScheme === 'dark' ? '#121212' : '#FAFAFA', // Material Design 3
-          borderTopColor: colorScheme === 'dark' ? '#2C2C2C' : '#E0E0E0', // Border rengi
+          borderTopColor: colorScheme === 'dark' ? '#2C2C2C' : '#8B5CF680', // Dark: Gri, Light: Yarı saydam mor
           borderTopWidth: 1,
+          height: 56, // 64px - Modern mobil standart (paddingBottom ile safe area eklenir)
+          paddingTop: 4,
+          paddingBottom: 4,
         },
       }}>
       <Tabs.Screen
@@ -32,6 +35,13 @@ export default function TabLayout() {
         options={{
           title: 'Tara',
           tabBarIcon: ({ color }) => <Ionicons size={28} name="barcode-outline" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: 'Ayarlar',
+          tabBarIcon: ({ color }) => <Ionicons size={28} name="settings-outline" color={color} />,
         }}
       />
     </Tabs>

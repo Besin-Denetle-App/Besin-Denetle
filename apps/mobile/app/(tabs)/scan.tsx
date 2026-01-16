@@ -1,21 +1,23 @@
 import { showInfoToast } from '@/components/feedback';
 import { ProductPopup } from '@/components/product';
 import { BarcodeScanner } from '@/components/scanner';
-import { ThemeToggle } from '@/components/ui';
 import type { IProduct } from '@besin-denetle/shared';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import { useState } from 'react';
 import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDebouncedNavigation } from '../../hooks/use-debounce';
 import { isRateLimitError, parseApiError } from '../../services/api';
 import * as productService from '../../services/product.service';
+import { useHapticsStore } from '../../stores/haptics.store';
 import { useProductStore } from '../../stores/product.store';
 
 export default function ScanScreen() {
     const { colorScheme } = useColorScheme();
     const { setProduct, setBarcode } = useProductStore();
+    const { error: hapticError } = useHapticsStore();
+    const { navigate } = useDebouncedNavigation();
     const [showScanner, setShowScanner] = useState(false);
     const [barcodeInput, setBarcodeInput] = useState('');
     
@@ -57,6 +59,7 @@ export default function ScanScreen() {
             }
         } catch (err) {
             const errorMessage = parseApiError(err);
+            hapticError(); // Hata titreşimi
             // Rate limit hatası ise popup'ı kapat, ana ekranda göster
             if (isRateLimitError(err)) {
                 setShowPopup(false);
@@ -68,20 +71,21 @@ export default function ScanScreen() {
         }
     };
 
-    // Ürün onaylandığında (EVET)
+    // Ürün onaylandığında - detay sayfasına git (debounced - çift tıklama engellenir)
+    // Geçmişe kaydetme detay sayfasında (use-product-details) yapılıyor
     const handleConfirm = async () => {
         if (!currentProduct) return;
 
-        // Product ve barcode'u store'a kaydet (detay sayfasında kullanılacak)
+        // Detay sayfasında kullanılmak üzere store'a kaydet
         setProduct(currentProduct);
         setBarcode(barcodeInput.trim());
 
         setShowPopup(false);
-        // Ürün detay sayfasına git
-        router.push(`/product/${currentProduct.id}` as any);
+        navigate(`/product/${currentProduct.id}`);
     };
 
-    // Ürün reddedildiğinde (HAYIR)
+    // Ürün reddedildiğinde - sonraki varyantı getir
+    // Bu aşamada geçmişe kayıt yapılmaz (henüz detay sayfasına gidilmedi)
     const handleReject = async () => {
         if (!currentProduct) return;
 
@@ -90,6 +94,7 @@ export default function ScanScreen() {
         try {
             const response = await productService.rejectProduct(currentProduct.id);
             if (response.nextProduct) {
+                // Farklı ürün varyantı geldi, popup'ta göster
                 setCurrentProduct(response.nextProduct);
                 showInfoToast('Sonraki ürün yüklendi');
             } else if (response.noMoreVariants) {
@@ -98,7 +103,6 @@ export default function ScanScreen() {
             }
         } catch (err) {
             const errorMessage = parseApiError(err);
-            // Rate limit hatası ise popup'ı kapat, ana ekranda göster
             if (isRateLimitError(err)) {
                 setShowPopup(false);
                 setCurrentProduct(null);
@@ -161,7 +165,7 @@ export default function ScanScreen() {
                         placeholder="Örn: 8690632006314"
                         placeholderTextColor={colorScheme === 'dark' ? '#A0A0A0' : '#757575'}
                         keyboardType="numeric"
-                        className="bg-secondary/50 border border-border rounded-2xl px-4 py-4 text-foreground text-base font-mono"
+                        className="bg-secondary/50 border border-primary/50 rounded-2xl px-4 py-4 text-foreground text-base font-mono"
                         editable={!isLoading}
                     />
                 </View>
@@ -210,9 +214,6 @@ export default function ScanScreen() {
                     )}
                 </TouchableOpacity>
             </View>
-
-            {/* Tema Değiştirme Butonu */}
-            <ThemeToggle />
 
             {/* Barkod Scanner Modal */}
             <BarcodeScanner

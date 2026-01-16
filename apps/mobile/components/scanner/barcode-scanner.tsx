@@ -3,7 +3,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useEffect, useRef, useState } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { APP_CONFIG, SHADOWS } from '../../constants';
-import { lightImpact } from '../../utils/haptics';
+import { useHapticsStore } from '../../stores/haptics.store';
 
 // Sabitleri constants'tan al
 const { confirmationThreshold, scanDebounceMs } = APP_CONFIG.scanner;
@@ -18,6 +18,7 @@ export function BarcodeScanner({ visible, onClose, onBarcodeConfirmed }: Barcode
     const [permission, requestPermission] = useCameraPermissions();
     const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
     const [showConfirmation, setShowConfirmation] = useState(false);
+    const success = useHapticsStore((state) => state.success);
 
     // Çoklu okuma için state
     const scanCountRef = useRef<{ [key: string]: number }>({});
@@ -77,8 +78,8 @@ export function BarcodeScanner({ visible, onClose, onBarcodeConfirmed }: Barcode
 
             // Threshold'a ulaşıldıysa onay ekranını göster
             if (scanCountRef.current[data] >= confirmationThreshold) {
-                // Haptic feedback - barkod okundu
-                lightImpact();
+                // Haptic feedback - barkod okundu (başarı titreşimi)
+                success();
                 
                 setScannedBarcode(data);
                 setShowConfirmation(true);
