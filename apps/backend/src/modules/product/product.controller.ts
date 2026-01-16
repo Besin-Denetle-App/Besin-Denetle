@@ -24,11 +24,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import {
-  THROTTLE_CONFIRM,
-  THROTTLE_FLAG,
-  THROTTLE_REJECT,
-} from '../../config';
+import { THROTTLE_CONFIRM, THROTTLE_FLAG, THROTTLE_REJECT } from '../../config';
 import { AiService } from '../ai/ai.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';

@@ -6,29 +6,29 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { WinstonModule } from 'nest-winston';
 
 import {
-    HttpExceptionFilter,
-    LastActiveInterceptor,
-    LoggingInterceptor,
-    UserThrottlerGuard,
+  HttpExceptionFilter,
+  LastActiveInterceptor,
+  LoggingInterceptor,
+  UserThrottlerGuard,
 } from './common';
 
 // Config
 import {
-    createLoggerConfig,
-    databaseConfig,
-    jwtConfig,
-    oauthConfig,
-    throttlerConfig,
+  createLoggerConfig,
+  databaseConfig,
+  jwtConfig,
+  oauthConfig,
+  throttlerConfig,
 } from './config';
 
 // Entity'ler
 import {
-    Barcode,
-    ContentAnalysis,
-    Product,
-    ProductContent,
-    User,
-    Vote,
+  Barcode,
+  ContentAnalysis,
+  Product,
+  ProductContent,
+  User,
+  Vote,
 } from './entities';
 
 // Modüller

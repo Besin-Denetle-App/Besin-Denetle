@@ -164,10 +164,7 @@ Yanıt formatı:
       const text = response.text || '';
       if (!text.trim()) {
         this.logger.warn('Gemini identifyProduct: Boş yanıt alındı');
-        throw new HttpException(
-          'AI yanıtı boş döndü',
-          HttpStatus.BAD_GATEWAY,
-        );
+        throw new HttpException('AI yanıtı boş döndü', HttpStatus.BAD_GATEWAY);
       }
       this.logger.debug(
         `Gemini identifyProduct response: ${text.substring(0, 200)}...`,
@@ -176,10 +173,7 @@ Yanıt formatı:
       // JSON parse et
       const result = this.parseJsonResponse<AIProductResult>(text);
       if (!result) {
-        throw new HttpException(
-          'AI yanıtı işlenemedi',
-          HttpStatus.BAD_GATEWAY,
-        );
+        throw new HttpException('AI yanıtı işlenemedi', HttpStatus.BAD_GATEWAY);
       }
       return result;
     } catch (error) {
@@ -277,10 +271,7 @@ Yanıt formatı:
       const text = response.text || '';
       if (!text.trim()) {
         this.logger.warn('Gemini getProductContent: Boş yanıt alındı');
-        throw new HttpException(
-          'AI yanıtı boş döndü',
-          HttpStatus.BAD_GATEWAY,
-        );
+        throw new HttpException('AI yanıtı boş döndü', HttpStatus.BAD_GATEWAY);
       }
       this.logger.debug(
         `Gemini getProductContent response: ${text.substring(0, 200)}...`,
@@ -289,10 +280,7 @@ Yanıt formatı:
       // JSON parse et
       const result = this.parseJsonResponse<AIContentResult>(text);
       if (!result) {
-        throw new HttpException(
-          'AI yanıtı işlenemedi',
-          HttpStatus.BAD_GATEWAY,
-        );
+        throw new HttpException('AI yanıtı işlenemedi', HttpStatus.BAD_GATEWAY);
       }
       return result;
     } catch (error) {
@@ -393,10 +381,7 @@ Yanıt formatı:
       const text = response.text || '';
       if (!text.trim()) {
         this.logger.warn('Gemini analyzeContent: Boş yanıt alındı');
-        throw new HttpException(
-          'AI yanıtı boş döndü',
-          HttpStatus.BAD_GATEWAY,
-        );
+        throw new HttpException('AI yanıtı boş döndü', HttpStatus.BAD_GATEWAY);
       }
       this.logger.debug(
         `Gemini analyzeContent response: ${text.substring(0, 200)}...`,
@@ -406,10 +391,7 @@ Yanıt formatı:
       const parsed =
         this.parseJsonResponse<Omit<AIAnalysisResult, 'model'>>(text);
       if (!parsed) {
-        throw new HttpException(
-          'AI yanıtı işlenemedi',
-          HttpStatus.BAD_GATEWAY,
-        );
+        throw new HttpException('AI yanıtı işlenemedi', HttpStatus.BAD_GATEWAY);
       }
       return {
         ...parsed,

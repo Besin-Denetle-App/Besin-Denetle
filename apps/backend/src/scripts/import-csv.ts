@@ -12,7 +12,14 @@ import { config } from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
 import { DataSource } from 'typeorm';
-import { Barcode, ContentAnalysis, Product, ProductContent, User, Vote } from '../entities';
+import {
+  Barcode,
+  ContentAnalysis,
+  Product,
+  ProductContent,
+  User,
+  Vote,
+} from '../entities';
 
 // .env dosyasını yükle
 config();
