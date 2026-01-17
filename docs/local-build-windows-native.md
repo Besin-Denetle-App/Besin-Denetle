@@ -9,16 +9,16 @@ Bu rehber, **Windows** üzerinde **doğrudan native Android build** almak için 
 
 ## 📊 Build Yöntemleri Karşılaştırması
 
-| Özellik | EAS Cloud Build | WSL2 Local | **Windows Native** |
-|---------|----------------|------------|-------------------|
-| **Kurulum** | ✅ Kolay | ⚠️ Orta | ⚠️ Orta |
-| **İlk Build Süresi** | ~15-20 dk | ~10-15 dk | ~10-15 dk |
-| **Sonraki Build** | ~10-15 dk | ~5-10 dk | ~5-10 dk |
-| **Maliyet** | 💰 Ücretli | ✅ Ücretsiz | ✅ Ücretsiz |
-| **İnternet Gereksinimi** | ☁️ Gerekli | 🌐 İsteğe bağlı | 🌐 İsteğe bağlı |
-| **Disk Kullanımı** | ✅ Yok | 📦 ~15 GB | 📦 ~10 GB |
-| **Platform** | ✅ Hepsi | 🐧 Linux | 🪟 Windows |
-| **Credentials Kontrolü** | ☁️ Cloud | 🔑 Lokal | 🔑 Lokal |
+| Özellik                  | EAS Cloud Build | WSL2 Local     | **Windows Native** |
+| ------------------------ | --------------- | -------------- | ------------------ |
+| **Kurulum**              | ✅ Kolay         | ⚠️ Orta         | ⚠️ Orta             |
+| **İlk Build Süresi**     | ~15-20 dk       | ~10-15 dk      | ~10-15 dk          |
+| **Sonraki Build**        | ~10-15 dk       | ~5-10 dk       | ~5-10 dk           |
+| **Maliyet**              | 💰 Ücretli       | ✅ Ücretsiz     | ✅ Ücretsiz         |
+| **İnternet Gereksinimi** | ☁️ Gerekli       | 🌐 İsteğe bağlı | 🌐 İsteğe bağlı     |
+| **Disk Kullanımı**       | ✅ Yok           | 📦 ~15 GB       | 📦 ~10 GB           |
+| **Platform**             | ✅ Hepsi         | 🐧 Linux        | 🪟 Windows          |
+| **Credentials Kontrolü** | ☁️ Cloud         | 🔑 Lokal        | 🔑 Lokal            |
 
 **Alternatif Rehberler:**
 - 📦 [EAS Cloud Build](../apps/mobile/README.md) - En kolay yöntem
@@ -28,13 +28,13 @@ Bu rehber, **Windows** üzerinde **doğrudan native Android build** almak için 
 
 ## 📋 Sistem Gereksinimleri
 
-| Bileşen | Versiyon | Neden Gerekli | Disk Alanı |
-|---------|----------|---------------|------------|
-| **Windows** | 10/11 (64-bit) | İşletim sistemi | - |
-| **Node.js** | 20.x LTS | JavaScript runtime | ~500 MB |
-| **pnpm** | 9.x | Monorepo paket yöneticisi | ~50 MB |
-| **Java JDK** | 17 | Android Gradle build | ~300 MB |
-| **Android Studio** | Latest | SDK ve build araçları | ~8-10 GB |
+| Bileşen            | Versiyon       | Neden Gerekli             | Disk Alanı |
+| ------------------ | -------------- | ------------------------- | ---------- |
+| **Windows**        | 10/11 (64-bit) | İşletim sistemi           | -          |
+| **Node.js**        | 20.x LTS       | JavaScript runtime        | ~500 MB    |
+| **pnpm**           | 9.x            | Monorepo paket yöneticisi | ~50 MB     |
+| **Java JDK**       | 17             | Android Gradle build      | ~300 MB    |
+| **Android Studio** | Latest         | SDK ve build araçları     | ~8-10 GB   |
 
 > [!NOTE]
 > **Toplam Disk Alanı:** ~10-12 GB
@@ -121,32 +121,32 @@ Android Studio'yu açıp SDK Manager'a gidin:
 
 ##### 📋 SDK Platforms Sekmesi Checklist
 
-| Yüklenecek Paket | Gereklilik | Açıklama |
-|------------------|------------|----------|
-| ☐ **Android 14.0 ("UpsideDownCake")** | ✅ Zorunlu | Ana SDK Platform |
+| Yüklenecek Paket                      | Gereklilik | Açıklama         |
+| ------------------------------------- | ---------- | ---------------- |
+| ☐ **Android 14.0 ("UpsideDownCake")** | ✅ Zorunlu  | Ana SDK Platform |
 
 **"Show Package Details" işaretli iken Android 14.0 altında:**
 
-| Alt Paket | Gereklilik | Açıklama |
-|-----------|------------|----------|
-| ☐ Android SDK Platform 34 | ✅ Zorunlu | Build için gerekli |
-| ☐ Sources for Android 34 | ⚪ Opsiyonel | Kaynak kodu debugging için |
-| ☐ Google APIs Intel x86_64 Atom System Image | ⚪ Opsiyonel | Emulator için (Intel CPU) |
+| Alt Paket                                    | Gereklilik  | Açıklama                   |
+| -------------------------------------------- | ----------- | -------------------------- |
+| ☐ Android SDK Platform 34                    | ✅ Zorunlu   | Build için gerekli         |
+| ☐ Sources for Android 34                     | ⚪ Opsiyonel | Kaynak kodu debugging için |
+| ☐ Google APIs Intel x86_64 Atom System Image | ⚪ Opsiyonel | Emulator için (Intel CPU)  |
 | ☐ Google Play Intel x86_64 Atom System Image | ⚪ Opsiyonel | Play Services ile emulator |
 
 ---
 
 ##### 📋 SDK Tools Sekmesi Checklist
 
-| Yüklenecek Paket | Gereklilik | Açıklama |
-|------------------|------------|----------|
-| ☐ **Android SDK Build-Tools 34.0.0** | ✅ Zorunlu | Derleme araçları |
-| ☐ **Android SDK Command-line Tools (latest)** | ✅ Zorunlu | `sdkmanager`, `avdmanager` komutları |
-| ☐ **Android SDK Platform-Tools** | ✅ Zorunlu | `adb` komutu |
-| ☐ **CMake** | ✅ Zorunlu | Native C++ build için (Reanimated, vb.) |
-| ☐ **NDK (Side by side)** | ✅ Zorunlu | Native Development Kit |
-| ☐ Android Emulator | ⚪ Opsiyonel | Sanal cihaz testi için |
-| ☐ Google Play Services | ⚪ Opsiyonel | Google APIs için |
+| Yüklenecek Paket                              | Gereklilik  | Açıklama                                |
+| --------------------------------------------- | ----------- | --------------------------------------- |
+| ☐ **Android SDK Build-Tools 34.0.0**          | ✅ Zorunlu   | Derleme araçları                        |
+| ☐ **Android SDK Command-line Tools (latest)** | ✅ Zorunlu   | `sdkmanager`, `avdmanager` komutları    |
+| ☐ **Android SDK Platform-Tools**              | ✅ Zorunlu   | `adb` komutu                            |
+| ☐ **CMake**                                   | ✅ Zorunlu   | Native C++ build için (Reanimated, vb.) |
+| ☐ **NDK (Side by side)**                      | ✅ Zorunlu   | Native Development Kit                  |
+| ☐ Android Emulator                            | ⚪ Opsiyonel | Sanal cihaz testi için                  |
+| ☐ Google Play Services                        | ⚪ Opsiyonel | Google APIs için                        |
 
 > [!WARNING]
 > **CMake ve NDK zorunludur!** Bu paketler olmadan `react-native-reanimated`, `react-native-worklets` gibi native modüller derlenemez.
@@ -158,13 +158,13 @@ Android Studio'yu açıp SDK Manager'a gidin:
 **"Show Package Details" işaretli iken:**
 
 **NDK (Side by side)** altında:
-| Versiyon | Gereklilik |
-|----------|------------|
+| Versiyon                      | Gereklilik |
+| ----------------------------- | ---------- |
 | ☐ 27.1.12297006 (veya en son) | ✅ Önerilen |
 
 **CMake** altında:
-| Versiyon | Gereklilik |
-|----------|------------|
+| Versiyon              | Gereklilik |
+| --------------------- | ---------- |
 | ☐ 4.1.2 (veya en son) | ✅ Önerilen |
 
 > [!NOTE]
@@ -251,21 +251,7 @@ pnpm -v
 
 ### Workflow Diyagramı
 
-```mermaid
-graph LR
-    A[Projeyi Klonla] --> B[pnpm install]
-    B --> C[.env Yapılandır]
-    C --> D[expo prebuild]
-    D --> E{Build Tipi?}
-    E -->|Debug| F[assembleDebug]
-    E -->|Release| G[Keystore Ayarla]
-    G --> H[assembleRelease/bundleRelease]
-    F --> I[APK Test]
-    H --> I
-    
-    style D fill:#4CAF50,stroke:#fff,stroke-width:2px,color:#fff
-    style G fill:#FF9800,stroke:#fff,stroke-width:2px,color:#fff
-```
+![](./image/local-build-windows-native-graph.png)
 
 ---
 
@@ -310,16 +296,7 @@ Expo'nun **CNG (Continuous Native Generation)** yaklaşımı kullanılır.
 
 #### CNG Yaklaşımı Nedir?
 
-```mermaid
-graph LR
-    A[app.config.js] --> B[expo prebuild]
-    B --> C[android/ klasörü]
-    C --> D[Native Build]
-    
-    style A fill:#000020,stroke:#fff,stroke-width:2px,color:#fff
-    style B fill:#4CAF50,stroke:#fff,stroke-width:2px,color:#fff
-    style C fill:#3DDC84,stroke:#fff,stroke-width:2px,color:#fff
-```
+![](./image/local-build-windows-native-graph2.png)
 
 > [!IMPORTANT]
 > **CNG Felsefesi:**
@@ -1095,46 +1072,46 @@ rm -r $env:USERPROFILE\.gradle\caches
 
 ### Expo Komutları
 
-| Komut | Açıklama | Kullanım |
-|-------|----------|----------|
-| `npx expo prebuild` | Native proje oluştur | İlk kez veya config değiştiğinde |
-| `npx expo prebuild --clean` | Temiz prebuild | Native sorunları çözmek için |
-| `npx expo run:android` | Debug build + run | Geliştirme sırasında |
-| `npx expo start` | Metro bundler başlat | JS development |
-| `npx expo start --clear` | Cache temizle + start | Cache sorunlarında |
+| Komut                       | Açıklama              | Kullanım                         |
+| --------------------------- | --------------------- | -------------------------------- |
+| `npx expo prebuild`         | Native proje oluştur  | İlk kez veya config değiştiğinde |
+| `npx expo prebuild --clean` | Temiz prebuild        | Native sorunları çözmek için     |
+| `npx expo run:android`      | Debug build + run     | Geliştirme sırasında             |
+| `npx expo start`            | Metro bundler başlat  | JS development                   |
+| `npx expo start --clear`    | Cache temizle + start | Cache sorunlarında               |
 
 ### Gradle Komutları
 
-| Komut | Açıklama | Çıktı |
-|-------|----------|-------|
-| `.\gradlew assembleDebug` | Debug APK | `apk/debug/app-debug.apk` |
-| `.\gradlew assembleRelease` | Release APK | `apk/release/app-release.apk` |
-| `.\gradlew bundleRelease` | Release AAB | `bundle/release/app-release.aab` |
-| `.\gradlew clean` | Build cache temizle | - |
-| `.\gradlew --refresh-dependencies` | Dependencies yenile | - |
-| `.\gradlew tasks` | Tüm task'leri listele | - |
+| Komut                              | Açıklama              | Çıktı                            |
+| ---------------------------------- | --------------------- | -------------------------------- |
+| `.\gradlew assembleDebug`          | Debug APK             | `apk/debug/app-debug.apk`        |
+| `.\gradlew assembleRelease`        | Release APK           | `apk/release/app-release.apk`    |
+| `.\gradlew bundleRelease`          | Release AAB           | `bundle/release/app-release.aab` |
+| `.\gradlew clean`                  | Build cache temizle   | -                                |
+| `.\gradlew --refresh-dependencies` | Dependencies yenile   | -                                |
+| `.\gradlew tasks`                  | Tüm task'leri listele | -                                |
 
 ### ADB Komutları
 
-| Komut | Açıklama |
-|-------|----------|
-| `adb devices` | Bağlı cihazları listele |
-| `adb install <apk>` | APK kur |
-| `adb install -r <apk>` | APK güncelle |
-| `adb uninstall <package>` | Uygulamayı kaldır |
-| `adb logcat` | Canlı logları göster |
-| `adb shell am start -n <package>/.MainActivity` | Uygulamayı başlat |
+| Komut                                           | Açıklama                |
+| ----------------------------------------------- | ----------------------- |
+| `adb devices`                                   | Bağlı cihazları listele |
+| `adb install <apk>`                             | APK kur                 |
+| `adb install -r <apk>`                          | APK güncelle            |
+| `adb uninstall <package>`                       | Uygulamayı kaldır       |
+| `adb logcat`                                    | Canlı logları göster    |
+| `adb shell am start -n <package>/.MainActivity` | Uygulamayı başlat       |
 
 ### EAS Komutları
 
-| Komut | Açıklama |
-|-------|----------|
-| `eas login` | EAS'e giriş yap |
-| `eas build` | Cloud build başlat |
-| `eas build --platform android --profile production` | Production build |
-| `eas build:list` | Build geçmişini listele |
-| `eas credentials` | Credentials menüsü |
-| `eas credentials --platform android` | Android credentials |
+| Komut                                               | Açıklama                |
+| --------------------------------------------------- | ----------------------- |
+| `eas login`                                         | EAS'e giriş yap         |
+| `eas build`                                         | Cloud build başlat      |
+| `eas build --platform android --profile production` | Production build        |
+| `eas build:list`                                    | Build geçmişini listele |
+| `eas credentials`                                   | Credentials menüsü      |
+| `eas credentials --platform android`                | Android credentials     |
 
 ---
 

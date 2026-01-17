@@ -9,16 +9,16 @@ Bu rehber, **WSL2 Ubuntu** veya **native Linux** üzerinde **EAS Local Build** (
 
 ## 📊 Build Yöntemleri Karşılaştırması
 
-| Özellik                  | EAS Cloud Build | **WSL2/Linux Local** | Windows Native    |
-| ------------------------ | --------------- | -------------------- | ----------------- |
-| **Kurulum**              | ✅ Kolay        | ⚠️ Orta              | ⚠️ Orta           |
-| **İlk Build Süresi**     | ~15-20 dk       | ~10-15 dk            | ~10-15 dk         |
-| **Sonraki Build**        | ~10-15 dk       | ~5-10 dk             | ~5-10 dk          |
-| **Maliyet**              | 💰 Ücretli      | ✅ Ücretsiz          | ✅ Ücretsiz       |
-| **İnternet Gereksinimi** | ☁️ Gerekli      | 🌐 İsteğe bağlı      | 🌐 İsteğe bağlı   |
-| **Disk Kullanımı**       | ✅ Yok          | 📦 ~15 GB            | 📦 ~10 GB         |
-| **Platform**             | ✅ Hepsi        | 🐧 Linux/WSL2        | 🪟 Windows        |
-| **`eas build --local`**  | N/A             | ✅ Destekleniyor     | ❌ Desteklenmiyor |
+| Özellik                  | EAS Cloud Build | **WSL2/Linux Local** | Windows Native   |
+| ------------------------ | --------------- | -------------------- | ---------------- |
+| **Kurulum**              | ✅ Kolay         | ⚠️ Orta               | ⚠️ Orta           |
+| **İlk Build Süresi**     | ~15-20 dk       | ~10-15 dk            | ~10-15 dk        |
+| **Sonraki Build**        | ~10-15 dk       | ~5-10 dk             | ~5-10 dk         |
+| **Maliyet**              | 💰 Ücretli       | ✅ Ücretsiz           | ✅ Ücretsiz       |
+| **İnternet Gereksinimi** | ☁️ Gerekli       | 🌐 İsteğe bağlı       | 🌐 İsteğe bağlı   |
+| **Disk Kullanımı**       | ✅ Yok           | 📦 ~15 GB             | 📦 ~10 GB         |
+| **Platform**             | ✅ Hepsi         | 🐧 Linux/WSL2         | 🪟 Windows        |
+| **`eas build --local`**  | N/A             | ✅ Destekleniyor      | ❌ Desteklenmiyor |
 
 **Alternatif Rehberler:**
 
@@ -84,13 +84,13 @@ sudo apt install -y curl wget unzip zip git build-essential
 ```
 
 **Yüklenen Araçlar:**
-| Araç | Açıklama |
-|------|----------|
-| `curl` | URL'den veri indirme |
-| `wget` | Dosya indirme |
-| `unzip/zip` | Arşiv işlemleri |
-| `git` | Versiyon kontrolü |
-| `build-essential` | GCC, make vb. |
+| Araç              | Açıklama             |
+| ----------------- | -------------------- |
+| `curl`            | URL'den veri indirme |
+| `wget`            | Dosya indirme        |
+| `unzip/zip`       | Arşiv işlemleri      |
+| `git`             | Versiyon kontrolü    |
+| `build-essential` | GCC, make vb.        |
 
 ---
 
@@ -322,22 +322,7 @@ echo "=========================================="
 
 ### Workflow Diyagramı
 
-```mermaid
-graph LR
-    A[Projeyi Klonla] --> B[pnpm install]
-    B --> C[apps/mobile'a Git]
-    C --> D{Build Profili?}
-    D -->|development| E[eas build --local --profile development]
-    D -->|preview| F[eas build --local --profile preview]
-    D -->|production| G[eas build --local --profile production]
-    E --> H[APK Oluşturuldu]
-    F --> H
-    G --> I[AAB Oluşturuldu]
-
-    style A fill:#4CAF50,stroke:#fff,stroke-width:2px,color:#fff
-    style H fill:#2196F3,stroke:#fff,stroke-width:2px,color:#fff
-    style I fill:#FF9800,stroke:#fff,stroke-width:2px,color:#fff
-```
+![](./docs/image/local-build-linux-eas-graph.png)
 
 ---
 
