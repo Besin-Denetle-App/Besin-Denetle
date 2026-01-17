@@ -30,16 +30,31 @@ export function ProductImage({
 
   // Resim varsa göster
   if (imageSource) {
+    // Border sadece borderRadius > 0 ise göster (bağımsız kullanımda)
+    const showBorder = borderRadius > 0;
+    
     return (
-      <Image
-        source={{ uri: imageSource }}
+      <View
         style={{
           width: size,
           height: size,
           borderRadius,
+          ...(showBorder && {
+            borderWidth: 1,
+            borderColor: colorScheme === 'dark' ? '#3f3f46' : '#e4e4e7',
+          }),
+          overflow: 'hidden',
         }}
-        resizeMode="cover"
-      />
+      >
+        <Image
+          source={{ uri: imageSource }}
+          style={{
+            width: '100%',
+            height: '100%',
+          }}
+          resizeMode="cover"
+        />
+      </View>
     );
   }
 

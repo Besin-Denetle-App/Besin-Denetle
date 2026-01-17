@@ -29,7 +29,7 @@
       },
       "env": {
         "APP_ENV": "production",
-        "API_URL": "https://api.besindenetle.app/api"
+        "API_URL": "https://besindenetle.furkanpasa.com/api"
       }
     }
   },

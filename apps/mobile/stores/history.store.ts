@@ -33,6 +33,7 @@ interface HistoryState {
   // Actions
   loadHistory: () => Promise<void>;
   addToHistory: (item: Omit<HistoryItem, 'viewedAt' | 'localImagePath'>) => Promise<void>;
+  updateHistoryAnalysis: (productId: string, analysis: IContentAnalysis) => Promise<void>;
   clearHistory: () => Promise<void>;
   cleanOldRecords: () => Promise<void>;
 }
@@ -83,30 +84,26 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     }
   },
 
-  // Geçmişe ekle
+  // Geçmişe ekle (resim arka planda indirilir, bloklamaz)
   addToHistory: async (item) => {
     try {
       const { history } = get();
 
-      // Resmi indir
-      const localImagePath = await downloadImage(item.product.image_url, item.id);
-
+      // Önce resimsiz kaydet (hızlı)
       const newItem: HistoryItem = {
         ...item,
         viewedAt: new Date().toISOString(),
-        localImagePath,
+        localImagePath: undefined, // Resim henüz yok
       };
 
       // productId bazlı kontrol: aynı ürün varsa güncelle, yoksa yeni ekle
       const existingIndex = history.findIndex((h) => h.id === item.id);
       let newHistory: HistoryItem[];
+      let oldImagePath: string | undefined;
 
       if (existingIndex >= 0) {
-        // Eski local resmi sil (yeni indirilmişse)
-        const oldItem = history[existingIndex];
-        if (oldItem.localImagePath && oldItem.localImagePath !== localImagePath) {
-          await deleteImage(oldItem.localImagePath);
-        }
+        // Eski resim yolunu sakla (sonra sileceğiz)
+        oldImagePath = history[existingIndex].localImagePath;
         
         // Mevcut kaydı güncelle ve başa taşı (en son görülen üstüne gelsin)
         newHistory = [
@@ -119,19 +116,67 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
         newHistory = [newItem, ...history];
       }
 
-      // Maksimum 200 kayıt tut, fazlasının resimlerini sil
+      // Maksimum 200 kayıt tut
+      let deletedItems: HistoryItem[] = [];
       if (newHistory.length > MAX_HISTORY_COUNT) {
-        const deletedItems = newHistory.slice(MAX_HISTORY_COUNT);
-        for (const deletedItem of deletedItems) {
-          await deleteImage(deletedItem.localImagePath);
-        }
+        deletedItems = newHistory.slice(MAX_HISTORY_COUNT);
         newHistory = newHistory.slice(0, MAX_HISTORY_COUNT);
       }
 
+      // Hemen state güncelle ve kaydet
       set({ history: newHistory });
       await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(newHistory));
+
+      // Arka planda resmi indir (bloklamadan)
+      const productId = item.id;
+      const imageUrl = item.product.image_url;
+      
+      // Fire and forget - Promise'i beklemiyoruz
+      (async () => {
+        try {
+          // Eski resmi sil (varsa)
+          if (oldImagePath) {
+            await deleteImage(oldImagePath);
+          }
+          
+          // Silinen kayıtların resimlerini temizle
+          for (const deletedItem of deletedItems) {
+            await deleteImage(deletedItem.localImagePath);
+          }
+
+          // Yeni resmi indir
+          const localImagePath = await downloadImage(imageUrl, productId);
+          
+          if (localImagePath) {
+            // Store'u ve AsyncStorage'ı güncelle
+            const { history: currentHistory } = get();
+            const updatedHistory = currentHistory.map((h) =>
+              h.id === productId ? { ...h, localImagePath } : h
+            );
+            set({ history: updatedHistory });
+            await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updatedHistory));
+          }
+        } catch (err) {
+          console.warn('[HistoryStore] Background image task failed:', err);
+        }
+      })();
+
     } catch (error) {
       console.error('History add error:', error);
+    }
+  },
+
+  // Geçmiş kaydının analizini güncelle
+  updateHistoryAnalysis: async (productId, analysis) => {
+    try {
+      const { history } = get();
+      const updatedHistory = history.map((item) =>
+        item.id === productId ? { ...item, analysis } : item
+      );
+      set({ history: updatedHistory });
+      await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updatedHistory));
+    } catch (error) {
+      console.error('History analysis update error:', error);
     }
   },
 

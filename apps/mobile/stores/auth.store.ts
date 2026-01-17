@@ -1,7 +1,7 @@
-import { AuthProvider, type UserPublicInfo } from '@besin-denetle/shared';
-import { create } from 'zustand';
-import * as authService from '../services/auth.service';
-import { clearAuthData, getUser, hasToken } from '../utils/storage';
+import { AuthProvider, type UserPublicInfo } from "@besin-denetle/shared";
+import { create } from "zustand";
+import * as authService from "../services/auth.service";
+import { clearAuthData, getUser, hasToken } from "../utils/storage";
 
 interface AuthState {
   // State
@@ -12,10 +12,13 @@ interface AuthState {
 
   // Actions
   initialize: () => Promise<void>;
-  loginWithGoogle: (accessToken: string) => Promise<{ needsRegistration: boolean }>;
+  loginWithGoogle: (
+    accessToken: string,
+  ) => Promise<{ needsRegistration: boolean }>;
   signupWithEmail: (email: string) => Promise<{ needsRegistration: boolean }>;
   completeRegistration: (username: string) => Promise<void>;
   logout: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
   setTempToken: (token: string | null) => void;
 }
 
@@ -43,7 +46,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
       }
     } catch (error) {
-      console.error('Auth initialize error:', error);
+      console.error("Auth initialize error:", error);
       await clearAuthData();
     } finally {
       set({ isLoading: false });
@@ -138,7 +141,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   completeRegistration: async (username: string) => {
     const { tempToken } = get();
     if (!tempToken) {
-      throw new Error('Geçici token bulunamadı');
+      throw new Error("Geçici token bulunamadı");
     }
 
     set({ isLoading: true });
@@ -166,6 +169,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true });
     try {
       await authService.logout();
+    } finally {
+      set({
+        user: null,
+        isAuthenticated: false,
+        tempToken: null,
+        isLoading: false,
+      });
+    }
+  },
+
+  // Hesabı sil
+  deleteAccount: async () => {
+    set({ isLoading: true });
+    try {
+      await authService.deleteAccount();
     } finally {
       set({
         user: null,

@@ -7,24 +7,38 @@ import { APP_CONFIG } from '../../constants';
 
 /**
  * Resim dizini yolunu al
+ * Expo Go'da bazen documentDirectory null olabilir
+ * @returns Dizin yolu veya null (hazır değilse)
  */
-function getImageDir(): string {
+function getImageDir(): string | null {
   // expo-file-system'da documentDirectory nullable olabilir
   const docDir = (FileSystem as unknown as { documentDirectory: string | null }).documentDirectory;
   if (!docDir) {
-    throw new Error('FileSystem.documentDirectory is not available');
+    // Expo Go'da uygulama tam başlatılmadan null dönebilir
+    console.warn('[ImageStorage] documentDirectory is not available yet');
+    return null;
   }
   return `${docDir}${APP_CONFIG.fileSystem.imageDirectory}`;
 }
 
 /**
  * Resim dizininin var olduğundan emin ol
+ * @returns true başarılı, false dizin hazır değil
  */
-export async function ensureImageDirectory(): Promise<void> {
+export async function ensureImageDirectory(): Promise<boolean> {
   const imageDir = getImageDir();
-  const dirInfo = await FileSystem.getInfoAsync(imageDir);
-  if (!dirInfo.exists) {
-    await FileSystem.makeDirectoryAsync(imageDir, { intermediates: true });
+  if (!imageDir) {
+    return false;
+  }
+  
+  try {
+    const dirInfo = await FileSystem.getInfoAsync(imageDir);
+    if (!dirInfo.exists) {
+      await FileSystem.makeDirectoryAsync(imageDir, { intermediates: true });
+    }
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -40,13 +54,22 @@ export async function downloadImage(
 ): Promise<string | undefined> {
   if (!imageUrl) return undefined;
 
+  // Dizin hazır mı kontrol et
+  const imageDir = getImageDir();
+  if (!imageDir) {
+    // documentDirectory henüz hazır değil, resim indirmeyi atla
+    return undefined;
+  }
+
   try {
     // Dizin yoksa oluştur
-    await ensureImageDirectory();
+    const dirReady = await ensureImageDirectory();
+    if (!dirReady) {
+      return undefined;
+    }
 
     // Dosya uzantısını al (varsayılan jpg)
     const extension = imageUrl.split('.').pop()?.split('?')[0] || 'jpg';
-    const imageDir = getImageDir();
     const localPath = `${imageDir}${productId}.${extension}`;
 
     // Zaten varsa tekrar indirme
@@ -90,8 +113,12 @@ export async function deleteImage(localPath: string | undefined): Promise<void> 
  * Tüm ürün resimlerini temizle
  */
 export async function clearAllImages(): Promise<void> {
+  const imageDir = getImageDir();
+  if (!imageDir) {
+    return;
+  }
+  
   try {
-    const imageDir = getImageDir();
     const dirInfo = await FileSystem.getInfoAsync(imageDir);
     if (dirInfo.exists) {
       await FileSystem.deleteAsync(imageDir, { idempotent: true });
@@ -102,8 +129,9 @@ export async function clearAllImages(): Promise<void> {
 }
 
 /**
- * Resim dizini yolunu al
+ * Resim dizini yolunu al (dışarıya export)
+ * @returns Dizin yolu veya null
  */
-export function getImageDirectory(): string {
+export function getImageDirectory(): string | null {
   return getImageDir();
 }

@@ -1,6 +1,6 @@
 {
   "name": "@besin-denetle/mobile",
-  "version": "0.8.3",
+  "version": "0.9.0",
   "description": "Besin Denetle Mobile App",
   "author": "Furkan Çelik",
   "license": "UNLICENSED",
@@ -8,16 +8,13 @@
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
-
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-
     "build": "eas build",
     "build:local": "eas build --local",
     "build:local-android-preview": "eas build --local --platform android --profile preview",
     "build:status": "eas build:list",
-    
     "lint": "expo lint",
     "clean": "npx rimraf --glob \"**/dist\" \"**/.turbo\" \"**/.expo\" \"**/android\" \"**/ios\""
   },

@@ -11,6 +11,7 @@
 **React Native** ve **Expo** altyapısı kullanılarak geliştirilmiştir. Tasarım için **Tailwind CSS (NativeWind)** tercih edilmiştir.
 
 ## 📑 İçindekiler
+
 - [Besin Denetle - Mobil Uygulama](#besin-denetle---mobil-uygulama)
   - [📑 İçindekiler](#-i̇çindekiler)
   - [📸 Ekran Görüntüleri](#-ekran-görüntüleri)
@@ -25,8 +26,8 @@
 
 ## 📸 Ekran Görüntüleri
 
-| Ana Sayfa (Kamera) | Sonuç Pop-up | Detay Sayfası |
-|:---:|:---:|:---:|
+|           Ana Sayfa (Kamera)           |               Sonuç Pop-up               |               Detay Sayfası                |
+| :------------------------------------: | :--------------------------------------: | :----------------------------------------: |
 | ![Home](./assets/screenshots/home.png) | ![Popup](./assets/screenshots/popup.png) | ![Detail](./assets/screenshots/detail.png) |
 
 ---
@@ -36,25 +37,31 @@
 Uygulama, kullanıcı dostu ve hızlı bir deneyim sunmak için tasarlanmıştır.
 
 ### 1. Barkod Tarama (Ana Sayfa)
+
 Uygulama açıldığında doğrudan kamera arayüzü ile başlar. Kullanıcı markette gezerken hızlıca barkodu taratabilir.
 
 ### 2. Sonuç Ekranı (Pop-up)
+
 Tarama sonrası iki durum oluşur:
-*   **Ürün Var:** Anında ürün adı, markası ve gramajı gösterilir.
-*   **Ürün Yok:** Yapay Zeka (AI) devreye girer, web araması yapar ve yeni ürün kaydını oluşturur.
+
+- **Ürün Var:** Anında ürün adı, markası ve gramajı gösterilir.
+- **Ürün Yok:** Yapay Zeka (AI) devreye girer, web araması yapar ve yeni ürün kaydını oluşturur.
 
 ### 3. Detay Sayfası
+
 Kullanıcı ürünü doğruladığında ("Evet, bu ürün" dediğinde) detay sayfası açılır:
-*   **İçindekiler:** Ürünün bileşenleri ve alerjen uyarıları.
-*   **Sağlık Analizi:** AI tarafından ürünün sağlığa etkileri yorumlanır.
+
+- **İçindekiler:** Ürünün bileşenleri ve alerjen uyarıları.
+- **Sağlık Analizi:** AI tarafından ürünün sağlığa etkileri yorumlanır.
 
 ---
 
 ## 🛠️ Kurulum ve Geliştirme
 
 ### Gereksinimler
-*   Telefonunuzda **Expo Go** uygulaması (App Store / Play Store'dan indirin).
-*   Bilgisayarınızda Node.js ve PNPM kurulu olmalı.
+
+- Telefonunuzda **Expo Go** uygulaması (App Store / Play Store'dan indirin).
+- Bilgisayarınızda Node.js ve PNPM kurulu olmalı.
 
 ## 🔑 Local Build Credentials (Android)
 
@@ -80,20 +87,24 @@ Local build (Android) alırken Google Login gibi özelliklerin çalışması iç
 > **Not:** `.credentials` klasörü ve `credentials.json` git'e yüklemediğinizden emin olun.
 
 ### 1. Bağımlılıkları Yükleyin
+
 ```bash
 pnpm install
 ```
 
 ### 2. Environment Variables
+
 ```bash
 cp .env.example .env
 # .env dosyasını kendi değerlerinizle düzenleyin
 ```
 
 ### 3. Geliştirme Sunucusunu Başlatın
+
 ```bash
 pnpm start
 ```
+
 Terminalde çıkan **QR Kodunu** Expo Go uygulaması ile taratın.
 
 ---
@@ -103,6 +114,7 @@ Terminalde çıkan **QR Kodunu** Expo Go uygulaması ile taratın.
 Expo Application Services (EAS) kullanarak bulutta build alınır.
 
 ### 1. Kurulum
+
 ```bash
 npm install -g eas-cli
 eas login
@@ -115,19 +127,22 @@ Build sırasında kullanılacak environment değişkenleri EAS Secrets'ta tutulu
 > **Not:** Local build için preview değişkenleri `eas.json` dosyasında tanımlı. Aşağıdaki komutlar cloud build için geçerlidir.
 
 **Production Build için:**
+
 ```bash
-eas env:create --name API_URL --value "https://api.besindenetle.app/api" --type string --visibility secret --environment production
+eas env:create --name API_URL --value "https://besindenetle.furkanpasa.com/api" --type string --visibility secret --environment production
 eas env:create --name GOOGLE_WEB_CLIENT_ID --value "XXX" --type string --visibility secret --environment production
 eas env:create --name GOOGLE_ANDROID_CLIENT_ID --value "XXX" --type string --visibility secret --environment production
 eas env:create --name GOOGLE_IOS_CLIENT_ID --value "XXX" --type string --visibility secret --environment production
 ```
 
 **Secrets'ları listele:**
+
 ```bash
 eas env:list
 ```
 
 ### 3. Build Alma
+
 ```bash
 # Preview APK (test için)
 eas build -p android --profile preview
@@ -170,16 +185,18 @@ apps/mobile/
 ## ⚠️ Karşılaşılabilecek Sorunlar
 
 **Soru: Kamera açılmıyor.**
-*   Cevap: Telefon ayarlarından Expo Go'ya kamera izni verin.
+
+- Cevap: Telefon ayarlarından Expo Go'ya kamera izni verin.
 
 **Soru: "Network Request Failed" hatası.**
-*   Cevap: Telefon ve bilgisayarın aynı Wi-Fi'da olduğundan emin olun. `.env`'de doğru IP adresini yazdığınızı kontrol edin.
+
+- Cevap: Telefon ve bilgisayarın aynı Wi-Fi'da olduğundan emin olun. `.env`'de doğru IP adresini yazdığınızı kontrol edin.
 
 ---
 
 ## 🔗 İlgili Dökümanlar
 
-*   📱 [Local Build - EAS (Linux/WSL2)](../../docs/local-build-linux-eas.md) - EAS Local Build
-*   🪟 [Local Build - Expo Prebuild (Windows)](../../docs/local-build-windows-native.md) - Expo Prebuild
-*   🐳 [Docker Development Rehberi](../../docs/docker-development.md)
-*   📦 [Shared Paket](../../packages/shared/README.md)
+- 📱 [Local Build - EAS (Linux/WSL2)](../../docs/local-build-linux-eas.md) - EAS Local Build
+- 🪟 [Local Build - Expo Prebuild (Windows)](../../docs/local-build-windows-native.md) - Expo Prebuild
+- 🐳 [Docker Development Rehberi](../../docs/docker-development.md)
+- 📦 [Shared Paket](../../packages/shared/README.md)

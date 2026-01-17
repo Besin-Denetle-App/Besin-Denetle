@@ -1,7 +1,7 @@
-import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import { useColorScheme } from 'nativewind';
-import { useState } from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { useColorScheme } from "nativewind";
+import { useState } from "react";
 import {
     ActivityIndicator,
     KeyboardAvoidingView,
@@ -10,47 +10,47 @@ import {
     TextInput,
     TouchableOpacity,
     View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useDebouncedNavigation } from '../../hooks/use-debounce';
-import { parseApiError } from '../../services/api';
-import { useAuthStore } from '../../stores/auth.store';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useDebouncedNavigation } from "../../hooks/use-debounce";
+import { parseApiError } from "../../services/api";
+import { useAuthStore } from "../../stores/auth.store";
 
 export default function EmailSignupScreen() {
   const { colorScheme } = useColorScheme();
   const { signupWithEmail, isLoading } = useAuthStore();
   const { navigate } = useDebouncedNavigation();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   // Gmail kontrolü
-  const isGmail = email.toLowerCase().trim().endsWith('@gmail.com');
-  
+  const isGmail = email.toLowerCase().trim().endsWith("@gmail.com");
+
   // Form geçerli mi kontrol et (sadece Gmail kabul ediliyor)
-  const isValid = email.trim().length >= 5 && email.includes('@') && isGmail;
+  const isValid = email.trim().length >= 5 && email.includes("@") && isGmail;
 
   const handleSubmit = async () => {
-    if (!isValid) return;
+    if (!isValid || isLoading) return; // Çift tıklama koruması
 
-    console.log('[EmailSignup] Submitting:', { email });
+    console.log("[EmailSignup] Submitting:", { email });
 
     try {
       setError(null);
       const result = await signupWithEmail(email.trim().toLowerCase());
 
-      console.log('[EmailSignup] Result:', result);
+      console.log("[EmailSignup] Result:", result);
 
       if (result.needsRegistration) {
         // Yeni kullanıcı - username belirleme ekranına yönlendir
-        console.log('[EmailSignup] Navigating to register screen');
-        navigate('/(auth)/register');
+        console.log("[EmailSignup] Navigating to register screen");
+        navigate("/(auth)/register");
       } else {
         // Mevcut kullanıcı - ana ekrana yönlendir
-        console.log('[EmailSignup] Navigating to tabs (existing user)');
-        router.replace('/(tabs)');
+        console.log("[EmailSignup] Navigating to tabs (existing user)");
+        router.replace("/(tabs)");
       }
     } catch (err) {
-      console.error('[EmailSignup] Error:', err);
+      console.error("[EmailSignup] Error:", err);
       setError(parseApiError(err));
     }
   };
@@ -58,7 +58,7 @@ export default function EmailSignupScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
       >
         <View className="flex-1 px-6">
@@ -70,7 +70,7 @@ export default function EmailSignupScreen() {
             <Ionicons
               name="arrow-back"
               size={24}
-              color={colorScheme === 'dark' ? '#E0E0E0' : '#212121'}
+              color={colorScheme === "dark" ? "#E0E0E0" : "#212121"}
             />
           </TouchableOpacity>
 
@@ -95,19 +95,23 @@ export default function EmailSignupScreen() {
           <View className="gap-4">
             {/* E-posta */}
             <View>
-              <Text className="text-foreground font-medium mb-2">Gmail Adresi</Text>
+              <Text className="text-foreground font-medium mb-2">
+                Gmail Adresi
+              </Text>
               <TextInput
                 value={email}
                 onChangeText={setEmail}
                 placeholder="ornek@gmail.com"
-                placeholderTextColor={colorScheme === 'dark' ? '#757575' : '#A3A3A3'}
+                placeholderTextColor={
+                  colorScheme === "dark" ? "#757575" : "#A3A3A3"
+                }
                 autoCapitalize="none"
                 autoCorrect={false}
                 keyboardType="email-address"
                 className="bg-secondary/50 border border-border rounded-2xl px-4 py-4 text-foreground text-base"
               />
               {/* Gmail uyarısı */}
-              {email.length > 0 && email.includes('@') && !isGmail && (
+              {email.length > 0 && email.includes("@") && !isGmail && (
                 <Text className="text-amber-500 text-sm mt-2">
                   ⚠️ Sadece Gmail adresleri kabul edilmektedir
                 </Text>
@@ -120,7 +124,7 @@ export default function EmailSignupScreen() {
             onPress={handleSubmit}
             disabled={!isValid || isLoading}
             className={`rounded-2xl py-4 items-center mt-8 ${
-              isValid ? 'bg-primary' : 'bg-muted'
+              isValid ? "bg-primary" : "bg-muted"
             }`}
             activeOpacity={0.7}
           >
@@ -129,7 +133,7 @@ export default function EmailSignupScreen() {
             ) : (
               <Text
                 className={`font-bold text-base ${
-                  isValid ? 'text-primary-foreground' : 'text-muted-foreground'
+                  isValid ? "text-primary-foreground" : "text-muted-foreground"
                 }`}
               >
                 Devam Et

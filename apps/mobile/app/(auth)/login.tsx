@@ -1,16 +1,22 @@
-import { Ionicons } from '@expo/vector-icons';
-import { makeRedirectUri } from 'expo-auth-session';
-import * as Google from 'expo-auth-session/providers/google';
-import Constants from 'expo-constants';
-import { router } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
-import { useColorScheme } from 'nativewind';
-import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useDebouncedNavigation } from '../../hooks/use-debounce';
-import { parseApiError } from '../../services/api';
-import { useAuthStore } from '../../stores/auth.store';
+import { Ionicons } from "@expo/vector-icons";
+import { makeRedirectUri } from "expo-auth-session";
+import * as Google from "expo-auth-session/providers/google";
+import Constants from "expo-constants";
+import { router } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
+import { useColorScheme } from "nativewind";
+import { useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useDebouncedNavigation } from "../../hooks/use-debounce";
+import { parseApiError } from "../../services/api";
+import { useAuthStore } from "../../stores/auth.store";
 
 // Expo Go'da ve standalone'da auth session'ı tamamlamak için gerekli
 WebBrowser.maybeCompleteAuthSession();
@@ -24,14 +30,14 @@ export default function LoginScreen() {
   const isProcessingRef = useRef(false); // Sonsuz döngü önleme için
 
   const googleConfig = Constants.expoConfig?.extra?.google || {};
-  
+
   // Expo Go mu yoksa native build mi?
-  const isExpoGo = Constants.appOwnership === 'expo';
-  
+  const isExpoGo = Constants.appOwnership === "expo";
+
   // Redirect URI: Expo Go için proxy, native build için scheme
   const redirectUri = isExpoGo
-    ? 'https://auth.expo.io/@furkanpasa/Besin-Denetle'
-    : makeRedirectUri({ scheme: 'besindenetle', path: 'auth' });
+    ? "https://auth.expo.io/@furkanpasa/Besin-Denetle"
+    : makeRedirectUri({ scheme: "besindenetle", path: "auth" });
 
   // Google OAuth request
   // Expo Go'da sadece webClientId kullanılır, native build'de platform'a göre seçilir
@@ -40,18 +46,18 @@ export default function LoginScreen() {
     androidClientId: isExpoGo ? undefined : googleConfig.androidClientId,
     iosClientId: isExpoGo ? undefined : googleConfig.iosClientId,
     redirectUri,
-    scopes: ['openid', 'email', 'profile'],
+    scopes: ["openid", "email", "profile"],
   });
 
   // Google OAuth response'ını useEffect ile yakala
   useEffect(() => {
     // Response değiştiğinde logla (debug için)
-    if (response?.type === 'error') {
-      console.error('Google OAuth Error:', response.error);
+    if (response?.type === "error") {
+      console.error("Google OAuth Error:", response.error);
     }
 
     async function handleGoogleResponse() {
-      if (response?.type === 'success') {
+      if (response?.type === "success") {
         const { authentication } = response;
         // Backend Google verifyIdToken API'si idToken bekliyor, accessToken değil
         if (authentication?.idToken && !isProcessingRef.current) {
@@ -60,11 +66,11 @@ export default function LoginScreen() {
           setError(null);
           try {
             const loginResult = await loginWithGoogle(authentication.idToken);
-            
+
             if (loginResult.needsRegistration) {
-              navigate('/(auth)/register');
+              navigate("/(auth)/register");
             } else {
-              router.replace('/(tabs)');
+              router.replace("/(tabs)");
             }
           } catch (err) {
             setError(parseApiError(err));
@@ -73,11 +79,11 @@ export default function LoginScreen() {
             setIsProcessing(false);
           }
         }
-      } else if (response?.type === 'error') {
-        console.error('Google auth error:', response.error);
-        setError('Google girişi sırasında bir hata oluştu');
-      } else if (response?.type === 'dismiss') {
-        console.log('Google auth dismissed by user');
+      } else if (response?.type === "error") {
+        console.error("Google auth error:", response.error);
+        setError("Google girişi sırasında bir hata oluştu");
+      } else if (response?.type === "dismiss") {
+        console.log("Google auth dismissed by user");
       }
     }
 
@@ -90,45 +96,48 @@ export default function LoginScreen() {
       setError(null);
       // showInRecents: true - Android'de callback'in düzgün çalışmasını sağlar
       const result = await promptAsync({ showInRecents: true });
-      
-      if (result?.type === 'success') {
-        const { authentication } = result;        
+
+      if (result?.type === "success") {
+        const { authentication } = result;
         if (authentication?.idToken) {
           setIsProcessing(true);
           try {
             const loginResult = await loginWithGoogle(authentication.idToken);
-            
+
             if (loginResult.needsRegistration) {
-              navigate('/(auth)/register');
+              navigate("/(auth)/register");
             } else {
-              router.replace('/(tabs)');
+              router.replace("/(tabs)");
             }
           } catch (err) {
-            console.error('Backend login error:', err);
+            console.error("Backend login error:", err);
             setError(parseApiError(err));
           } finally {
             setIsProcessing(false);
           }
         } else {
-          console.error('idToken missing in response');
-          setError('Google girişi başarısız: idToken alınamadı');
+          console.error("idToken missing in response");
+          setError("Google girişi başarısız: idToken alınamadı");
         }
-      } else if (result?.type === 'error') {
-        console.error('Google auth error:', result.error);
-        setError('Google girişi sırasında bir hata oluştu: ' + (result.error?.message || 'Bilinmeyen hata'));
-      } else if (result?.type === 'dismiss' || result?.type === 'cancel') {
-        console.log('Google auth dismissed/cancelled by user');
+      } else if (result?.type === "error") {
+        console.error("Google auth error:", result.error);
+        setError(
+          "Google girişi sırasında bir hata oluştu: " +
+            (result.error?.message || "Bilinmeyen hata"),
+        );
+      } else if (result?.type === "dismiss" || result?.type === "cancel") {
+        console.log("Google auth dismissed/cancelled by user");
       }
     } catch (err) {
-      console.error('promptAsync error:', err);
+      console.error("promptAsync error:", err);
       setError(parseApiError(err));
     }
   };
 
-  // E-posta butonuna tıklandığında (debounced - çift tıklama engellenir)
+  // E-posta butonuna tıklandığında (çift tıklama engellenir)
   const handleEmailNavigation = () => {
     if (isLoading || isProcessing) return;
-    navigate('/(auth)/email-signup');
+    navigate("/(auth)/email-signup");
   };
 
   // @disabled Apple Sign In
@@ -172,14 +181,14 @@ export default function LoginScreen() {
             <Ionicons
               name="nutrition"
               size={48}
-              color={colorScheme === 'dark' ? '#8B5CF6' : '#8B5CF6'}
+              color={colorScheme === "dark" ? "#8B5CF6" : "#8B5CF6"}
             />
           </View>
           <Text className="text-3xl font-bold text-foreground mb-2">
             Besin Denetle
           </Text>
           <Text className="text-muted-foreground text-center text-base">
-            Daha sağlıklı seçimler için{'\n'}ürünlerin içeriğini keşfedin
+            Daha sağlıklı seçimler için{"\n"}ürünlerin içeriğini keşfedin
           </Text>
         </View>
 
@@ -192,22 +201,19 @@ export default function LoginScreen() {
 
         {/* OAuth Butonları */}
         <View className="gap-4">
-          {/* Google ile Giriş */}
+          {/* Google ile Giriş - Tema uyumlu + Google mavisi vurgu */}
           <TouchableOpacity
             onPress={() => handleGoogleLogin()}
             disabled={isLoading || isProcessing || !request}
-            className="bg-card border border-border rounded-2xl py-4 flex-row items-center justify-center"
-            activeOpacity={0.7}
+            style={{ borderColor: "#4285F4" }}
+            className="bg-card border-2 rounded-3xl py-4 flex-row items-center justify-center"
+            activeOpacity={0.8}
           >
-            {(isLoading || isProcessing) ? (
-              <ActivityIndicator color={colorScheme === 'dark' ? '#E0E0E0' : '#212121'} />
+            {isLoading || isProcessing ? (
+              <ActivityIndicator color="#4285F4" />
             ) : (
               <>
-                <Ionicons
-                  name="logo-google"
-                  size={24}
-                  color={colorScheme === 'dark' ? '#E0E0E0' : '#212121'}
-                />
+                <Ionicons name="logo-google" size={24} color="#4285F4" />
                 <Text className="text-foreground font-semibold text-base ml-3">
                   Google ile Giriş Yap
                 </Text>
@@ -215,56 +221,62 @@ export default function LoginScreen() {
             )}
           </TouchableOpacity>
 
-          {/* E-posta ile Giriş (Beta) */}
+          {/* Apple ile Giriş - Koyu gri premium görünüm */}
+          <TouchableOpacity
+            onPress={() => {
+              Alert.alert(
+                "Apple ile Giriş",
+                "Apple ile giriş şimdilik kullanılamamaktadır. Lütfen Google veya E-posta ile giriş yapın.",
+                [{ text: "Tamam", style: "default" }],
+              );
+            }}
+            disabled={isLoading || isProcessing}
+            style={{ backgroundColor: "#18181b" }}
+            className="rounded-3xl py-4 flex-row items-center justify-center border-2 border-gray-600"
+            activeOpacity={0.8}
+          >
+            <Ionicons name="logo-apple" size={24} color="#FFFFFF" />
+            <Text className="text-white font-semibold text-base ml-3">
+              Apple ile Giriş Yap
+            </Text>
+            <View
+              style={{ backgroundColor: "#3f3f46" }}
+              className="rounded-full px-2 py-0.5 ml-2"
+            >
+              <Text className="text-gray-300 text-xs font-medium">Yakında</Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* E-posta ile Giriş - Mor */}
           <TouchableOpacity
             onPress={handleEmailNavigation}
             disabled={isLoading || isProcessing}
-            className="bg-card border border-border rounded-2xl py-4 flex-row items-center justify-center"
-            activeOpacity={0.7}
+            className="bg-primary border-2 border-primary rounded-3xl py-4 flex-row items-center justify-center"
+            activeOpacity={0.8}
           >
-            <Ionicons
-              name="mail-outline"
-              size={24}
-              color={colorScheme === 'dark' ? '#E0E0E0' : '#212121'}
-            />
-            <Text className="text-foreground font-semibold text-base ml-3">
+            <Ionicons name="mail-outline" size={24} color="#FFFFFF" />
+            <Text className="text-white font-semibold text-base ml-3">
               E-posta ile Giriş
             </Text>
+            <View className="bg-white/20 rounded-full px-2 py-0.5 ml-2">
+              <Text className="text-white text-xs font-medium">Beta</Text>
+            </View>
           </TouchableOpacity>
-
-          {/* @disabled Apple Sign In */}
-          {/* 
-          <TouchableOpacity
-            onPress={() => handleAppleLogin()}
-            disabled={isLoading}
-            className="bg-card border border-border rounded-2xl py-4 flex-row items-center justify-center"
-            activeOpacity={0.7}
-          >
-            <Ionicons
-              name="logo-apple"
-              size={24}
-              color={colorScheme === 'dark' ? '#E0E0E0' : '#212121'}
-            />
-            <Text className="text-foreground font-semibold text-base ml-3">
-              Apple ile Giriş Yap
-            </Text>
-          </TouchableOpacity>
-          */}
         </View>
 
         {/* Alt Açıklama */}
         <Text className="text-muted-foreground text-center text-sm mt-8 px-4">
-          Giriş yaparak{' '}
+          Giriş yaparak{" "}
           <Text
             className="text-primary underline"
-            onPress={() => router.push('/(auth)/terms' as any)}
+            onPress={() => router.push("/(auth)/terms" as any)}
           >
             Kullanım Koşulları
-          </Text>
-          {' '}ve{' '}
+          </Text>{" "}
+          ve{" "}
           <Text
             className="text-primary underline"
-            onPress={() => router.push('/(auth)/privacy' as any)}
+            onPress={() => router.push("/(auth)/privacy" as any)}
           >
             Gizlilik Politikası
           </Text>

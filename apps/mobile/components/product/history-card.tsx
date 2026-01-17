@@ -22,19 +22,18 @@ export function HistoryCard({ item, onPress }: HistoryCardProps) {
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
-      className="flex-row bg-card border border-border rounded-2xl p-3 mb-3"
+      className="flex-row bg-card border border-border rounded-2xl overflow-hidden mb-3"
     >
-      {/* Sol: Ürün Resmi */}
+      {/* Sol: Ürün Resmi - Karta dayalı */}
       <ProductImage 
         url={product.image_url} 
         localPath={item.localImagePath} 
-        size={80} 
-        borderRadius={12} 
-        className="mr-3" 
+        size={88} 
+        borderRadius={0}
       />
 
       {/* Sağ: Ürün Bilgileri */}
-      <View className="flex-1 justify-center">
+      <View className="flex-1 justify-center py-3 pl-3 pr-2">
         {/* Marka */}
         {product.brand && (
           <Text className="text-muted-foreground text-xs uppercase tracking-wider mb-0.5">
@@ -56,8 +55,9 @@ export function HistoryCard({ item, onPress }: HistoryCardProps) {
 
         {/* Barkod ve Tarih */}
         <View className="flex-row items-center mt-1.5">
-          <Text className="text-muted-foreground text-xs font-mono">
-            🔢 {barcode}
+          <Ionicons name="barcode-outline" size={14} color={colorScheme === 'dark' ? '#A3A3A3' : '#737373'} />
+          <Text className="text-muted-foreground text-xs font-mono ml-1">
+            {barcode}
           </Text>
           <Text className="text-muted-foreground text-xs mx-2">•</Text>
           <Text className="text-muted-foreground text-xs">
