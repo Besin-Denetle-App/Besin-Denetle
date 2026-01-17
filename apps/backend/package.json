@@ -1,6 +1,6 @@
 {
   "name": "@besin-denetle/backend",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Besin Denetle Backend API",
   "author": "Furkan Çelik",
   "license": "UNLICENSED",
@@ -18,7 +18,7 @@
     "test:cov": "jest --coverage",
     "typeorm": "typeorm-ts-node-commonjs",
     "analyze": "npx ts-node --transpile-only src/scripts/analyze-csv.ts",
-    "import": "npx ts-node --transpile-only src/scripts/import-csv.ts",
+    "importcsv": "npx ts-node --transpile-only src/scripts/import-csv.ts",
     "recalculate": "npx ts-node --transpile-only src/scripts/recalculate-scores.ts"
   },
   "dependencies": {

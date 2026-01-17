@@ -108,7 +108,7 @@ export default function EmailSignupScreen() {
                 autoCapitalize="none"
                 autoCorrect={false}
                 keyboardType="email-address"
-                className="bg-secondary/50 border border-border rounded-2xl px-4 py-4 text-foreground text-base"
+                className="bg-secondary/50 border-2 border-primary rounded-2xl px-4 py-4 text-foreground text-base"
               />
               {/* Gmail uyarısı */}
               {email.length > 0 && email.includes("@") && !isGmail && (

@@ -3,13 +3,13 @@ import { router } from "expo-router";
 import { useColorScheme } from "nativewind";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    KeyboardAvoidingView,
+    Platform,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { parseApiError } from "../../services/api";
@@ -117,10 +117,10 @@ export default function RegisterScreen() {
               autoCapitalize="none"
               autoCorrect={false}
               maxLength={20}
-              className={`bg-secondary/50 border rounded-2xl px-4 py-4 text-foreground text-base ${
+              className={`bg-secondary/50 border-2 rounded-2xl px-4 py-4 text-foreground text-base ${
                 username.length > 0 && username.length < 3
                   ? "border-destructive"
-                  : "border-border"
+                  : "border-primary"
               }`}
             />
             <View className="flex-row justify-between mt-2">

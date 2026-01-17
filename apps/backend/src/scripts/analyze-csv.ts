@@ -46,10 +46,10 @@ const dataSource = new DataSource({
 });
 
 async function analyzeCsv() {
-  // CSV dosya yolunu argümandan al veya default kullan
+  // CSV dosya yolunu argümandan al veya scripts klasöründen UrunListesi.csv kullan
   const csvFilePath = process.argv[2]
     ? path.resolve(process.argv[2])
-    : path.resolve(__dirname, '../../../../UrunListesi.csv');
+    : path.resolve(__dirname, 'UrunListesi.csv');
 
   console.log(`📄 CSV okunuyor: ${csvFilePath}`);
 

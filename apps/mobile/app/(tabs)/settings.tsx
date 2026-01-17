@@ -104,13 +104,21 @@ export default function SettingsScreen() {
       setDeleteCountdown((prev) => {
         if (prev <= 1) {
           if (countdownRef.current) clearInterval(countdownRef.current);
-          performDelete();
+          // performDelete callback içinde çağrılamaz - useEffect ile yapılacak
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
   };
+
+  // Countdown sıfırlandığında silme işlemini başlat
+  useEffect(() => {
+    if (isDeleting && deleteCountdown === 0) {
+      performDelete();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deleteCountdown, isDeleting]);
 
   const cancelDelete = () => {
     if (countdownRef.current) clearInterval(countdownRef.current);
@@ -123,7 +131,7 @@ export default function SettingsScreen() {
     try {
       error(); // Hata titreşimi
       await deleteAccount();
-      showInfoToast("Hesabınız silindi");
+      showInfoToast("Hesabınız kalıcı olarak silindi. Görüşmek üzere...");
     } catch {
       showInfoToast("Hesap silinemedi");
     } finally {

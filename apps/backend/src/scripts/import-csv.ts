@@ -53,10 +53,10 @@ const clean = (val: string | undefined): string | null => {
 };
 
 async function importCsv() {
-  // CSV dosya yolunu argümandan al veya default kullan
+  // CSV dosya yolunu argümandan al veya scripts klasöründen UrunListesi.csv kullan
   const csvFilePath = process.argv[2]
     ? path.resolve(process.argv[2])
-    : path.resolve(__dirname, '../../../../UrunListesi.csv');
+    : path.resolve(__dirname, 'UrunListesi.csv');
 
   console.log(`📄 CSV okunuyor: ${csvFilePath}`);
 
@@ -96,14 +96,32 @@ async function importCsv() {
     const batch = rows.slice(i, i + batchSize);
 
     await dataSource.manager.transaction(async (manager) => {
+      // 1. Batch'teki tüm barkod kodlarını topla
+      const barcodeCodesInBatch = batch
+        .filter((row) => row.barcode)
+        .map((row) => row.barcode!.trim());
+
+      if (barcodeCodesInBatch.length === 0) return;
+
+      // 2. Mevcut barkodları tek sorguda al (BATCH LOOKUP)
+      const existingBarcodes = await manager
+        .createQueryBuilder(Barcode, 'b')
+        .where('b.code IN (:...codes)', { codes: barcodeCodesInBatch })
+        .getMany();
+
+      // 3. Mevcut barkodları Map'e dönüştür (hızlı erişim için)
+      const existingBarcodeMap = new Map<string, Barcode>();
+      for (const barcode of existingBarcodes) {
+        existingBarcodeMap.set(barcode.code, barcode);
+      }
+
+      // 4. Her satır için işlem yap
       for (const row of batch) {
         if (!row.barcode) continue;
         const barcodeCode = row.barcode.trim();
 
-        // 1. Barkod var mı kontrol et
-        let barcode = await manager.findOne(Barcode, {
-          where: { code: barcodeCode },
-        });
+        // Barkod var mı kontrol et (Map'ten)
+        let barcode = existingBarcodeMap.get(barcodeCode);
 
         if (!barcode) {
           // Yeni barkod oluştur
@@ -113,10 +131,11 @@ async function importCsv() {
             is_manual: false,
           });
           await manager.save(Barcode, barcode);
+          existingBarcodeMap.set(barcodeCode, barcode); // Sonraki satırlar için cache'e ekle
           createdBarcodeCount++;
         }
 
-        // 2. Ürün varyantı oluştur
+        // Ürün varyantı oluştur
         const product = manager.create(Product, {
           barcode: barcode,
           barcode_id: barcode.id,

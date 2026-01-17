@@ -4,11 +4,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { useColorScheme } from "nativewind";
 import { useEffect, useMemo, useState } from "react";
 import {
-    FlatList,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  FlatList,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDebouncedNavigation } from "../../hooks/use-debounce";
@@ -98,11 +98,11 @@ export default function HomeScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
       {/* Başlık Alanı */}
-      <View className="px-6 pt-4 pb-2">
-        <Text className="text-3xl font-bold text-foreground">
+      <View className="px-6 pt-6 pb-2">
+        <Text className="text-3xl font-bold text-foreground mb-2">
           Besin Denetle
         </Text>
-        <Text className="text-muted-foreground text-base">
+        <Text className="text-muted-foreground text-base mb-2">
           Daha sağlıklı bir yaşam için seçimlerinizi doğru yapın
         </Text>
       </View>
