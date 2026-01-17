@@ -9,18 +9,19 @@ Bu rehber, **WSL2 Ubuntu** veya **native Linux** üzerinde **EAS Local Build** (
 
 ## 📊 Build Yöntemleri Karşılaştırması
 
-| Özellik | EAS Cloud Build | **WSL2/Linux Local** | Windows Native |
-|---------|----------------|---------------------|----------------|
-| **Kurulum** | ✅ Kolay | ⚠️ Orta | ⚠️ Orta |
-| **İlk Build Süresi** | ~15-20 dk | ~10-15 dk | ~10-15 dk |
-| **Sonraki Build** | ~10-15 dk | ~5-10 dk | ~5-10 dk |
-| **Maliyet** | 💰 Ücretli | ✅ Ücretsiz | ✅ Ücretsiz |
-| **İnternet Gereksinimi** | ☁️ Gerekli | 🌐 İsteğe bağlı | 🌐 İsteğe bağlı |
-| **Disk Kullanımı** | ✅ Yok | 📦 ~15 GB | 📦 ~10 GB |
-| **Platform** | ✅ Hepsi | 🐧 Linux/WSL2 | 🪟 Windows |
-| **`eas build --local`** | N/A | ✅ Destekleniyor | ❌ Desteklenmiyor |
+| Özellik                  | EAS Cloud Build | **WSL2/Linux Local** | Windows Native    |
+| ------------------------ | --------------- | -------------------- | ----------------- |
+| **Kurulum**              | ✅ Kolay        | ⚠️ Orta              | ⚠️ Orta           |
+| **İlk Build Süresi**     | ~15-20 dk       | ~10-15 dk            | ~10-15 dk         |
+| **Sonraki Build**        | ~10-15 dk       | ~5-10 dk             | ~5-10 dk          |
+| **Maliyet**              | 💰 Ücretli      | ✅ Ücretsiz          | ✅ Ücretsiz       |
+| **İnternet Gereksinimi** | ☁️ Gerekli      | 🌐 İsteğe bağlı      | 🌐 İsteğe bağlı   |
+| **Disk Kullanımı**       | ✅ Yok          | 📦 ~15 GB            | 📦 ~10 GB         |
+| **Platform**             | ✅ Hepsi        | 🐧 Linux/WSL2        | 🪟 Windows        |
+| **`eas build --local`**  | N/A             | ✅ Destekleniyor     | ❌ Desteklenmiyor |
 
 **Alternatif Rehberler:**
+
 - 📦 [EAS Cloud Build](../apps/mobile/README.md) - En kolay yöntem
 - 🪟 [Windows Native Build](./local-build-windows-native.md) - Gradle ile doğrudan build
 
@@ -28,14 +29,14 @@ Bu rehber, **WSL2 Ubuntu** veya **native Linux** üzerinde **EAS Local Build** (
 
 ## 📋 Sistem Gereksinimleri
 
-| Bileşen | Versiyon | Neden Gerekli | Disk Alanı |
-|---------|----------|---------------|------------|
-| **WSL2** | Ubuntu 22.04+ | Linux environment | ~2-3 GB |
-| **Node.js** | 20.x LTS | JavaScript runtime | ~500 MB |
-| **pnpm** | 9.x | Monorepo paket yöneticisi | ~50 MB |
-| **Java JDK** | 17 | Android Gradle build | ~300 MB |
-| **Android SDK** | 34 | Platform ve build tools | ~8-10 GB |
-| **EAS CLI** | Latest | Expo build aracı | ~50 MB |
+| Bileşen         | Versiyon      | Neden Gerekli             | Disk Alanı |
+| --------------- | ------------- | ------------------------- | ---------- |
+| **WSL2**        | Ubuntu 22.04+ | Linux environment         | ~2-3 GB    |
+| **Node.js**     | 20.x LTS      | JavaScript runtime        | ~500 MB    |
+| **pnpm**        | 9.x           | Monorepo paket yöneticisi | ~50 MB     |
+| **Java JDK**    | 17            | Android Gradle build      | ~300 MB    |
+| **Android SDK** | 34            | Platform ve build tools   | ~8-10 GB   |
+| **EAS CLI**     | Latest        | Expo build aracı          | ~50 MB     |
 
 > [!NOTE]
 > **Toplam Disk Alanı:** ~12-15 GB
@@ -106,6 +107,7 @@ java -version
 ```
 
 **Beklenen Çıktı:**
+
 ```
 openjdk version "17.0.x" 2024-xx-xx
 OpenJDK Runtime Environment (build 17.0.x+x-Ubuntu-xxx)
@@ -137,6 +139,7 @@ nvm alias default 20
 ```
 
 **Doğrulama:**
+
 ```bash
 node -v  # v20.x.x
 npm -v   # 10.x.x
@@ -189,6 +192,7 @@ rm cmdline-tools.zip
 ```
 
 **Oluşan Dizin Yapısı:**
+
 ```
 ~/android-sdk/
 └── cmdline-tools/
@@ -228,6 +232,7 @@ export PATH=$PATH:$JAVA_HOME/bin
 ```
 
 **Doğrulama:**
+
 ```bash
 source ~/.bashrc
 echo $ANDROID_HOME  # ~/android-sdk
@@ -260,6 +265,7 @@ eas login
 ```
 
 **Login Süreci:**
+
 ```
 ? Email or username: your@email.com
 ? Password: ********
@@ -290,9 +296,10 @@ echo "=========================================="
 ```
 
 **Beklenen Çıktı:**
+
 ```
 ==========================================
-        🔍 KURULUM DURUMU KONTROLÜ        
+        🔍 KURULUM DURUMU KONTROLÜ
 ==========================================
 
 📦 Node.js:     v20.x.x
@@ -326,7 +333,7 @@ graph LR
     E --> H[APK Oluşturuldu]
     F --> H
     G --> I[AAB Oluşturuldu]
-    
+
     style A fill:#4CAF50,stroke:#fff,stroke-width:2px,color:#fff
     style H fill:#2196F3,stroke:#fff,stroke-width:2px,color:#fff
     style I fill:#FF9800,stroke:#fff,stroke-width:2px,color:#fff
@@ -350,6 +357,7 @@ pnpm install
 ```
 
 **Çıktı:**
+
 ```
 Packages: +xxxx
 ++++++++++++++++++++++++++++++++++++++++++++
@@ -397,7 +405,7 @@ Local build için değişkenler `apps/mobile/eas.json` dosyasındaki `env` bloğ
     "production": {
       "env": {
         "APP_ENV": "production",
-        "API_URL": "https://api.besindenetle.app/api"
+        "API_URL": "https://besindenetle.furkanpasa.com/api"
       }
     }
   }
@@ -418,8 +426,6 @@ npx expo install --fix
 
 > [!TIP]
 > Bu komut, Expo SDK versiyonuyla uyumsuz paketleri tespit edip doğru versiyonlarına günceller.
-
-
 
 ### 5️⃣ Build Al
 
@@ -442,6 +448,7 @@ eas build --local --platform android --profile production
 ```
 
 **Build Süreci:**
+
 ```
 ✔ Using profile: development
 ✔ Resolved build type: development
@@ -455,6 +462,7 @@ Build completed!
 
 > [!NOTE]
 > **İlk build ne kadar sürer?**
+>
 > - ⏱️ İlk build: ~10-30 dakika (Gradle bağımlılıkları indirilir)
 > - ⚡ Sonraki build'ler: ~5-15 dakika (cache kullanılır)
 
@@ -479,11 +487,13 @@ apps/mobile/
 #### 1. SDK Bulunamıyor Hatası
 
 **Hata:**
+
 ```
 SDK location not found. Define location with an ANDROID_HOME environment variable
 ```
 
 **Çözüm:**
+
 ```bash
 # ANDROID_HOME değişkenini kontrol et
 echo $ANDROID_HOME
@@ -499,11 +509,13 @@ source ~/.bashrc
 #### 2. JAVA_HOME Bulunamıyor
 
 **Hata:**
+
 ```
 ERROR: JAVA_HOME is not set and no 'java' command could be found
 ```
 
 **Çözüm:**
+
 ```bash
 # Java yolunu bul
 which java
@@ -521,11 +533,13 @@ export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 #### 3. Yetki Hatası (Permission Denied)
 
 **Hata:**
+
 ```
 Permission denied: ~/.android-sdk/...
 ```
 
 **Çözüm:**
+
 ```bash
 # SDK dizinine yazma yetkisi ver
 chmod -R 755 ~/android-sdk
@@ -539,6 +553,7 @@ sudo chown -R $USER:$USER ~/android-sdk
 #### 4. WSL2 Bellek Yetersiz
 
 **Hata:**
+
 ```
 FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory
 ```
@@ -555,6 +570,7 @@ processors=4
 ```
 
 Sonra WSL'i yeniden başlat:
+
 ```powershell
 # PowerShell'de
 wsl --shutdown
@@ -568,11 +584,13 @@ wsl --shutdown
 #### 5. Gradle Timeout / Build Hatası
 
 **Hata:**
+
 ```
 Could not resolve all dependencies for configuration ':app:releaseRuntimeClasspath'
 ```
 
 **Çözüm:**
+
 ```bash
 # Gradle cache temizle
 rm -rf ~/.gradle/caches
@@ -592,11 +610,13 @@ eas build --local --platform android --profile development
 #### 6. sdkmanager Komutu Bulunamıyor
 
 **Hata:**
+
 ```
 bash: sdkmanager: command not found
 ```
 
 **Çözüm:**
+
 ```bash
 # PATH'i kontrol et
 echo $PATH | grep android-sdk
@@ -613,11 +633,13 @@ cat ~/.bashrc | grep android
 #### 7. NDK Bulunamıyor
 
 **Hata:**
+
 ```
 NDK not configured. Download it with SDK manager.
 ```
 
 **Çözüm:**
+
 ```bash
 # NDK'yı kur
 sdkmanager "ndk;26.1.10909125"
@@ -637,11 +659,11 @@ sdkmanager --list | grep ndk
 
 **A:**
 
-| Profil | Çıktı | İmza | Kullanım |
-|--------|-------|------|----------|
-| **development** | APK | Debug key | Geliştirme, hot reload |
-| **preview** | APK | EAS managed | Beta test, internal |
-| **production** | AAB | Upload key | Play Store yayını |
+| Profil          | Çıktı | İmza        | Kullanım               |
+| --------------- | ----- | ----------- | ---------------------- |
+| **development** | APK   | Debug key   | Geliştirme, hot reload |
+| **preview**     | APK   | EAS managed | Beta test, internal    |
+| **production**  | AAB   | Upload key  | Play Store yayını      |
 
 </details>
 
@@ -654,9 +676,11 @@ sdkmanager --list | grep ndk
 - ⚡ Sonraki build'ler: Cache'den kullanılır
 
 Cache'i temizlemek için:
+
 ```bash
 rm -rf ~/.gradle/caches
 ```
+
 </details>
 
 ---
@@ -678,6 +702,7 @@ git clone ...
 ```
 
 > WSL içindeki dosyalar (`~/`) çok daha hızlı işlenir.
+
 </details>
 
 <details>
@@ -686,11 +711,13 @@ git clone ...
 **A:** Doğrudan adb ile zor, ama şu yöntemler var:
 
 1. **APK'yı Windows'a kopyala:**
+
    ```bash
    cp build-xxx.apk /mnt/c/Users/username/Desktop/
    ```
 
 2. **Windows'tan adb ile yükle:**
+
    ```powershell
    adb install C:\Users\username\Desktop\build-xxx.apk
    ```
@@ -704,11 +731,11 @@ git clone ...
 
 `apps/mobile/eas.json` dosyasındaki profiller:
 
-| Profil | Açıklama | Çıktı | İmza |
-|--------|----------|-------|------|
-| `development` | Geliştirme modu, Expo Go tarzı | APK | Debug |
-| `preview` | Test dağıtımı | APK | EAS Managed |
-| `production` | Play Store yayını | AAB | Upload Key |
+| Profil        | Açıklama                       | Çıktı | İmza        |
+| ------------- | ------------------------------ | ----- | ----------- |
+| `development` | Geliştirme modu, Expo Go tarzı | APK   | Debug       |
+| `preview`     | Test dağıtımı                  | APK   | EAS Managed |
+| `production`  | Play Store yayını              | AAB   | Upload Key  |
 
 ```bash
 # Tüm profilleri görmek için
@@ -721,45 +748,47 @@ cat apps/mobile/eas.json
 
 ### EAS Komutları
 
-| Komut | Açıklama |
-|-------|----------|
-| `eas login` | EAS hesabına giriş |
-| `eas build --local -p android` | Local Android build |
-| `eas build --local -p android --profile preview` | Preview profili ile build |
-| `eas build:list` | Önceki build'leri listele |
-| `eas credentials` | Signing credentials yönetimi |
-| `eas whoami` | Giriş yapılan hesabı göster |
+| Komut                                            | Açıklama                     |
+| ------------------------------------------------ | ---------------------------- |
+| `eas login`                                      | EAS hesabına giriş           |
+| `eas build --local -p android`                   | Local Android build          |
+| `eas build --local -p android --profile preview` | Preview profili ile build    |
+| `eas build:list`                                 | Önceki build'leri listele    |
+| `eas credentials`                                | Signing credentials yönetimi |
+| `eas whoami`                                     | Giriş yapılan hesabı göster  |
 
 ### SDK Manager Komutları
 
-| Komut | Açıklama |
-|-------|----------|
-| `sdkmanager --list` | Tüm paketleri listele |
-| `sdkmanager --list_installed` | Kurulu paketleri listele |
-| `sdkmanager "platforms;android-34"` | Android 34 platform kur |
-| `sdkmanager --update` | Paketleri güncelle |
-| `sdkmanager --licenses` | Lisansları kabul et |
+| Komut                               | Açıklama                 |
+| ----------------------------------- | ------------------------ |
+| `sdkmanager --list`                 | Tüm paketleri listele    |
+| `sdkmanager --list_installed`       | Kurulu paketleri listele |
+| `sdkmanager "platforms;android-34"` | Android 34 platform kur  |
+| `sdkmanager --update`               | Paketleri güncelle       |
+| `sdkmanager --licenses`             | Lisansları kabul et      |
 
 ### pnpm Komutları
 
-| Komut | Açıklama |
-|-------|----------|
-| `pnpm install` | Bağımlılıkları yükle |
-| `pnpm -F mobile start` | Mobile uygulamayı başlat |
-| `pnpm -F mobile run android` | Android'de çalıştır |
-| `pnpm -F mobile clean` | Tüm build cache temizle |
+| Komut                        | Açıklama                 |
+| ---------------------------- | ------------------------ |
+| `pnpm install`               | Bağımlılıkları yükle     |
+| `pnpm -F mobile start`       | Mobile uygulamayı başlat |
+| `pnpm -F mobile run android` | Android'de çalıştır      |
+| `pnpm -F mobile clean`       | Tüm build cache temizle  |
 
 ---
 
 ## 🔗 İlgili Kaynaklar
 
 ### Resmi Dokümantasyon
+
 - [Expo EAS Build](https://docs.expo.dev/build/introduction/)
 - [EAS Local Builds](https://docs.expo.dev/build-reference/local-builds/)
 - [Android SDK Command Line Tools](https://developer.android.com/tools)
 - [WSL2 Kurulum Rehberi](https://docs.microsoft.com/en-us/windows/wsl/install)
 
 ### Proje Dökümanları
+
 - 📦 [EAS Cloud Build Rehberi](../apps/mobile/README.md)
 - 🪟 [Windows Native Build Rehberi](./local-build-windows-native.md)
 - 🐳 [Docker Development Rehberi](./docker-development.md)

@@ -1,6 +1,6 @@
 {
   "name": "@besin-denetle/root",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Besin Denetle - Monorepo with mobile app and backend",
   "author": "Furkan Çelik",
   "license": "UNLICENSED",
@@ -9,13 +9,10 @@
     "build:shared": "pnpm --filter @besin-denetle/shared build",
     "build:backend": "pnpm --filter @besin-denetle/backend build",
     "build:all": "pnpm build:shared && pnpm build:backend",
-
     "dev:backend": "pnpm --filter @besin-denetle/backend start:dev",
     "dev:mobile": "pnpm --filter @besin-denetle/mobile start",
-
     "start:prod": "pm2 start apps/backend/dist/main.js --name besin-backend",
     "restart:prod": "pm2 restart besin-backend",
-
     "clean:node": "npx rimraf --glob \"node_modules\" \"**/node_modules\"",
     "clean:build": "npx rimraf --glob \"**/dist\" \"**/.turbo\" \"**/.expo\" \"**/android\" \"**/ios\""
   },
