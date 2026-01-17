@@ -16,30 +16,45 @@ Bu proje, "Survival of the Fittest" (En Güçlünün Hayatta Kalması) prensibin
 - [Besin Denetle Mobil App](#besin-denetle-mobil-app)
   - [📑 İçindekiler](#-i̇çindekiler)
   - [🏗️ Sistem Mimarisi](#️-sistem-mimarisi)
+    - [📂 Proje Yapısı (Monorepo)](#-proje-yapısı-monorepo)
   - [🚀 Hızlı Başlangıç](#-hızlı-başlangıç)
+    - [Gereksinimler](#gereksinimler)
+    - [Kurulum Adımları](#kurulum-adımları)
   - [🌍 Canlı Ortam (Production) Kurulumu](#-canlı-ortam-production-kurulumu)
   - [📚 Dokümantasyon](#-dokümantasyon)
+    - [Geliştirme Rehberleri](#geliştirme-rehberleri)
+    - [Deployment Rehberleri](#deployment-rehberleri)
   - [📄 Lisans](#-lisans)
 
 ---
 
 ## 🏗️ Sistem Mimarisi
 
-Proje, güvenilirliği ve ölçeklenebilirliği artırmak için modern bir **Monorepo** yapısı üzerine kurulmuştur. Aşağıdaki diyagram, sistemin genel çalışma mantığını özetler:
-*(GitHub Mermaid diyagramlarını yerel olarak destekler)*
+Proje, güvenilirliği ve ölçeklenebilirliği artırmak için modern bir **Monorepo** yapısı üzerine kurulmuştur.
 
 ```mermaid
-flowchart TD
-    User[📱 Mobil Kullanıcı] -->|Barkod Tarama| App[Besin Denetle App]
-    App -->|API İstekleri| Backend[Backend API (NestJS)]
-    Backend -->|Veri & İlişki| DB[(PostgreSQL)]
-    Backend -->|Web Araması & Analiz| AI[Google Gemini AI]
-    
-    subgraph "Veri Akışı"
-        Backend -- Ürün Bulunamadı --> AI
-        AI -- Ürün Bilgisi --> Backend
-        Backend -- Doğrulanmış Veri --> App
-    end
+flowchart TB
+ subgraph subGraph0["Veri Akışı"]
+        AI["Google Gemini AI"]
+        Backend["Backend API NestJS"]
+        App["Besin Denetle App"]
+  end
+    User["📱 Mobil Kullanıcı"] -- Barkod Tarama --> App
+    App -- API İstekleri --> Backend
+    Backend -- Veri &amp; İlişki --> DB[("PostgreSQL")]
+    Backend -- Web Araması & Analiz --> AI
+    Backend -- Ürün Bulunamadı --> AI
+    AI -- Ürün Bilgisi --> Backend
+    Backend -- Doğrulanmış Veri --> App
+
+    style AI stroke:#7ac3ff,stroke-width:4px,stroke-dasharray: 0
+    style Backend stroke:#4275ff,stroke-width:4px,stroke-dasharray: 0
+    style App stroke:#AA00FF,stroke-width:4px,stroke-dasharray: 0
+    style User color:#AA00FF,stroke:#AA00FF,stroke-width:4px,stroke-dasharray: 0
+    style DB stroke:#ff5c77,stroke-width:4px,stroke-dasharray: 0,fill:#ffccbf
+    style subGraph0 stroke:#424242
+    linkStyle 0 stroke:#AA00FF,fill:none
+    linkStyle 2 stroke:#ffccbf,fill:none
 ```
 
 ### 📂 Proje Yapısı (Monorepo)
