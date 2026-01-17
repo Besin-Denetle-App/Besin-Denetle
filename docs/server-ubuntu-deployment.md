@@ -13,14 +13,15 @@ Bu rehber, Besin-Denetle backend'ini Ubuntu Server üzerinde production ortamın
 
 ## 📋 Gereksinimler
 
-| Bileşen | Minimum | Önerilen |
-|---------|---------|----------|
-| Ubuntu | 22.04 LTS | 24.04 LTS |
-| RAM | 1 GB | 2 GB |
-| CPU | 1 vCPU | 2 vCPU |
-| Disk | 20 GB | 40 GB |
+| Bileşen | Minimum   | Önerilen  |
+| ------- | --------- | --------- |
+| Ubuntu  | 22.04 LTS | 24.04 LTS |
+| RAM     | 1 GB      | 2 GB      |
+| CPU     | 1 vCPU    | 2 vCPU    |
+| Disk    | 20 GB     | 40 GB     |
 
 **Yazılım Gereksinimleri:**
+
 - Docker Engine 24+
 - Node.js 20+
 - PNPM 8+
@@ -91,7 +92,7 @@ sudo mkdir besin-denetle
 sudo chown $USER:$USER besin-denetle
 cd besin-denetle
 
-git clone https://github.com/Furkan-Pasa/Besin-Denetle.git .
+git clone git@github.com:Besin-Denetle-App/Besin-Denetle.git .
 ```
 
 ### 5. Environment Dosyasını Hazırla
@@ -103,6 +104,7 @@ nano apps/backend/.env
 
 > [!IMPORTANT]
 > Production için **mutlaka** şunları değiştirin:
+>
 > - `JWT_SECRET`: Min 32 karakterlik rastgele değer
 > - `DB_PASSWORD`: Güçlü veritabanı şifresi
 > - `DB_HOST`: `localhost` olarak bırakın (PostgreSQL aynı makinede)
@@ -133,12 +135,6 @@ cd /opt/besin-denetle
 # PM2 ile başlat
 # (pm2 start apps/backend/dist/main.js --name besin-backend)
 pnpm start:prod
-
-# Durumu kontrol et
-pm2 status
-
-# Logları izle
-pm2 logs besin-backend
 ```
 
 ### 9. PM2 Otomatik Başlatma
@@ -151,7 +147,26 @@ pm2 startup
 pm2 save
 ```
 
----
+### 10. PM2 Komutları
+
+```bash
+# Durumu kontrol et
+pm2 status
+
+# Logları izle
+pm2 logs besin-backend
+
+# Sırayla yeniden başlat (kesintisiz)
+pm2 reload besin-backend
+
+# Tamamen yeniden başlat
+pm2 restart besin-backend
+
+# Kaldımak için
+pm2 delete besin-backend
+```
+
+## s
 
 ## 🔒 Güvenlik Ayarları
 
@@ -218,6 +233,7 @@ sudo nano /etc/caddy/Caddyfile
 ```
 
 İçerik:
+
 ```
 api.besindenetle.com {
     reverse_proxy localhost:3200
@@ -254,6 +270,7 @@ crontab -e
 ```
 
 Ekle (her gün gece 3'te):
+
 ```
 0 3 * * * cd /opt/besin-denetle && docker compose exec -T db pg_dump -U myuser besindenetle > /opt/backups/db_$(date +\%Y\%m\%d).sql
 ```

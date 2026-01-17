@@ -11,7 +11,7 @@
     "build:all": "pnpm build:shared && pnpm build:backend",
     "dev:backend": "pnpm --filter @besin-denetle/backend start:dev",
     "dev:mobile": "pnpm --filter @besin-denetle/mobile start",
-    "start:prod": "pm2 start apps/backend/dist/main.js --name besin-backend",
+    "start:prod": "pm2 start ecosystem.config.js",
     "restart:prod": "pm2 restart besin-backend",
     "clean:node": "npx rimraf --glob \"node_modules\" \"**/node_modules\"",
     "clean:build": "npx rimraf --glob \"**/dist\" \"**/.turbo\" \"**/.expo\" \"**/android\" \"**/ios\""
