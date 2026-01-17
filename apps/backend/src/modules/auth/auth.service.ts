@@ -204,29 +204,62 @@ export class AuthService {
       throw new UnauthorizedException('Bu kullanıcı adı zaten kullanımda');
     }
 
-    // Kullanıcı oluştur
-    const user = this.userRepository.create({
-      username,
-      email: tokenData.email,
-      auth_provider: tokenData.provider,
-      provider_id: tokenData.providerId,
-      role: UserRole.USER,
-      is_active: true,
+    // E-posta kontrolü (aynı e-posta farklı provider ile kayıt olamaz)
+    const existingEmail = await this.userRepository.findOne({
+      where: { email: tokenData.email },
     });
 
-    await this.userRepository.save(user);
+    if (existingEmail) {
+      throw new UnauthorizedException(
+        'Bu e-posta adresi başka bir hesapla ilişkili. Lütfen o hesapla giriş yapın.',
+      );
+    }
 
-    // tempToken sil
-    tempTokenStore.delete(tempToken);
+    // Kullanıcı oluştur (try-catch ile DB constraint hatalarını yakala)
+    try {
+      const user = this.userRepository.create({
+        username,
+        email: tokenData.email,
+        auth_provider: tokenData.provider,
+        provider_id: tokenData.providerId,
+        role: UserRole.USER,
+        is_active: true,
+      });
 
-    // JWT üret
-    const tokens = this.generateTokens(user);
+      await this.userRepository.save(user);
 
-    return {
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
-      user,
-    };
+      // tempToken sil
+      tempTokenStore.delete(tempToken);
+
+      // JWT üret
+      const tokens = this.generateTokens(user);
+
+      return {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        user,
+      };
+    } catch (error: unknown) {
+      // Race condition: DB constraint hatalarını yakala
+      const dbError = error as { code?: string; detail?: string };
+      if (dbError.code === '23505') {
+        // PostgreSQL unique violation
+        if (dbError.detail?.includes('username')) {
+          throw new UnauthorizedException('Bu kullanıcı adı zaten kullanımda');
+        }
+        if (dbError.detail?.includes('email')) {
+          throw new UnauthorizedException(
+            'Bu e-posta adresi başka bir hesapla ilişkili',
+          );
+        }
+        if (dbError.detail?.includes('provider_id')) {
+          throw new UnauthorizedException('Bu hesap zaten kayıtlı');
+        }
+      }
+      // Bilinmeyen hata - logla ve yeniden fırlat
+      this.logger.error('Kayıt sırasında beklenmeyen hata:', error);
+      throw error;
+    }
   }
 
   /**
