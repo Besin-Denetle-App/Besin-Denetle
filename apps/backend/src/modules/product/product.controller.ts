@@ -1,5 +1,6 @@
 import {
   ConfirmResponse,
+  GenerateAnalysisResponse,
   RejectAnalysisResponse,
   RejectContentResponse,
   RejectProductResponse,
@@ -35,6 +36,7 @@ import { ContentService } from './content.service';
 import {
   ConfirmRequestDto,
   FlagBarcodeRequestDto,
+  GenerateAnalysisRequestDto,
   RejectAnalysisRequestDto,
   RejectContentRequestDto,
   RejectProductRequestDto,
@@ -72,7 +74,10 @@ export class ProductController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Barkod tara' })
   @ApiResponse({ status: 200, description: 'Ürün bulundu veya oluşturuldu' })
-  async scan(@Body() dto: ScanRequestDto): Promise<ScanResponse> {
+  async scan(
+    @Body() dto: ScanRequestDto,
+    @CurrentUser('id') userId: string,
+  ): Promise<ScanResponse> {
     const { barcode } = dto;
 
     if (!barcode || barcode.trim() === '') {
@@ -98,7 +103,11 @@ export class ProductController {
     }
 
     // Veritabanında bulunamadı, AI devreye giriyor (Gemini Search Grounding)
-    const aiResult = await this.aiService.identifyProduct(barcode);
+    const aiResult = await this.aiService.identifyProduct(
+      barcode,
+      userId,
+      true, // enforceLimit: her zaman rate limit uygula
+    );
 
     if (!aiResult.isFood || !aiResult.product) {
       throw new NotFoundException(
@@ -144,8 +153,8 @@ export class ProductController {
   @Throttle(THROTTLE_CONFIRM)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Ürün onayla, içerik ve analiz getir' })
-  @ApiResponse({ status: 200, description: 'İçerik ve analiz döner' })
+  @ApiOperation({ summary: 'Ürün onayla, içerik getir' })
+  @ApiResponse({ status: 200, description: 'İçerik döner' })
   async confirm(
     @CurrentUser('id') userId: string,
     @Body() dto: ConfirmRequestDto,
@@ -158,15 +167,15 @@ export class ProductController {
       throw new NotFoundException('Ürün bulunamadı');
     }
 
-    // Otomatik UPVOTE - kullanıcı ürünü onayladı
-    await this.voteService.vote(
+    // Otomatik UPVOTE - ürün onaylandı (arka planda)
+    void this.voteService.vote(
       userId,
       VoteTarget.PRODUCT,
       productId,
       VoteType.UP,
     );
 
-    // Ürüne bağlı en iyi skorlu içerik varyantını buluyoruz
+    // Ürüne bağlı en iyi skorlu içerik varyantını bul
     let content = await this.contentService.findBestByProductId(productId);
     let isContentNew = false;
 
@@ -182,53 +191,25 @@ export class ProductController {
         product_id: productId,
         ingredients: aiContent.ingredients,
         allergens: aiContent.allergens,
-        nutrition_table: aiContent.nutrition,
+        nutrition_table: aiContent.nutrition
+          ? { ...aiContent.nutrition, _source: aiContent.model }
+          : null,
         is_manual: false,
       });
       isContentNew = true;
     }
 
-    // En yüksek skorlu analizi bul
-    let analysis = await this.analysisService.findBestByContentId(content.id);
-    let isAnalysisNew = false;
-
-    if (!analysis) {
-      // Analiz yok - AI ile oluştur
-      const aiAnalysis = await this.aiService.analyzeContent(
-        product.brand,
-        product.name,
-        content.ingredients,
-        content.allergens,
-        content.nutrition_table,
-      );
-
-      analysis = await this.analysisService.create({
-        product_content_id: content.id,
-        analysis_text: aiAnalysis,
-        is_manual: false,
-      });
-      isAnalysisNew = true;
-    }
-
-    // Otomatik UPVOTE - görüntülenen içerik ve analize +1 puan
-    await this.voteService.vote(
+    // İçerik için UPVOTE (arka planda)
+    void this.voteService.vote(
       userId,
       VoteTarget.CONTENT,
       content.id,
       VoteType.UP,
     );
-    await this.voteService.vote(
-      userId,
-      VoteTarget.ANALYSIS,
-      analysis.id,
-      VoteType.UP,
-    );
 
     return {
       content,
-      analysis,
       isContentNew,
-      isAnalysisNew,
     };
   }
 
@@ -253,7 +234,7 @@ export class ProductController {
     @CurrentUser('id') userId: string,
     @Body() dto: RejectProductRequestDto,
   ): Promise<RejectProductResponse> {
-    const { productId } = dto;
+    const { productId, excludeIds = [] } = dto;
 
     // Ürünü bul
     const product = await this.productService.findById(productId);
@@ -261,18 +242,21 @@ export class ProductController {
       throw new NotFoundException('Ürün bulunamadı');
     }
 
-    // Otomatik DOWNVOTE - kullanıcı ürünü reddetti
-    await this.voteService.vote(
+    // Otomatik DOWNVOTE - kullanıcı ürünü reddetti (arka planda)
+    void this.voteService.vote(
       userId,
       VoteTarget.PRODUCT,
       productId,
       VoteType.DOWN,
     );
 
+    // Tüm hariç tutulacak ID'leri birleştir (şu anki + önceki redler)
+    const allExcludeIds = [...new Set([productId, ...excludeIds])];
+
     // Sonraki en yüksek skorlu varyantı bul (bu ürün hariç)
     const nextProduct = await this.productService.findBestExcluding(
       product.barcode_id,
-      [productId],
+      allExcludeIds,
     );
 
     if (nextProduct) {
@@ -289,7 +273,11 @@ export class ProductController {
       throw new NotFoundException('Barkod bulunamadı');
     }
 
-    const aiResult = await this.aiService.identifyProduct(barcode.code);
+    const aiResult = await this.aiService.identifyProduct(
+      barcode.code,
+      userId,
+      true, // enforceLimit: her zaman rate limit uygula
+    );
 
     if (!aiResult.isFood || !aiResult.product) {
       return {
@@ -323,20 +311,20 @@ export class ProductController {
    * İçerik değişince, ona bağlı analiz de geçersiz olur ve yenilenmesi gerekir.
    */
   /**
-   * Rate Limit: 6/dk (reject akışı - AI maliyeti yüksek, domino etkisi)
+   * Rate Limit: 6/dk (reject akışı - AI maliyeti yüksek)
    */
   @Post('content/reject')
   @HttpCode(HttpStatus.OK)
   @Throttle(THROTTLE_REJECT)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'İçerik reddet (domino etkisi)' })
-  @ApiResponse({ status: 200, description: 'Yeni içerik ve analiz' })
+  @ApiOperation({ summary: 'İçerik reddet, sonraki içerik getir' })
+  @ApiResponse({ status: 200, description: 'Yeni içerik' })
   async rejectContent(
     @CurrentUser('id') userId: string,
     @Body() dto: RejectContentRequestDto,
   ): Promise<RejectContentResponse> {
-    const { contentId } = dto;
+    const { contentId, excludeIds = [] } = dto;
 
     // İçeriği bul
     const content = await this.contentService.findById(contentId);
@@ -344,18 +332,21 @@ export class ProductController {
       throw new NotFoundException('İçerik bulunamadı');
     }
 
-    // Otomatik DOWNVOTE - kullanıcı içeriği reddetti
-    await this.voteService.vote(
+    // DOWNVOTE - içerik reddedildi (arka planda)
+    void this.voteService.vote(
       userId,
       VoteTarget.CONTENT,
       contentId,
       VoteType.DOWN,
     );
 
+    // Tüm hariç tutulacak ID'leri birleştir (şu anki + önceki redler)
+    const allExcludeIds = [...new Set([contentId, ...excludeIds])];
+
     // Sonraki en yüksek skorlu içeriği bul
     let nextContent = await this.contentService.findBestExcluding(
       content.product_id,
-      [contentId],
+      allExcludeIds,
     );
     let isContentNew = false;
 
@@ -379,65 +370,94 @@ export class ProductController {
         product_id: content.product_id,
         ingredients: aiContent.ingredients,
         allergens: aiContent.allergens,
-        nutrition_table: aiContent.nutrition,
+        nutrition_table: aiContent.nutrition
+          ? { ...aiContent.nutrition, _source: aiContent.model }
+          : null,
         is_manual: false,
       });
       isContentNew = true;
     }
 
-    // Domino etkisi: Yeni içeriğe bağlı analiz getir veya oluştur
-    let nextAnalysis = await this.analysisService.findBestByContentId(
-      nextContent.id,
-    );
-    let isAnalysisNew = false;
-
-    if (!nextAnalysis) {
-      const product = await this.productService.findById(content.product_id);
-
-      const aiAnalysis = await this.aiService.analyzeContent(
-        product?.brand ?? null,
-        product?.name ?? null,
-        nextContent.ingredients,
-        nextContent.allergens,
-        nextContent.nutrition_table,
-      );
-
-      nextAnalysis = await this.analysisService.create({
-        product_content_id: nextContent.id,
-        analysis_text: aiAnalysis,
-        is_manual: false,
-      });
-      isAnalysisNew = true;
-    }
-
-    // Otomatik UPVOTE - yeni içerik ve analize +1 puan
-    await this.voteService.vote(
+    // Yeni içerik için UPVOTE (arka planda)
+    void this.voteService.vote(
       userId,
       VoteTarget.CONTENT,
       nextContent.id,
       VoteType.UP,
     );
-    await this.voteService.vote(
-      userId,
-      VoteTarget.ANALYSIS,
-      nextAnalysis.id,
-      VoteType.UP,
-    );
 
     return {
       nextContent,
-      nextAnalysis,
       isContentNew,
-      isAnalysisNew,
       noMoreVariants: false,
     };
   }
 
   /**
-   * POST /api/analysis/reject
-   * Analiz reddi - sadece yeni analysis
+   * POST /api/analysis/generate
+   * İçerik için analiz üret veya mevcut en iyisini getir
    */
+  @Post('analysis/generate')
+  @HttpCode(HttpStatus.OK)
+  @Throttle(THROTTLE_CONFIRM)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'İçerik için analiz üret' })
+  @ApiResponse({ status: 200, description: 'Analiz döner' })
+  async generateAnalysis(
+    @CurrentUser('id') userId: string,
+    @Body() dto: GenerateAnalysisRequestDto,
+  ): Promise<GenerateAnalysisResponse> {
+    const contentId = dto.contentId;
+
+    // İçeriği bul
+    const content = await this.contentService.findById(contentId);
+    if (!content) {
+      throw new NotFoundException('İçerik bulunamadı');
+    }
+
+    // En iyi analizi bul
+    let analysis = await this.analysisService.findBestByContentId(contentId);
+    let isNew = false;
+
+    if (!analysis) {
+      // Analiz yok - AI ile oluştur
+      const product = await this.productService.findById(content.product_id);
+
+      const aiAnalysis = await this.aiService.analyzeContent(
+        product?.brand ?? null,
+        product?.name ?? null,
+        content.ingredients,
+        content.allergens,
+        content.nutrition_table,
+      );
+
+      const newAnalysis = await this.analysisService.create({
+        product_content_id: contentId,
+        analysis_text: aiAnalysis,
+        is_manual: false,
+      });
+      analysis = newAnalysis;
+      isNew = true;
+    }
+
+    // Analiz için UPVOTE (arka planda)
+    void this.voteService.vote(
+      userId,
+      VoteTarget.ANALYSIS,
+      analysis.id,
+      VoteType.UP,
+    );
+
+    return {
+      analysis,
+      isNew,
+    };
+  }
+
   /**
+   * POST /api/analysis/reject
+   * Analiz reddi - sonraki varyant getir
    * Rate Limit: 6/dk (reject akışı - AI maliyeti yüksek)
    */
   @Post('analysis/reject')
@@ -451,7 +471,7 @@ export class ProductController {
     @CurrentUser('id') userId: string,
     @Body() dto: RejectAnalysisRequestDto,
   ): Promise<RejectAnalysisResponse> {
-    const { analysisId } = dto;
+    const { analysisId, excludeIds = [] } = dto;
 
     // Analizi bul
     const analysis = await this.analysisService.findById(analysisId);
@@ -459,18 +479,21 @@ export class ProductController {
       throw new NotFoundException('Analiz bulunamadı');
     }
 
-    // Otomatik DOWNVOTE - kullanıcı analizi reddetti
-    await this.voteService.vote(
+    // Otomatik DOWNVOTE - kullanıcı analizi reddetti (arka planda)
+    void this.voteService.vote(
       userId,
       VoteTarget.ANALYSIS,
       analysisId,
       VoteType.DOWN,
     );
 
+    // Tüm hariç tutulacak ID'leri birleştir (şu anki + önceki redler)
+    const allExcludeIds = [...new Set([analysisId, ...excludeIds])];
+
     // Sonraki en yüksek skorlu analizi bul
     let nextAnalysis = await this.analysisService.findBestExcluding(
       analysis.product_content_id,
-      [analysisId],
+      allExcludeIds,
     );
     let isNew = false;
 
@@ -506,8 +529,8 @@ export class ProductController {
       isNew = true;
     }
 
-    // Otomatik UPVOTE - yeni analize +1 puan
-    await this.voteService.vote(
+    // Otomatik UPVOTE - yeni analize +1 puan (arka planda)
+    void this.voteService.vote(
       userId,
       VoteTarget.ANALYSIS,
       nextAnalysis.id,

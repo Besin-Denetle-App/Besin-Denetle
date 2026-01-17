@@ -2,8 +2,12 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { validateEnvironment } from './config/env.validation';
 
 async function bootstrap() {
+  // Zorunlu ortam değişkenlerini kontrol et
+  validateEnvironment();
+
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
 

@@ -14,7 +14,7 @@ import { Vote } from './vote.entity';
 
 /**
  * Ürün varyantlarını temsil eden tablomuz.
- * Bir barkoda bağlı birden fazla ürün kaydı olabilir (örn. farklı kullanıcılar farklı bilgiler girebilir).
+ * Bir barkoda bağlı birden fazla ürün kaydı olabilir
  * Oylama sistemi ile en doğru varyantı öne çıkarıyoruz.
  */
 @Entity('product')

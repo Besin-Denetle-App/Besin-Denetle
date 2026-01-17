@@ -20,8 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
   ) {
-    const jwtSecret =
-      configService.get<string>('JWT_SECRET') || 'dev-secret-key';
+    const jwtSecret = configService.get<string>('JWT_SECRET')!; // Zorunlu
 
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),

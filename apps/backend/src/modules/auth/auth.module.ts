@@ -19,7 +19,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'dev-secret-key',
+        secret: configService.get<string>('JWT_SECRET')!, // Zorunlu
         signOptions: {
           expiresIn: 60 * 60 * 24 * 7, // 7 gün (saniye)
         },

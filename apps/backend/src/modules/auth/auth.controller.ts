@@ -6,6 +6,7 @@ import {
 import {
   Body,
   Controller,
+  Delete,
   HttpCode,
   HttpStatus,
   Post,
@@ -21,6 +22,7 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import { THROTTLE_AUTH, THROTTLE_AUTH_NORMAL } from '../../config';
 import { AuthService } from './auth.service';
+import { CurrentUser } from './decorators/current-user.decorator';
 import {
   EmailSignupRequestDto,
   OAuthRequestDto,
@@ -199,6 +201,28 @@ export class AuthController {
     return {
       message: 'Çıkış başarılı',
       userId: req.user?.id ?? '',
+    };
+  }
+
+  /**
+   * DELETE /api/auth/delete-account
+   * Hesabı kalıcı olarak sil
+   * Rate Limit: 5/dk (User bazlı - kritik işlem)
+   */
+  @Delete('delete-account')
+  @HttpCode(HttpStatus.OK)
+  @Throttle(THROTTLE_AUTH)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Hesabı kalıcı olarak sil' })
+  @ApiResponse({ status: 200, description: 'Hesap silindi' })
+  async deleteAccount(
+    @CurrentUser('id') userId: string,
+  ): Promise<{ success: boolean; message: string }> {
+    await this.authService.deleteAccount(userId);
+    return {
+      success: true,
+      message: 'Hesabınız başarıyla silindi',
     };
   }
 }

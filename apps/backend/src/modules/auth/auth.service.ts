@@ -15,7 +15,6 @@ import { User } from '../../entities';
 
 // Geçici token deposu.
 // Yeni kayıt sürecinde kullanıcı bilgilerini kısa süreliğine RAM'de tutmak için kullanılır.
-// Production ortamında burası Redis gibi bir cache sistemine taşınmalıdır.
 interface TempTokenData {
   provider: AuthProvider;
   providerId: string;
@@ -44,8 +43,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {
-    this.jwtSecret =
-      this.configService.get<string>('JWT_SECRET') || 'dev-secret-key';
+    this.jwtSecret = this.configService.get<string>('JWT_SECRET')!; // Zorunlu
     this.jwtExpiresIn = 60 * 60 * 24 * 7; // 7 gün (saniye)
     this.googleClientId =
       this.configService.get<string>('oauth.google.clientId') || '';
@@ -263,6 +261,25 @@ export class AuthService {
    */
   async findById(userId: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { id: userId } });
+  }
+
+  /**
+   * Kullanıcı hesabını kalıcı olarak sil
+   * Vote tablosunda CASCADE ON DELETE tanımlı olduğu için oylar otomatik silinir.
+   */
+  async deleteAccount(userId: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new UnauthorizedException('Kullanıcı bulunamadı');
+    }
+
+    this.logger.log(`Hesap siliniyor: ${user.username} (${user.email})`);
+
+    // Kullanıcıyı sil (ilişkili veriler CASCADE ile silinir)
+    await this.userRepository.remove(user);
+
+    this.logger.log(`Hesap silindi: ${user.username}`);
   }
 
   /**

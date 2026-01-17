@@ -147,7 +147,7 @@ Yanıt formatı:
   "isFood": true,
   "product": {
     "brand": "Marka adı",
-    "name": "Ürün adı",
+    "name": "Ürünün adı",
     "quantity": "Gramaj (örn: 500g, 1L)"
   }
 }`;
@@ -277,12 +277,16 @@ Yanıt formatı:
         `Gemini getProductContent response: ${text.substring(0, 200)}...`,
       );
 
-      // JSON parse et
-      const result = this.parseJsonResponse<AIContentResult>(text);
-      if (!result) {
+      // JSON parse et ve model adını ekle
+      const parsed =
+        this.parseJsonResponse<Omit<AIContentResult, 'model'>>(text);
+      if (!parsed) {
         throw new HttpException('AI yanıtı işlenemedi', HttpStatus.BAD_GATEWAY);
       }
-      return result;
+      return {
+        ...parsed,
+        model: GEMINI_MODEL_FAST, // Kullanılan model
+      };
     } catch (error) {
       const errorMessage = (error as Error).message || 'Bilinmeyen AI hatası';
       this.logger.error(`Gemini getProductContent error: ${errorMessage}`);
@@ -360,13 +364,13 @@ ${nutritionStr}
 
 ÖNEMLİ KURALLAR:
 1. Sağlık puanı 1-10 arası olmalı (1=çok kötü, 10=mükemmel).
-2. Özet 2-3 cümle olmalı.
+2. Özet 3-5 cümle olmalı.
 3. Sadece JSON döndür, başka açıklama ekleme.
 
 Yanıt formatı:
 {
-  "summary": "2-3 cümlelik genel değerlendirme (Türkçe)",
-  "healthScore": 5,
+  "summary": "3-5 cümlelik genel değerlendirme (Türkçe)",
+  "healthScore": 7,
   "warnings": ["Dikkat edilmesi gereken noktalar"],
   "positives": ["Olumlu yönler"],
   "recommendation": "Tüketim önerisi"
@@ -517,6 +521,7 @@ Yanıt formatı:
         sodium: 80,
         salt: 0.2,
       },
+      model: 'mock-gemini', // Mock model
     };
   }
 

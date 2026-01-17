@@ -3,6 +3,17 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { DataSource, EntityManager } from 'typeorm';
 
+/**
+ * PostgreSQL raw query sonucundan etkilenen satır sayısını çıkarır.
+ * Format: [rows, affectedCount] veya farklı formatlar olabilir.
+ */
+function extractAffectedRows(result: unknown): number {
+  if (Array.isArray(result) && typeof result[1] === 'number') {
+    return result[1];
+  }
+  return 0;
+}
+
 /** Skor hesaplama sonucu */
 interface RecalculationResult {
   products: number;
@@ -89,8 +100,10 @@ export class ScoreRecalculationService {
   /**
    * Product skorlarını Vote tablosundan yeniden hesaplar.
    */
-  private async recalculateProductScores(manager: EntityManager): Promise<number> {
-    const result = await manager.query(`
+  private async recalculateProductScores(
+    manager: EntityManager,
+  ): Promise<number> {
+    const result: unknown = await manager.query(`
       UPDATE product p
       SET 
         score = COALESCE((
@@ -104,14 +117,16 @@ export class ScoreRecalculationService {
          OR p.score != 0 
          OR p.vote_count != 0
     `);
-    return result[1] ?? 0;
+    return extractAffectedRows(result);
   }
 
   /**
    * ProductContent skorlarını Vote tablosundan yeniden hesaplar.
    */
-  private async recalculateContentScores(manager: EntityManager): Promise<number> {
-    const result = await manager.query(`
+  private async recalculateContentScores(
+    manager: EntityManager,
+  ): Promise<number> {
+    const result: unknown = await manager.query(`
       UPDATE product_content pc
       SET 
         score = COALESCE((
@@ -125,14 +140,16 @@ export class ScoreRecalculationService {
          OR pc.score != 0 
          OR pc.vote_count != 0
     `);
-    return result[1] ?? 0;
+    return extractAffectedRows(result);
   }
 
   /**
    * ContentAnalysis skorlarını Vote tablosundan yeniden hesaplar.
    */
-  private async recalculateAnalysisScores(manager: EntityManager): Promise<number> {
-    const result = await manager.query(`
+  private async recalculateAnalysisScores(
+    manager: EntityManager,
+  ): Promise<number> {
+    const result: unknown = await manager.query(`
       UPDATE content_analysis ca
       SET 
         score = COALESCE((
@@ -146,6 +163,6 @@ export class ScoreRecalculationService {
          OR ca.score != 0 
          OR ca.vote_count != 0
     `);
-    return result[1] ?? 0;
+    return extractAffectedRows(result);
   }
 }
