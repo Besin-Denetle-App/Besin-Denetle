@@ -35,6 +35,7 @@ export default function ScanScreen() {
   const [popupMode, setPopupMode] = useState<"confirm" | "non-food">("confirm");
   const [error, setError] = useState<string | null>(null);
   const [rejectedProductIds, setRejectedProductIds] = useState<string[]>([]);
+  const [isFromAI, setIsFromAI] = useState(false); // Ürün AI tarafından mı bulundu
 
   // Kameradan barkod okunduğunda
   const handleBarcodeScanned = (barcode: string) => {
@@ -63,6 +64,7 @@ export default function ScanScreen() {
         setPopupMode("confirm");
         setCurrentProduct(response.product);
         setCurrentBarcodeId(response.product.barcode_id);
+        setIsFromAI(response.isNew); // AI tarafından mı bulundu
       }
     } catch (err) {
       const errorMessage = parseApiError(err);
@@ -151,6 +153,7 @@ export default function ScanScreen() {
     setPopupMode("confirm");
     setError(null);
     setRejectedProductIds([]); // Yeni arama için listeyi sıfırla
+    setIsFromAI(false); // AI state'ini sıfırla
   };
 
   return (
@@ -254,6 +257,7 @@ export default function ScanScreen() {
         visible={showPopup}
         product={currentProduct}
         isLoading={isLoading}
+        isFromAI={isFromAI}
         mode={popupMode}
         onConfirm={handleConfirm}
         onReject={handleReject}
