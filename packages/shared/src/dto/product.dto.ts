@@ -1,4 +1,10 @@
-import { IAnalysisResult, IContentAnalysis, INutritionTable, IProduct, IProductContent } from '../types';
+import {
+  IAnalysisResult,
+  IContentAnalysis,
+  INutritionTable,
+  IProduct,
+  IProductContent,
+} from "../types";
 
 // ==================== SCAN ====================
 
@@ -29,12 +35,11 @@ export interface ConfirmRequest {
 
 /**
  * Ürün onaylama yanıtı
+ * Analysis ayrı endpoint'ten alınır
  */
 export interface ConfirmResponse {
   content: IProductContent | null;
-  analysis: IContentAnalysis | null;
-  isContentNew: boolean; // İçerik yeni mi oluşturuldu
-  isAnalysisNew: boolean; // Analiz yeni mi oluşturuldu
+  isContentNew: boolean;
 }
 
 // ==================== REJECT ====================
@@ -44,6 +49,7 @@ export interface ConfirmResponse {
  */
 export interface RejectProductRequest {
   productId: string;
+  excludeIds?: string[]; // Önceki reddedilen ürünlerin ID'leri
 }
 
 /**
@@ -60,16 +66,16 @@ export interface RejectProductResponse {
  */
 export interface RejectContentRequest {
   contentId: string;
+  excludeIds?: string[]; // Önceki reddedilen içeriklerin ID'leri
 }
 
 /**
- * İçerik reddetme yanıtı (Domino etkisi: yeni content + analysis)
+ * İçerik reddetme yanıtı
+ * Analysis ayrı endpoint'ten alınır
  */
 export interface RejectContentResponse {
   nextContent: IProductContent | null;
-  nextAnalysis: IContentAnalysis | null;
   isContentNew: boolean;
-  isAnalysisNew: boolean;
   noMoreVariants: boolean;
 }
 
@@ -78,6 +84,7 @@ export interface RejectContentResponse {
  */
 export interface RejectAnalysisRequest {
   analysisId: string;
+  excludeIds?: string[]; // Önceki reddedilen analizlerin ID'leri
 }
 
 /**
@@ -87,6 +94,23 @@ export interface RejectAnalysisResponse {
   nextAnalysis: IContentAnalysis | null;
   isNew: boolean;
   noMoreVariants: boolean;
+}
+
+// ==================== GENERATE ANALYSIS ====================
+
+/**
+ * Analiz üretme isteği
+ */
+export interface GenerateAnalysisRequest {
+  contentId: string;
+}
+
+/**
+ * Analiz üretme yanıtı
+ */
+export interface GenerateAnalysisResponse {
+  analysis: IContentAnalysis;
+  isNew: boolean;
 }
 
 // ==================== AI PROMPTS ====================
@@ -110,6 +134,7 @@ export interface AIContentResult {
   ingredients: string | null;
   allergens: string | null;
   nutrition: INutritionTable | null;
+  model: string;
 }
 
 /**

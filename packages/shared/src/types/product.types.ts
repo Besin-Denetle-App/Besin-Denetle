@@ -42,6 +42,7 @@ export interface INutritionTable {
   fiber?: number;
   sodium?: number;
   salt?: number;
+  _source?: string;
 }
 
 /**
