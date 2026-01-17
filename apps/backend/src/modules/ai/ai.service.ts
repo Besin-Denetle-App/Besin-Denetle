@@ -8,10 +8,7 @@ import {
 import { GoogleGenAI } from '@google/genai';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-
-// Kullanılacak Gemini modelleri
-const GEMINI_MODEL_FAST = 'gemini-2.5-flash'; // Prompt 1-2: Ürün tanımlama ve içerik (stabil)
-const GEMINI_MODEL_SMART = 'gemini-2.5-pro'; // Prompt 3: Sağlık analizi (daha akıllı)
+import { AiConfig } from '../../config';
 
 /**
  * Yapay Zeka entegrasyon servisi.
@@ -25,6 +22,10 @@ export class AiService {
   private readonly isMockMode: boolean;
   private readonly genai: GoogleGenAI | null;
 
+  // Config'den alınan model isimleri
+  private readonly modelFast: string;
+  private readonly modelSmart: string;
+
   // Rate limiting için son çağrı zamanları (userId -> timestamp)
   private readonly lastCallTime: Map<string, number> = new Map();
 
@@ -32,11 +33,16 @@ export class AiService {
     this.apiKey = this.configService.get<string>('GEMINI_API_KEY');
     this.isMockMode = !this.apiKey || this.apiKey.trim() === '';
 
+    // Config'den model isimlerini al
+    const aiConfig = this.configService.get<AiConfig>('ai');
+    this.modelFast = aiConfig?.modelFast || 'gemini-2.5-flash';
+    this.modelSmart = aiConfig?.modelSmart || 'gemini-2.5-pro';
+
     // Gemini client oluştur (API key varsa)
     if (!this.isMockMode && this.apiKey) {
       this.genai = new GoogleGenAI({ apiKey: this.apiKey });
       this.logger.log(
-        `AI Service initialized with models: ${GEMINI_MODEL_FAST} (fast), ${GEMINI_MODEL_SMART} (smart)`,
+        `AI Service initialized with models: ${this.modelFast} (fast), ${this.modelSmart} (smart)`,
       );
     } else {
       this.genai = null;
@@ -154,7 +160,7 @@ Yanıt formatı:
 
       // Google Search grounding ile çağrı yap
       const response = await this.genai.models.generateContent({
-        model: GEMINI_MODEL_FAST,
+        model: this.modelFast,
         contents: prompt,
         config: {
           tools: [{ googleSearch: {} }],
@@ -261,7 +267,7 @@ Yanıt formatı:
 
       // Google Search grounding ile çağrı yap
       const response = await this.genai.models.generateContent({
-        model: GEMINI_MODEL_FAST,
+        model: this.modelFast,
         contents: prompt,
         config: {
           tools: [{ googleSearch: {} }],
@@ -285,7 +291,7 @@ Yanıt formatı:
       }
       return {
         ...parsed,
-        model: GEMINI_MODEL_FAST, // Kullanılan model
+        model: this.modelFast, // Kullanılan model
       };
     } catch (error) {
       const errorMessage = (error as Error).message || 'Bilinmeyen AI hatası';
@@ -378,7 +384,7 @@ Yanıt formatı:
 
       // Grounding kullanılmadan çağrı yap (maliyet optimizasyonu)
       const response = await this.genai.models.generateContent({
-        model: GEMINI_MODEL_SMART,
+        model: this.modelSmart,
         contents: prompt,
       });
 
@@ -399,7 +405,7 @@ Yanıt formatı:
       }
       return {
         ...parsed,
-        model: GEMINI_MODEL_SMART, // Kullanılan model
+        model: this.modelSmart, // Kullanılan model
       };
     } catch (error) {
       const errorMessage = (error as Error).message || 'Bilinmeyen AI hatası';

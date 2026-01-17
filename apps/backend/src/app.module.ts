@@ -14,6 +14,7 @@ import {
 
 // Config
 import {
+  aiConfig,
   createLoggerConfig,
   databaseConfig,
   jwtConfig,
@@ -44,7 +45,7 @@ import { VoteModule } from './modules/vote';
     WinstonModule.forRoot(createLoggerConfig()),
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, jwtConfig, oauthConfig, throttlerConfig],
+      load: [aiConfig, databaseConfig, jwtConfig, oauthConfig, throttlerConfig],
     }),
     // API güvenliği için Rate Limiting ayarları
     // Katman 1: IP bazlı global limit (DDoS/CGNAT koruması)
