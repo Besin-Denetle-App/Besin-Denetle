@@ -112,6 +112,7 @@ nano apps/backend/.env
 ### 6. PostgreSQL Container'ını Başlat
 
 ```bash
+export $(grep -v '^#' apps/backend/.env | xargs)
 docker compose up -d db
 docker compose ps
 ```
@@ -141,7 +142,7 @@ pnpm start:prod
 
 ```bash
 # Startup script oluştur
-pm2 startup
+sudo pm2 startup
 
 # Mevcut process listesini kaydet
 pm2 save
@@ -166,7 +167,7 @@ pm2 restart besin-backend
 pm2 delete besin-backend
 ```
 
-## s
+---
 
 ## 🔒 Güvenlik Ayarları
 
@@ -191,9 +192,8 @@ sudo ufw enable
 # SSH'e izin ver
 sudo ufw allow ssh
 
-# HTTP/HTTPS'e izin ver
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
+# HTTP/HTTPS sadece Cloudflare IP'lerinden
+# (Aşağıdaki bölüme bakın)
 
 # PostgreSQL portunu KAPATILI tut (dışarıdan erişim yok)
 # 5432 portu sadece localhost'tan erişilebilir
@@ -201,6 +201,28 @@ sudo ufw allow 443/tcp
 # Durumu kontrol et
 sudo ufw status
 ```
+
+### Cloudflare IP Kısıtlaması (Önerilen)
+
+Sadece Cloudflare IP'lerinden erişime izin vermek için:
+
+```bash
+# Mevcut HTTP/HTTPS kurallarını kaldır
+sudo ufw delete allow 80/tcp
+sudo ufw delete allow 443/tcp
+
+# Cloudflare IPv4 adreslerini ekle
+for ip in $(curl -s https://www.cloudflare.com/ips-v4); do
+  sudo ufw allow from $ip to any port 80,443 proto tcp
+done
+
+# Cloudflare IPv6 adreslerini ekle
+for ip in $(curl -s https://www.cloudflare.com/ips-v6); do
+  sudo ufw allow from $ip to any port 80,443 proto tcp
+done
+```
+
+> **Not:** Bu sayede sunucuya doğrudan IP ile erişim engellenir, sadece Cloudflare üzerinden erişilebilir.
 
 ### Fail2ban (Opsiyonel)
 
@@ -212,9 +234,9 @@ sudo systemctl start fail2ban
 
 ---
 
-## 🌐 Reverse Proxy (Caddy)
+## 🌐 Reverse Proxy (Caddy + Cloudflare)
 
-SSL sertifikası ve domain yönlendirmesi için Caddy önerilir:
+Cloudflare arkasında Caddy kullanarak SSL ve domain yönlendirmesi yapılır.
 
 ### Caddy Kurulumu
 
@@ -226,7 +248,7 @@ sudo apt update
 sudo apt install caddy
 ```
 
-### Caddyfile Yapılandırması
+### Caddyfile Yapılandırması (Cloudflare ile)
 
 ```bash
 sudo nano /etc/caddy/Caddyfile
@@ -235,8 +257,19 @@ sudo nano /etc/caddy/Caddyfile
 İçerik:
 
 ```
-api.besindenetle.com {
-    reverse_proxy localhost:3200
+besindenetle.furkanpasa.com {
+    # Gzip sıkıştırma
+    encode gzip
+
+    # /api/* isteklerini backend'e yönlendir
+    handle_path /api/* {
+        reverse_proxy localhost:3200
+    }
+
+    # Ana sayfa yanıtı
+    handle {
+        respond "Besin Denetle API - Use /api endpoint" 200
+    }
 }
 ```
 
@@ -244,7 +277,45 @@ api.besindenetle.com {
 sudo systemctl restart caddy
 ```
 
-> **Not:** Caddy otomatik olarak Let's Encrypt'ten SSL sertifikası alır.
+> **Not:** `handle_path` kullanıldığında `/api/health` isteği backend'e `/health` olarak ulaşır.
+
+### Cloudflare DNS Kurulumu
+
+1. [Cloudflare Dashboard](https://dash.cloudflare.com)'a giriş yap
+2. Domain'i seç veya ekle: `furkanpasa.com`
+3. **DNS** sekmesine git
+4. Yeni kayıt ekle:
+
+| Type | Name           | Content            | Proxy Status |
+| ---- | -------------- | ------------------ | ------------ |
+| A    | `besindenetle` | `SUNUCU_IP_ADRESI` | Proxied (🟠) |
+
+> **Not:** `besindenetle` subdomain'i `besindenetle.furkanpasa.com` olarak çözümlenir.
+
+### Cloudflare SSL/TLS Ayarları
+
+**SSL/TLS** → **Overview** sekmesinde:
+
+| Ayar                    | Değer         | Açıklama                  |
+| ----------------------- | ------------- | ------------------------- |
+| **Encryption mode**     | Full (Strict) | Caddy + Let's Encrypt ile |
+| **Always Use HTTPS**    | On            | HTTP → HTTPS yönlendirme  |
+| **Minimum TLS Version** | 1.2           | Güvenlik için             |
+
+### Cloudflare Ek Ayarlar (Önerilen)
+
+**Security** → **Settings**:
+
+- **Security Level**: Medium
+- **Challenge Passage**: 30 minutes
+- **Browser Integrity Check**: On
+
+**Speed** → **Optimization**:
+
+- **Auto Minify**: JavaScript, CSS, HTML (Opsiyonel)
+- **Brotli**: On
+
+> **Not:** Caddy otomatik olarak Let's Encrypt'ten SSL sertifikası alır. Cloudflare "Full (Strict)" modu kullandığında hem Cloudflare-sunucu hem de kullanıcı-Cloudflare arası şifreli olur.
 
 ---
 
@@ -262,18 +333,26 @@ cat backup_20240101.sql | docker compose exec -T db psql -U myuser besindenetle
 
 ### Otomatik Yedekleme (Cron)
 
+Proje içinde hazır backup script'i bulunur: [`apps/backend/src/scripts/backup-db.sh`](../apps/backend/src/scripts/backup-db.sh)
+
 ```bash
 # Backup klasörü oluştur
 sudo mkdir -p /opt/backups
 
+# Script'e çalıştırma izni ver
+chmod +x /opt/besin-denetle/apps/backend/src/scripts/backup-db.sh
+
+# Cron'a ekle
 crontab -e
 ```
 
 Ekle (her gün gece 3'te):
 
 ```
-0 3 * * * cd /opt/besin-denetle && docker compose exec -T db pg_dump -U myuser besindenetle > /opt/backups/db_$(date +\%Y\%m\%d).sql
+0 3 * * * /opt/besin-denetle/apps/backend/src/scripts/backup-db.sh >> /var/log/db-backup.log 2>&1
 ```
+
+> **Not:** Script `.env` dosyasından `DB_USER` ve `DB_NAME` değerlerini otomatik okur.
 
 ---
 

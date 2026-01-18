@@ -19,12 +19,13 @@
       },
       "env": {
         "APP_ENV": "preview",
-        "API_HOST": "192.168.1.106",
-        "API_PORT": "3200"
+        "API_HOST": "https://besindenetle.furkanpasa.com/api",
+        "API_PORT": ""
       }
     },
     "production": {
       "android": {
+        "credentialsSource": "local",
         "buildType": "app-bundle"
       },
       "env": {
