@@ -262,7 +262,7 @@ besindenetle.furkanpasa.com {
     encode gzip
 
     # /api/* isteklerini backend'e yönlendir
-    handle_path /api/* {
+    handle /api/* {
         reverse_proxy localhost:3200
     }
 
@@ -288,7 +288,7 @@ sudo systemctl restart caddy
 
 | Type | Name           | Content            | Proxy Status |
 | ---- | -------------- | ------------------ | ------------ |
-| A    | `besindenetle` | `SUNUCU_IP_ADRESI` | Proxied (🟠) |
+| A    | `besindenetle` | `SUNUCU_IP_ADRESI` | Proxied (🟠)  |
 
 > **Not:** `besindenetle` subdomain'i `besindenetle.furkanpasa.com` olarak çözümlenir.
 
