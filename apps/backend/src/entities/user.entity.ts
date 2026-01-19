@@ -1,11 +1,11 @@
 import { AuthProvider, UserRole } from '@besin-denetle/shared';
 import {
-    Column,
-    CreateDateColumn,
-    Entity,
-    Index,
-    OneToMany,
-    PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  OneToMany,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Vote } from './vote.entity';
 

@@ -9,12 +9,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { DataSource } from 'typeorm';
 import {
-    Barcode,
-    ContentAnalysis,
-    Product,
-    ProductContent,
-    User,
-    Vote,
+  Barcode,
+  ContentAnalysis,
+  Product,
+  ProductContent,
+  User,
+  Vote,
 } from '../entities';
 
 // .env dosyasını yükle

@@ -7,4 +7,3 @@ export { ProductContent } from './product-content.entity';
 export { Product } from './product.entity';
 export { User } from './user.entity';
 export { Vote } from './vote.entity';
-

@@ -1,9 +1,9 @@
 import {
-    CallHandler,
-    ExecutionContext,
-    Inject,
-    Injectable,
-    NestInterceptor,
+  CallHandler,
+  ExecutionContext,
+  Inject,
+  Injectable,
+  NestInterceptor,
 } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Observable } from 'rxjs';
