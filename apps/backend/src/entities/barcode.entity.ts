@@ -9,22 +9,21 @@ import {
 import { Product } from './product.entity';
 
 /**
- * Barkod veritabanı modeli.
- * Sistemdeki her bir benzersiz barkodun ana kaydını burada tutuyoruz.
- * Ürünlerin varyantları bu tabloya ID ile bağlanıyor.
+ * Barkod entity
+ * Benzersiz barkodların ana kaydı.
  */
 @Entity('barcode')
 export class Barcode {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // Barkod numarası (örn: 8690000123456)
+  // Barkod kodu (8690000123456)
   @Column({ unique: true })
   @Index()
   code: string;
 
   /**
-   * Ürünün kategorisi (gıda, içecek vs.)
+   * Ürünün kategorisi:
    * 0: Kararsız durum
    * 1: Yiyecek
    * 2: İçecek
@@ -34,20 +33,20 @@ export class Barcode {
   @Column({ type: 'int', default: 0 })
   type: number;
 
-  // Bu kaydın kaynağı (true ise manuel, false ise AI tahmini)
+  // Kaynak (true=manuel, false=AI)
   @Column({ default: false })
   is_manual: boolean;
 
-  // Kullanıcılar tarafından "hatalı barkod" olarak raporlandı mı?
+  // Kullanıcılar tarafından raporlandı mı
   @Column({ default: false })
   @Index()
   is_flagged: boolean;
 
-  // Kaç kez bildirildi (önceliklendirme için)
+  // Bildirim sayısı
   @Column({ type: 'int', default: 0 })
   flag_count: number;
 
-  // Kaydın oluşturulma tarihi
+  // Oluşturulma
   @CreateDateColumn()
   created_at: Date;
 

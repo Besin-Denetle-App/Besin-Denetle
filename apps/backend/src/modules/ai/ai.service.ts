@@ -11,9 +11,8 @@ import { ConfigService } from '@nestjs/config';
 import { AiConfig } from '../../config';
 
 /**
- * Yapay Zeka entegrasyon servisi.
- * Google Gemini API ile iletişim kurarak ürün tanımlama, içerik bulma ve sağlık analizi işlemlerini yürütür.
- * Maliyet kontrolü ve API limit aşımını önlemek için kullanıcı bazlı Rate Limiting uygulanır.
+ * Gemini AI entegrasyon servisi
+ * Ürün tanımlama, içerik bulma ve sağlık analizi.
  */
 @Injectable()
 export class AiService {
@@ -22,23 +21,23 @@ export class AiService {
   private readonly isMockMode: boolean;
   private readonly genai: GoogleGenAI | null;
 
-  // Config'den alınan model isimleri
+  // Model isimleri
   private readonly modelFast: string;
   private readonly modelSmart: string;
 
-  // Rate limiting için son çağrı zamanları (userId -> timestamp)
+  // Rate limit map (userId -> timestamp)
   private readonly lastCallTime: Map<string, number> = new Map();
 
   constructor(private readonly configService: ConfigService) {
     this.apiKey = this.configService.get<string>('GEMINI_API_KEY');
     this.isMockMode = !this.apiKey || this.apiKey.trim() === '';
 
-    // Config'den model isimlerini al
+    // Model config
     const aiConfig = this.configService.get<AiConfig>('ai');
     this.modelFast = aiConfig?.modelFast || 'gemini-2.5-flash';
     this.modelSmart = aiConfig?.modelSmart || 'gemini-2.5-pro';
 
-    // Gemini client oluştur (API key varsa)
+    // Gemini client
     if (!this.isMockMode && this.apiKey) {
       this.genai = new GoogleGenAI({ apiKey: this.apiKey });
       this.logger.log(
@@ -49,7 +48,7 @@ export class AiService {
       this.logger.warn('AI Service running in MOCK MODE - no API key provided');
     }
 
-    // Her 1 saatte eski rate limit kayıtlarını temizle (bellek sızıntısını önler)
+    // Rate limit temizleme (1 saat)
     setInterval(
       () => {
         this.cleanupOldRateLimitEntries();
@@ -59,8 +58,7 @@ export class AiService {
   }
 
   /**
-   * Eski rate limit kayıtlarını temizler.
-   * 1 saatten eski kayıtlar silinerek bellek tasarrufu sağlanır.
+   * Eski rate limit kayıtlarını temizle (1 saatten eski)
    */
   private cleanupOldRateLimitEntries(): void {
     const now = Date.now();
@@ -82,10 +80,7 @@ export class AiService {
   }
 
   /**
-   * API kullanım sıklığını kontrol eder.
-   * Aynı kullanıcı için ardışık AI çağrıları arasında minimum bekleme süresi
-   * @param userId - Kullanıcı ID (opsiyonel, yoksa global rate limit)
-   * @throws TooManyRequestsException - Bekleme süresi dolmadıysa
+   * Rate limit kontrolü
    */
   private enforceRateLimit(userId?: string): void {
     const key = userId || 'global';
@@ -103,24 +98,22 @@ export class AiService {
       );
     }
 
-    // Yeni çağrı zamanını kaydet
+    // Zamanı güncelle
     this.lastCallTime.set(key, Date.now());
   }
 
   /**
-   * İlk tarama sırasında kullanıcıyı bekletmemek için rate limit istisnası uygular.
-   * Ancak son arama zamanını günceller, böylece hemen ardından gelecek istekler limitlenir.
+   * Rate limit uygulama olmadan sadece zaman güncelle
    */
   private updateLastCallTime(userId?: string): void {
     const key = userId || 'global';
     this.lastCallTime.set(key, Date.now());
   }
 
-  // ==================== PROMPT 1: ÜRÜN KİMLİĞİ ====================
+  // ==================== PROMPT 1 ====================
 
   /**
    * Prompt 1: Ürün kimliği (barkoddan marka, isim, gramaj)
-   * Google Search Grounding ile web araması yaparak ürün bilgisi bulur.
    */
   async identifyProduct(
     barcode: string,
@@ -186,7 +179,7 @@ Yanıt formatı:
       const errorMessage = (error as Error).message || 'Bilinmeyen AI hatası';
       this.logger.error(`Gemini identifyProduct error: ${errorMessage}`);
 
-      // HttpException ise tekrar fırlat (kendi fırlattığımız exception'lar)
+      // HttpException'ları tekrar fırlat
       if (error instanceof HttpException) {
         throw error;
       }
@@ -210,11 +203,10 @@ Yanıt formatı:
     }
   }
 
-  // ==================== PROMPT 2: İÇERİK BİLGİSİ ====================
+  // ==================== PROMPT 2 ====================
 
   /**
    * Prompt 2: İçerik bilgisi (içindekiler, alerjenler, besin değerleri)
-   * Google Search Grounding ile web araması yaparak içerik bilgisi bulur.
    */
   async getProductContent(
     brand: string | null,
@@ -283,7 +275,7 @@ Yanıt formatı:
         `Gemini getProductContent response: ${text.substring(0, 200)}...`,
       );
 
-      // JSON parse et ve model adını ekle
+      // JSON parse + model ekle
       const parsed =
         this.parseJsonResponse<Omit<AIContentResult, 'model'>>(text);
       if (!parsed) {
@@ -321,11 +313,10 @@ Yanıt formatı:
     }
   }
 
-  // ==================== PROMPT 3: SAĞLIK ANALİZİ ====================
+  // ==================== PROMPT 3 ====================
 
   /**
-   * Prompt 3: Sağlık analizi
-   * Grounding kullanılmaz, sadece model bilgisi ile analiz yapılır.
+   * Prompt 3: Sağlık analizi (grounding yok)
    */
   async analyzeContent(
     brand: string | null,
@@ -382,7 +373,7 @@ Yanıt formatı:
   "recommendation": "Tüketim önerisi"
 }`;
 
-      // Grounding kullanılmadan çağrı yap (maliyet optimizasyonu)
+      // Grounding kullanılmadan çağrı yap
       const response = await this.genai.models.generateContent({
         model: this.modelSmart,
         contents: prompt,
@@ -397,7 +388,7 @@ Yanıt formatı:
         `Gemini analyzeContent response: ${text.substring(0, 200)}...`,
       );
 
-      // JSON yanıtını parse et ve model adını ekle
+      // JSON parse + model ekle
       const parsed =
         this.parseJsonResponse<Omit<AIAnalysisResult, 'model'>>(text);
       if (!parsed) {
@@ -435,18 +426,17 @@ Yanıt formatı:
     }
   }
 
-  // ==================== YARDIMCI METOTLAR ====================
+  // ==================== YARDIMCI ====================
 
   /**
-   * Gemini yanıtından JSON parse eder.
-   * Yanıt markdown code block içinde olabilir, temizler.
+   * JSON parse (markdown temizleme dahil)
    */
   private parseJsonResponse<T>(text: string): T | null {
     try {
-      // Markdown code block temizle
+      // Markdown temizle
       let cleaned = text.trim();
 
-      // ```json ... ``` formatını temizle
+      // ```json ... ``` formatı
       if (cleaned.startsWith('```')) {
         cleaned = cleaned
           .replace(/^```(?:json)?\n?/, '')
@@ -471,7 +461,7 @@ Yanıt formatı:
     return ProductType.FOOD;
   }
 
-  // ==================== MOCK METOTLAR ====================
+  // ==================== MOCK ====================
 
   /**
    * Mock: Ürün kimliği
@@ -479,7 +469,7 @@ Yanıt formatı:
   private mockIdentifyProduct(barcode: string): AIProductResult {
     this.logger.debug(`[MOCK] Identifying product for barcode: ${barcode}`);
 
-    // Bazı test barkodları için farklı sonuçlar
+    // Test barkodları
     if (barcode.startsWith('869')) {
       return {
         isFood: true,
@@ -491,7 +481,7 @@ Yanıt formatı:
       };
     }
 
-    // Varsayılan mock sonuç
+    // Varsayılan mock
     return {
       isFood: true,
       product: {

@@ -26,15 +26,15 @@ export const THROTTLE_AUTH_NORMAL = { default: { limit: 20, ttl: 60000 } };
 /** Flag işlemi */
 export const THROTTLE_FLAG = { default: { limit: 5, ttl: 60000 } };
 
-/** Health check - Halka açık olduğu için kısıtlı (50sn'de 1) */
+/** Health check - Public olduğu için kısıtlı (50sn'de 1) */
 export const THROTTLE_HEALTH = { default: { limit: 1, ttl: 50000 } };
 
 // ============== CONFIG SERVICE İÇİN (app.module.ts) ==============
 
 export default registerAs('throttler', () => ({
-  // Katman 1: IP bazlı global limit (DDoS/CGNAT koruması)
+  // IP bazlı global limit
   global: {
     ttl: 60000, // 1 dakika
-    limit: 1000, // IP başına 1000 istek/dk
+    limit: 1000, // 1000 istek/dk
   },
 }));

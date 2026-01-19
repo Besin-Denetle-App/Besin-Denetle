@@ -1,9 +1,9 @@
 import {
-  CallHandler,
-  ExecutionContext,
-  Inject,
-  Injectable,
-  NestInterceptor,
+    CallHandler,
+    ExecutionContext,
+    Inject,
+    Injectable,
+    NestInterceptor,
 } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Observable } from 'rxjs';
@@ -11,8 +11,7 @@ import { tap } from 'rxjs/operators';
 import { Logger } from 'winston';
 
 /**
- * HTTP isteklerini loglayan interceptor.
- * Her istek için method, URL, user ID ve işlem süresini kaydeder.
+ * HTTP request logger interceptor
  */
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {

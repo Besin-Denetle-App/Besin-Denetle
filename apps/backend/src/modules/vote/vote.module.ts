@@ -6,14 +6,12 @@ import { VoteService } from './vote.service';
 
 /**
  * Vote modülü
- * Oylama işlemlerini yönetir.
- * NOT: VoteController kaldırıldı - tüm oylar otomatik olarak
- * product.controller.ts içinden voteService.vote() ile veriliyor.
+ * Tüm oylar product.controller.ts üzerinden otomatik verilir.
  */
 @Module({
   imports: [
     TypeOrmModule.forFeature([Vote, Product, ProductContent, ContentAnalysis]),
-    forwardRef(() => ProductModule), // Circular dependency çözümü
+    forwardRef(() => ProductModule), // Circular dependency
   ],
   providers: [VoteService],
   exports: [VoteService],

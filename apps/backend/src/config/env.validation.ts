@@ -1,6 +1,5 @@
 /**
  * Environment validation
- * Uygulama başlarken zorunlu ortam değişkenlerini kontrol eder.
  * Eksik değişken varsa uygulama başlamaz.
  */
 
@@ -14,32 +13,31 @@ const requiredEnvVars = [
   'DB_NAME',
 ] as const;
 
-// Opsiyonel ama önerilen
+// Opsiyonel ortam değişkenleri
 const recommendedEnvVars = ['GEMINI_API_KEY', 'GOOGLE_WEB_CLIENT_ID'] as const;
 
 /**
- * Ortam değişkenlerini doğrular.
- * Zorunlu değişkenler eksikse Error fırlatır.
+ * Ortam değişkenlerini doğrula
  */
 export function validateEnvironment(): void {
   const missing: string[] = [];
   const warnings: string[] = [];
 
-  // Zorunlu değişkenleri kontrol et
+  // Zorunlu kontrol
   for (const envVar of requiredEnvVars) {
     if (!process.env[envVar] || process.env[envVar]?.trim() === '') {
       missing.push(envVar);
     }
   }
 
-  // Önerilen değişkenleri kontrol et
+  // Önerilen kontrol
   for (const envVar of recommendedEnvVars) {
     if (!process.env[envVar] || process.env[envVar]?.trim() === '') {
       warnings.push(envVar);
     }
   }
 
-  // Uyarıları logla
+  // Uyarıları göster
   if (warnings.length > 0) {
     console.warn(
       `⚠️  Önerilen ortam değişkenleri eksik: ${warnings.join(', ')}`,

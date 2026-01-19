@@ -4,8 +4,7 @@ import { Cron } from '@nestjs/schedule';
 import { DataSource, EntityManager } from 'typeorm';
 
 /**
- * PostgreSQL raw query sonucundan etkilenen satır sayısını çıkarır.
- * Format: [rows, affectedCount] veya farklı formatlar olabilir.
+ * Raw query sonuçundan etkilenen satır sayısı
  */
 function extractAffectedRows(result: unknown): number {
   if (Array.isArray(result) && typeof result[1] === 'number') {
@@ -23,12 +22,8 @@ interface RecalculationResult {
 }
 
 /**
- * Skorları yeniden hesaplayan zamanlanmış servis.
- * Her gece 02:00'de çalışır ve tüm skorları güncelleyerek
- * silinmiş oylardan kaynaklanan tutarsızlıkları düzeltir.
- *
- * Performans: SQL subquery kullanarak tek sorguda güncelleme yapar.
- * Bu sayede N+1 query problemi önlenir.
+ * Skor yeniden hesaplama servisi
+ * Her gece 02:00'de çalışır.
  */
 @Injectable()
 export class ScoreRecalculationService {
@@ -37,7 +32,7 @@ export class ScoreRecalculationService {
   constructor(private readonly dataSource: DataSource) {}
 
   /**
-   * Her gece saat 02:00'de çalışır (Türkiye saati).
+   * Cron: Her gece 02:00 (Türkiye)
    */
   @Cron('0 2 * * *', {
     name: 'score-recalculation',
@@ -60,8 +55,7 @@ export class ScoreRecalculationService {
   }
 
   /**
-   * Manuel olarak skor yeniden hesaplamayı tetikler.
-   * Admin API veya test için kullanılabilir.
+   * Manuel hesaplama triggeri
    */
   async triggerManualRecalculation(): Promise<RecalculationResult> {
     this.logger.log('🔧 Manuel skor yeniden hesaplama başlatıldı...');
@@ -73,8 +67,7 @@ export class ScoreRecalculationService {
   }
 
   /**
-   * Tüm skorları yeniden hesaplar.
-   * Product, ProductContent ve ContentAnalysis için tek transaction içinde çalışır.
+   * Tüm skorları hesapla (tek transaction)
    */
   private async recalculateAllScores(): Promise<RecalculationResult> {
     const startTime = Date.now();
@@ -98,7 +91,7 @@ export class ScoreRecalculationService {
   }
 
   /**
-   * Product skorlarını Vote tablosundan yeniden hesaplar.
+   * Product skorlarını hesapla
    */
   private async recalculateProductScores(
     manager: EntityManager,
@@ -121,7 +114,7 @@ export class ScoreRecalculationService {
   }
 
   /**
-   * ProductContent skorlarını Vote tablosundan yeniden hesaplar.
+   * Content skorlarını hesapla
    */
   private async recalculateContentScores(
     manager: EntityManager,
@@ -144,7 +137,7 @@ export class ScoreRecalculationService {
   }
 
   /**
-   * ContentAnalysis skorlarını Vote tablosundan yeniden hesaplar.
+   * Analysis skorlarını hesapla
    */
   private async recalculateAnalysisScores(
     manager: EntityManager,

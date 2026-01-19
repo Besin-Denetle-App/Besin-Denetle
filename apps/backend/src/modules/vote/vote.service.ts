@@ -30,7 +30,7 @@ export class VoteService {
     targetId: string,
     voteType: VoteType,
   ): Promise<{ scoreDelta: number; previousVote: VoteType | null }> {
-    // Mevcut oyu kontrol et
+    // Mevcut oy kontrol
     const existingVote = await this.findExistingVote(userId, target, targetId);
 
     let scoreDelta = 0;
@@ -41,7 +41,7 @@ export class VoteService {
       previousVote = existingVote.vote_type;
 
       if (existingVote.vote_type === voteType) {
-        // Aynı oy, değişiklik yok
+        // Aynı oy
         return { scoreDelta: 0, previousVote };
       }
 
@@ -51,7 +51,7 @@ export class VoteService {
       } else {
         scoreDelta = SCORE_CHANGES.UP_TO_DOWN; // -2
       }
-      voteCountDelta = 0; // Oy değişiminde count artmaz
+      voteCountDelta = 0; // Değişimde count artmaz
 
       // Mevcut oyu güncelle
       existingVote.vote_type = voteType;
@@ -64,12 +64,12 @@ export class VoteService {
           : SCORE_CHANGES.NEW_DOWN;
       voteCountDelta = 1;
 
-      // Yeni oy kaydı oluştur
+      // Yeni kayıt
       const vote = this.createVoteEntity(userId, target, targetId, voteType);
       await this.voteRepository.save(vote);
     }
 
-    // Hedef entity'nin skorunu güncelle
+    // Skor güncelle
     await this.updateTargetScore(target, targetId, scoreDelta, voteCountDelta);
 
     return { scoreDelta, previousVote };
@@ -132,7 +132,7 @@ export class VoteService {
   }
 
   /**
-   * Hedef entity'nin skorunu güncelle
+   * Skor güncelle
    */
   private async updateTargetScore(
     target: VoteTarget,

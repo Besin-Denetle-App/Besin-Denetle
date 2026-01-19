@@ -3,15 +3,13 @@ import * as winston from 'winston';
 import 'winston-daily-rotate-file';
 
 /**
- * Winston logger konfigürasyonu.
- * - Geliştirme ortamında console'a renkli çıktı
- * - Production'da günlük dosyalara yazma (50MB, 30 gün saklama, gzip sıkıştırma)
+ * Winston logger konfigürasyonu
  */
 export const createLoggerConfig = () => {
   const isProduction = process.env.NODE_ENV === 'production';
 
   const transports: winston.transport[] = [
-    // Console transport (her zaman aktif)
+    // Console transport
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.timestamp(),
@@ -24,21 +22,21 @@ export const createLoggerConfig = () => {
     }),
   ];
 
-  // Production'da dosyaya da yaz
+  // Production'da dosya log
   if (isProduction) {
     transports.push(
       new winston.transports.DailyRotateFile({
         filename: 'logs/app-%DATE%.log',
         datePattern: 'YYYY-MM-DD',
-        maxSize: '50m', // Dosya başına max 50MB
-        maxFiles: '30d', // 30 gün sakla, eskilerini sil
-        zippedArchive: true, // Eski logları gzip ile sıkıştır
+        maxSize: '50m', // Max 50MB/dosya
+        maxFiles: '30d', // 30 gün sakla
+        zippedArchive: true, // gzip
         format: winston.format.combine(
           winston.format.timestamp(),
           winston.format.json(),
         ),
       }),
-      // Sadece hatalar için ayrı dosya
+      // Hatalar için ayrı dosya
       new winston.transports.DailyRotateFile({
         filename: 'logs/error-%DATE%.log',
         datePattern: 'YYYY-MM-DD',

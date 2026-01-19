@@ -1,35 +1,34 @@
 import { AuthProvider, UserRole } from '@besin-denetle/shared';
 import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  Index,
-  OneToMany,
-  PrimaryGeneratedColumn,
+    Column,
+    CreateDateColumn,
+    Entity,
+    Index,
+    OneToMany,
+    PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Vote } from './vote.entity';
 
 /**
- * Kullanıcı bilgilerini tuttuğumuz tablomuz.
- * Sadece OAuth (Google/Apple) girişi destekliyoruz, şifre tutmuyoruz.
+ * Kullanıcı entity
+ * OAuth (Google/Apple) girişi destekleniyor.
  */
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // Kullanıcı adı (benzersiz)
+  // Username (unique)
   @Column({ unique: true })
   @Index()
   username: string;
 
-  // E-posta adresi (benzersiz)
+  // E-posta (unique)
   @Column({ unique: true })
   @Index()
   email: string;
 
-  // Hangi servis ile giriş yaptı?
-  // Kimlik sağlayıcı: Google veya Apple
+  // Auth provider: Google veya Apple
   @Column({
     type: 'enum',
     enum: AuthProvider,
@@ -37,12 +36,12 @@ export class User {
   })
   auth_provider: AuthProvider;
 
-  // OAuth servisinden dönen unique ID
+  // OAuth provider ID
   @Column({ unique: true })
   @Index()
   provider_id: string;
 
-  // Kullanıcı rolü: User veya Admin
+  // Rol: User veya Admin
   @Column({
     type: 'enum',
     enum: UserRole,
@@ -50,7 +49,7 @@ export class User {
   })
   role: UserRole;
 
-  // Hesap aktif mi?
+  // Aktif mi
   @Column({ default: true })
   is_active: boolean;
 
@@ -58,7 +57,7 @@ export class User {
   @CreateDateColumn()
   created_at: Date;
 
-  // Son çevrimiçi olma tarihi (her authenticated istekte güncellenir)
+  // Son aktif
   @Column({ type: 'timestamp', nullable: true })
   last_active: Date | null;
 

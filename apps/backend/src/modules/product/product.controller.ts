@@ -1,28 +1,28 @@
 import {
-  ConfirmResponse,
-  GenerateAnalysisResponse,
-  RejectAnalysisResponse,
-  RejectContentResponse,
-  RejectProductResponse,
-  ScanResponse,
-  VoteTarget,
-  VoteType,
+    ConfirmResponse,
+    GenerateAnalysisResponse,
+    RejectAnalysisResponse,
+    RejectContentResponse,
+    RejectProductResponse,
+    ScanResponse,
+    VoteTarget,
+    VoteType,
 } from '@besin-denetle/shared';
 import {
-  BadRequestException,
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  NotFoundException,
-  Post,
-  UseGuards,
+    BadRequestException,
+    Body,
+    Controller,
+    HttpCode,
+    HttpStatus,
+    NotFoundException,
+    Post,
+    UseGuards,
 } from '@nestjs/common';
 import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
+    ApiBearerAuth,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { THROTTLE_CONFIRM, THROTTLE_FLAG, THROTTLE_REJECT } from '../../config';
@@ -34,19 +34,18 @@ import { AnalysisService } from './analysis.service';
 import { BarcodeService } from './barcode.service';
 import { ContentService } from './content.service';
 import {
-  ConfirmRequestDto,
-  FlagBarcodeRequestDto,
-  GenerateAnalysisRequestDto,
-  RejectAnalysisRequestDto,
-  RejectContentRequestDto,
-  RejectProductRequestDto,
-  ScanRequestDto,
+    ConfirmRequestDto,
+    FlagBarcodeRequestDto,
+    GenerateAnalysisRequestDto,
+    RejectAnalysisRequestDto,
+    RejectContentRequestDto,
+    RejectProductRequestDto,
+    ScanRequestDto,
 } from './dto';
 import { ProductService } from './product.service';
 
 /**
- * Ürün işlemlerini yöneten ana kontrolcü.
- * Barkod tarama, ürün onaylama ve reddetme gibi temel akışlar buradan yönetilir.
+ * Product controller
  */
 @ApiTags('products')
 @Controller()
@@ -61,11 +60,7 @@ export class ProductController {
   ) {}
 
   /**
-   * Barkod tarama servisi. { POST /api/products/scan }
-   * Gelen barkodu önce veritabanında arar, yoksa AI servisine sorar.
-   */
-  /**
-   * Rate Limit: 20/dk (normal akış)
+   * Barkod tara - DB'de yoksa AI'dan al
    */
   @Post('products/scan')
   @HttpCode(HttpStatus.OK)
@@ -88,7 +83,7 @@ export class ProductController {
     let barcodeEntity = await this.barcodeService.findByCode(barcode);
 
     if (barcodeEntity) {
-      // Barkod mevcut, puanı en yüksek varyantı getiriyoruz.
+      // Barkod mevcut, en iyi varyantı getir
       const bestProduct = await this.productService.findBestByBarcodeId(
         barcodeEntity.id,
       );
@@ -102,11 +97,11 @@ export class ProductController {
       }
     }
 
-    // Veritabanında bulunamadı, AI devreye giriyor (Gemini Search Grounding)
+    // AI devreye giriyor
     const aiResult = await this.aiService.identifyProduct(
       barcode,
       userId,
-      true, // enforceLimit: her zaman rate limit uygula
+      true, // Rate limit uygula
     );
 
     if (!aiResult.isFood || !aiResult.product) {
@@ -142,11 +137,7 @@ export class ProductController {
   }
 
   /**
-   * Kullanıcı ürünü doğruladığında çağrılır. { POST /api/products/confirm }
-   * Bu aşamada ürünün detaylı içerik ve analiz verilerini hazırlayıp dönüyoruz.
-   */
-  /**
-   * Rate Limit: 20/dk (normal akış)
+   * Ürün onayla, içerik getir
    */
   @Post('products/confirm')
   @HttpCode(HttpStatus.OK)
@@ -167,7 +158,7 @@ export class ProductController {
       throw new NotFoundException('Ürün bulunamadı');
     }
 
-    // Otomatik UPVOTE - ürün onaylandı (arka planda)
+    // UPVOTE - ürün onaylandı
     void this.voteService.vote(
       userId,
       VoteTarget.PRODUCT,
@@ -175,12 +166,12 @@ export class ProductController {
       VoteType.UP,
     );
 
-    // Ürüne bağlı en iyi skorlu içerik varyantını bul
+    // En iyi içerik varyantını bul
     let content = await this.contentService.findBestByProductId(productId);
     let isContentNew = false;
 
     if (!content) {
-      // İçerik yok - AI ile oluştur
+      // AI ile oluştur
       const aiContent = await this.aiService.getProductContent(
         product.brand,
         product.name,
@@ -199,7 +190,7 @@ export class ProductController {
       isContentNew = true;
     }
 
-    // İçerik için UPVOTE (arka planda)
+    // UPVOTE
     void this.voteService.vote(
       userId,
       VoteTarget.CONTENT,
@@ -214,11 +205,7 @@ export class ProductController {
   }
 
   /**
-   * Kullanıcı ürünü "Bu değil" diyerek reddettiğinde çalışır. { POST /api/products/reject }
-   * Sistem alternatif varyant varsa onu sunar, yoksa AI'dan yeni bir tahmin ister.
-   */
-  /**
-   * Rate Limit: 6/dk (reject akışı - AI maliyeti yüksek)
+   * Ürün reddet, sonraki varyant getir
    */
   @Post('products/reject')
   @HttpCode(HttpStatus.OK)
@@ -242,7 +229,7 @@ export class ProductController {
       throw new NotFoundException('Ürün bulunamadı');
     }
 
-    // Otomatik DOWNVOTE - kullanıcı ürünü reddetti (arka planda)
+    // DOWNVOTE - ürün reddedildi
     void this.voteService.vote(
       userId,
       VoteTarget.PRODUCT,
@@ -253,7 +240,7 @@ export class ProductController {
     // Tüm hariç tutulacak ID'leri birleştir (şu anki + önceki redler)
     const allExcludeIds = [...new Set([productId, ...excludeIds])];
 
-    // Sonraki en yüksek skorlu varyantı bul (bu ürün hariç)
+    // Sonraki en iyi varyantı bul
     const nextProduct = await this.productService.findBestExcluding(
       product.barcode_id,
       allExcludeIds,
@@ -267,7 +254,7 @@ export class ProductController {
       };
     }
 
-    // Alternatif varyant yok - AI ile yeni ürün oluştur
+    // Alternatif yok - AI ile yeni oluştur
     const barcode = await this.barcodeService.findById(product.barcode_id);
     if (!barcode) {
       throw new NotFoundException('Barkod bulunamadı');
@@ -276,7 +263,7 @@ export class ProductController {
     const aiResult = await this.aiService.identifyProduct(
       barcode.code,
       userId,
-      true, // enforceLimit: her zaman rate limit uygula
+      true, // Rate limit uygula
     );
 
     if (!aiResult.isFood || !aiResult.product) {
@@ -287,10 +274,10 @@ export class ProductController {
       };
     }
 
-    // Varyant limitini kontrol et (max 3)
+    // Varyant limiti (max 3)
     await this.productService.enforceVariantLimit(product.barcode_id);
 
-    // Yeni ürün varyantı oluştur
+    // Yeni varyant oluştur
     const newProduct = await this.productService.create({
       barcode_id: product.barcode_id,
       brand: aiResult.product.brand,
@@ -307,11 +294,7 @@ export class ProductController {
   }
 
   /**
-   * İçerik reddedildiğinde "Domino Etkisi" başlar. { POST /api/content/reject }
-   * İçerik değişince, ona bağlı analiz de geçersiz olur ve yenilenmesi gerekir.
-   */
-  /**
-   * Rate Limit: 6/dk (reject akışı - AI maliyeti yüksek)
+   * İçerik reddet (Domino etkisi: analiz de yenilenir)
    */
   @Post('content/reject')
   @HttpCode(HttpStatus.OK)

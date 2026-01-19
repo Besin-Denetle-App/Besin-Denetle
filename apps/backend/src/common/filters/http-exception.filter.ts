@@ -1,20 +1,16 @@
 import {
-  ArgumentsHost,
-  Catch,
-  ExceptionFilter,
-  HttpException,
-  HttpStatus,
-  Logger,
+    ArgumentsHost,
+    Catch,
+    ExceptionFilter,
+    HttpException,
+    HttpStatus,
+    Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 /**
- * Tüm hataları standart bir formatta döndüren global exception filter.
- * Bu sayede frontend her zaman aynı yapıda hata yanıtı alır.
- *
- * Yakalanan hatalar:
- * - HttpException ve türevleri (BadRequest, NotFound, Unauthorized vb.)
- * - Beklenmeyen hatalar (TypeORM, validation vb.)
+ * Global exception filter
+ * Tüm hataları standart formatta döndürür.
  */
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -25,7 +21,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    // HTTP durumu ve mesajı belirle
+    // HTTP status ve mesajı belirle
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Beklenmeyen bir hata oluştu';
     let errorCode: string | number = 'INTERNAL_ERROR';
@@ -46,16 +42,16 @@ export class HttpExceptionFilter implements ExceptionFilter {
         const msg = (exceptionResponse as Record<string, unknown>).message;
         message = Array.isArray(msg) ? msg.join(', ') : String(msg);
 
-        // Özel hata kodu varsa kullan (örn: 'PRODUCT_NOT_FOUND')
+        // Özel hata kodu varsa kullan
         if ('error' in exceptionResponse) {
           errorCode = (exceptionResponse as Record<string, unknown>)
             .error as string;
         }
       }
     } else if (exception instanceof Error) {
-      // Beklenmeyen hatalar (TypeORM, vs.)
+      // Beklenmeyen hatalar
       message = 'Sunucu hatası oluştu';
-      // Production'da gerçek hata mesajını gizle
+      // Production'da gerçek hatayı gizle
       if (process.env.NODE_ENV === 'development') {
         message = exception.message;
       }
@@ -72,20 +68,20 @@ export class HttpExceptionFilter implements ExceptionFilter {
       },
     };
 
-    // Loglama stratejisi
+    // Log stratejisi
     const logContext = `${request.method} ${request.url}`;
 
     if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
-      // 5xx: Sunucu hataları - ERROR seviyesi + stack trace
+      // 5xx: Sunucu hataları - ERROR + stack
       this.logger.error(
         `[${status}] ${message} - ${logContext}`,
         exception instanceof Error ? exception.stack : undefined,
       );
     } else if (status === HttpStatus.TOO_MANY_REQUESTS) {
-      // 429: Rate limit - WARN seviyesi (izleme için önemli)
+      // 429: Rate limit - WARN
       this.logger.warn(`[${status}] ${message} - ${logContext}`);
     }
-    // 4xx (400, 401, 403, 404): Normal akış, loglama yok
+    // 4xx: Normal akış, log yok
 
     response.status(status).json(errorResponse);
   }

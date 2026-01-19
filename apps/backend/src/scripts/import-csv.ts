@@ -1,10 +1,6 @@
 /**
  * CSV Import Scripti
- *
  * Kullanım: pnpm import-csv [csv-dosyası]
- * Örnek: pnpm import-csv ./data/urunler.csv
- *
- * CSV dosyasından ürün verilerini veritabanına aktarır.
  */
 
 import csv from 'csv-parser';
@@ -13,12 +9,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { DataSource } from 'typeorm';
 import {
-  Barcode,
-  ContentAnalysis,
-  Product,
-  ProductContent,
-  User,
-  Vote,
+    Barcode,
+    ContentAnalysis,
+    Product,
+    ProductContent,
+    User,
+    Vote,
 } from '../entities';
 
 // .env dosyasını yükle

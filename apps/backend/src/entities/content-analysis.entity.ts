@@ -13,8 +13,8 @@ import { ProductContent } from './product-content.entity';
 import { Vote } from './vote.entity';
 
 /**
- * AI (Gemini) tarafından üretilen sağlık analizlerini sakladığımız tablo.
- * İçerik (ProductContent) değişirse analiz de değişmek zorundadır (Zincirleme reaksiyon).
+ * AI (Gemini) tarafından üretilen sağlık analizlerinin saklandığı dosya.
+ * İçerik (ProductContent) değişirse analiz de değişmek zorunda.
  * Bu nedenle analizler doğrudan bir içerik varyantına bağlıdır.
  */
 @Entity('content_analysis')
@@ -22,7 +22,7 @@ export class ContentAnalysis {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // Ait olduğu içerik varyantı
+  // Bağlı içerik
   @Column({ type: 'uuid' })
   @Index()
   product_content_id: string;
@@ -33,11 +33,11 @@ export class ContentAnalysis {
   @JoinColumn({ name: 'product_content_id' })
   productContent: ProductContent;
 
-  // AI tarafından üretilen analiz çıktısı (esnek JSONB yapı)
+  // AI analiz çıktısı (JSONB)
   @Column({ type: 'jsonb', nullable: true })
   analysis_text: IAnalysisResult | null;
 
-  // Analiz varyantı puanı
+  // Skor
   @Column({ type: 'int', default: 0 })
   @Index()
   score: number;
@@ -46,11 +46,11 @@ export class ContentAnalysis {
   @Column({ type: 'int', default: 0 })
   vote_count: number;
 
-  // AI mı manuel mi oluşturuldu
+  // Kaynak
   @Column({ default: false })
   is_manual: boolean;
 
-  // Oluşturulma tarihi
+  // Oluşturulma
   @CreateDateColumn()
   created_at: Date;
 

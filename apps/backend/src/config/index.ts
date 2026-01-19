@@ -1,4 +1,6 @@
-// Config modülü barrel export
+/**
+ * Config modülü - barrel export
+ */
 export { default as aiConfig, type AiConfig } from './ai.config';
 export { default as databaseConfig } from './database.config';
 export { default as jwtConfig } from './jwt.config';
@@ -11,5 +13,6 @@ export {
   THROTTLE_FLAG,
   THROTTLE_HEALTH,
   THROTTLE_REJECT,
-  default as throttlerConfig,
+  default as throttlerConfig
 } from './throttler.config';
+

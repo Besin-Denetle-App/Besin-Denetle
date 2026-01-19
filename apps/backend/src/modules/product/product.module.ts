@@ -1,12 +1,12 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
-  Barcode,
-  ContentAnalysis,
-  Product,
-  ProductContent,
-  User,
-  Vote,
+    Barcode,
+    ContentAnalysis,
+    Product,
+    ProductContent,
+    User,
+    Vote,
 } from '../../entities';
 import { AiModule } from '../ai/ai.module';
 import { VoteModule } from '../vote/vote.module';
@@ -30,7 +30,7 @@ import { ProductService } from './product.service';
       Vote,
       User,
     ]),
-    forwardRef(() => VoteModule), // Circular dependency çözümü
+    forwardRef(() => VoteModule), // Circular dependency
     AiModule,
   ],
   controllers: [ProductController],

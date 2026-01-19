@@ -1,10 +1,6 @@
 /**
  * CSV Analiz Scripti
- *
  * Kullanım: pnpm analyze-csv [csv-dosyası]
- * Örnek: pnpm analyze-csv ./data/urunler.csv
- *
- * CSV dosyasındaki barkodları analiz eder ve veritabanıyla karşılaştırır.
  */
 
 import csv from 'csv-parser';
@@ -13,12 +9,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { DataSource } from 'typeorm';
 import {
-  Barcode,
-  ContentAnalysis,
-  Product,
-  ProductContent,
-  User,
-  Vote,
+    Barcode,
+    ContentAnalysis,
+    Product,
+    ProductContent,
+    User,
+    Vote,
 } from '../entities';
 
 // .env dosyasını yükle

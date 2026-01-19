@@ -1,10 +1,7 @@
 import { registerAs } from '@nestjs/config';
 
 /**
- * JWT konfigürasyonu.
- * Access token ve refresh token süreleri merkezi olarak yönetilir.
- *
- * JWT_SECRET zorunludur - env.validation.ts tarafından uygulama başlarken kontrol edilir.
+ * JWT konfigürasyonu
  */
 export default registerAs('jwt', () => ({
   secret: process.env.JWT_SECRET!,

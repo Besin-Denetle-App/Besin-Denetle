@@ -1,16 +1,23 @@
 {
   "name": "@besin-denetle/backend",
-  "version": "0.9.2",
-  "description": "Besin Denetle Backend API",
-  "author": "Furkan Çelik",
-  "license": "UNLICENSED",
+  "version": "0.10.1",
+  "description": "RESTful API built with NestJS for Besin Denetle food analysis platform",
+  "author": "Furkan Çelik <iletisim.furkancelik@gmail.com> (https://furkanpasa.com)",
+  "license": "GPL-3.0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Besin-Denetle-App/Besin-Denetle.git",
+    "directory": "apps/backend"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "build": "nest build",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",

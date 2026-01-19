@@ -1,10 +1,6 @@
 /**
  * Manuel Skor Yeniden Hesaplama Scripti
- *
  * Kullanım: pnpm recalculate-scores
- *
- * Bu script, Vote tablosundaki oylardan tüm skorları yeniden hesaplar.
- * Kullanıcı silindikten sonra veya veri tutarsızlığı olduğunda kullanılır.
  */
 
 import { VoteType } from '@besin-denetle/shared';
@@ -31,7 +27,7 @@ interface UpdateResult {
 }
 
 /**
- * Tek tablo için skor güncelleme SQL'i oluştur ve çalıştır
+ * Skor güncelleme SQL'i
  */
 async function updateTableScores(
   dataSource: DataSource,

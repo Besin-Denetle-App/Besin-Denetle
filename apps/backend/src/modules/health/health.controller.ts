@@ -5,8 +5,7 @@ import { DataSource } from 'typeorm';
 import { THROTTLE_HEALTH } from '../../config';
 
 /**
- * Sunucu sağlık kontrolü için basit endpoint.
- * Load balancer, Docker healthcheck ve monitoring araçları tarafından kullanılır.
+ * Health check endpoint
  */
 @ApiTags('health')
 @Controller('health')
@@ -20,7 +19,7 @@ export class HealthController {
   @ApiOperation({ summary: 'Sunucu sağlık kontrolü' })
   @ApiResponse({ status: 200, description: 'Sunucu sağlıklı' })
   async check() {
-    // Veritabanı bağlantı kontrolü
+    // DB kontrolü
     let dbStatus = 'ok';
     try {
       await this.dataSource.query('SELECT 1');

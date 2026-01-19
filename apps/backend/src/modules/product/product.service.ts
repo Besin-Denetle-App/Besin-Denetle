@@ -5,8 +5,7 @@ import { In, Not, Repository } from 'typeorm';
 import { Product } from '../../entities';
 
 /**
- * Ürün varyantlarını yöneten servis.
- * Veritabanı sorguları ve varyant eleme mantığı burada bulunur.
+ * Ürün varyant servisi
  */
 @Injectable()
 export class ProductService {
@@ -16,7 +15,7 @@ export class ProductService {
   ) {}
 
   /**
-   * Verilen barkoda ait en yüksek puanlı (en güvenilir) ürünü getirir.
+   * Barkod ID'ye göre en yüksek skorlu ürünü getir
    */
   async findBestByBarcodeId(barcodeId: string): Promise<Product | null> {
     return this.productRepository.findOne({
@@ -26,7 +25,7 @@ export class ProductService {
   }
 
   /**
-   * Kullanıcının reddettiği varyantlar hariç en iyi alternatifi bulur.
+   * Reddedilen ID'ler hariç en iyi ürünü getir
    */
   async findBestExcluding(
     barcodeId: string,
@@ -66,7 +65,7 @@ export class ProductService {
   }
 
   /**
-   * Bir barkoda bağlı kaç farklı ürün varyantı olduğunu sayar.
+   * Barkod ID'ye göre varyant sayısı
    */
   async countByBarcodeId(barcodeId: string): Promise<number> {
     return this.productRepository.count({
@@ -75,7 +74,7 @@ export class ProductService {
   }
 
   /**
-   * Yeni bir ürün varyantı oluşturur. Puanı 0 olarak başlar.
+   * Yeni ürün varyantı oluştur
    */
   async create(data: ICreateProduct): Promise<Product> {
     const product = this.productRepository.create({
@@ -92,14 +91,13 @@ export class ProductService {
   }
 
   /**
-   * Veritabanı şişkinliğini önlemek için varyant limitini kontrol eder.
-   * Limit aşıldıysa en düşük puanlı varyantı siler (Survival of the Fittest).
+   * Varyant limitini kontrol et (max aşılırsa en düşük skorluyu sil)
    */
   async enforceVariantLimit(barcodeId: string): Promise<void> {
     const count = await this.countByBarcodeId(barcodeId);
 
     if (count >= MAX_VARIANTS) {
-      // En düşük skorlu varyantı bul ve sil
+      // En düşük skorluyu sil
       const lowestScored = await this.productRepository.findOne({
         where: { barcode_id: barcodeId },
         order: { score: 'ASC', created_at: 'ASC' },

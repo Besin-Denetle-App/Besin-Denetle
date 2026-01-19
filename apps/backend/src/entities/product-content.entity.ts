@@ -14,16 +14,15 @@ import { Product } from './product.entity';
 import { Vote } from './vote.entity';
 
 /**
- * Ürünün "içindekiler" ve "besin değerleri" verisini tutan tablo.
- * AI, içeriği bazen farklı yorumlayabilir veya kullanıcılar düzeltmek isteyebilir.
- * Bu yüzden içeriği üründen ayrı bir tabloda tutarak varyantlaşmasına izin veriyoruz.
+ * Ürün içerik entity
+ * İçindekiler ve besin değerleri.
  */
 @Entity('product_content')
 export class ProductContent {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // Ait olduğu ürün varyantı
+  // Bağlı ürün
   @Column({ type: 'uuid' })
   @Index()
   product_id: string;
@@ -34,32 +33,32 @@ export class ProductContent {
   @JoinColumn({ name: 'product_id' })
   product: Product;
 
-  // Ürünün arka yüzündeki "İçindekiler" metni
+  // İçindekiler metni
   @Column({ type: 'text', nullable: true })
   ingredients: string | null;
 
-  // Alerjen bilgisi (AI veya kullanıcı girişi) (örn: Gluten, Süt, Fındık içerir)
+  // Alerjen bilgisi
   @Column({ type: 'text', nullable: true })
   allergens: string | null;
 
-  // Besin değerleri tablosu (JSON formatında)
+  // Besin tablosu (JSONB)
   @Column({ type: 'jsonb', nullable: true })
   nutrition_table: INutritionTable | null;
 
-  // İçerik varyantı puanı
+  // Skor
   @Column({ type: 'int', default: 0 })
   @Index()
   score: number;
 
-  // Bu içeriğe oy veren kullanıcı sayısı
+  // Oy sayısı
   @Column({ type: 'int', default: 0 })
   vote_count: number;
 
-  // Verinin kaynağı (false: AI sonucu, true: manuel giriş)
+  // Kaynak (false=AI, true=manuel)
   @Column({ default: false })
   is_manual: boolean;
 
-  // Oluşturulma tarihi
+  // Oluşturulma
   @CreateDateColumn()
   created_at: Date;
 

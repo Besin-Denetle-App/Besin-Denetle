@@ -21,7 +21,7 @@ import { User } from './user.entity';
  * "Survival of the Fittest" (En iyinin hayatta kalması) mantığı bu tablo üzerinden yürür.
  */
 @Entity('vote')
-// Veri bütünlüğü için Unique Constraint'ler: Aynı kullanıcı aynı kayda oy veremez.
+// Unique constraint'ler
 @Unique('unique_user_product', ['user_id', 'product_id'])
 @Unique('unique_user_content', ['user_id', 'product_content_id'])
 @Unique('unique_user_analysis', ['user_id', 'content_analysis_id'])
@@ -29,7 +29,7 @@ export class Vote {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // Oy veren kullanıcının kimliği
+  // Oy veren
   @Column({ type: 'uuid' })
   @Index()
   user_id: string;
@@ -38,14 +38,14 @@ export class Vote {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  // Oy tipi: UP (+1) veya DOWN (-1)
+  // Oy tipi: UP veya DOWN
   @Column({
     type: 'enum',
     enum: VoteType,
   })
   vote_type: VoteType;
 
-  // Ürün kimliği oylaması için (nullable)
+  // Ürün oylaması (nullable)
   @Column({ type: 'uuid', nullable: true })
   @Index()
   product_id: string | null;
@@ -57,7 +57,7 @@ export class Vote {
   @JoinColumn({ name: 'product_id' })
   product: Product | null;
 
-  // İçerik oylaması için (nullable)
+  // İçerik oylaması (nullable)
   @Column({ type: 'uuid', nullable: true })
   @Index()
   product_content_id: string | null;
@@ -69,7 +69,7 @@ export class Vote {
   @JoinColumn({ name: 'product_content_id' })
   productContent: ProductContent | null;
 
-  // Analiz oylaması için (nullable)
+  // Analiz oylaması (nullable)
   @Column({ type: 'uuid', nullable: true })
   @Index()
   content_analysis_id: string | null;
@@ -81,11 +81,11 @@ export class Vote {
   @JoinColumn({ name: 'content_analysis_id' })
   contentAnalysis: ContentAnalysis | null;
 
-  // İlk oy tarihi
+  // Oluşturulma
   @CreateDateColumn()
   created_at: Date;
 
-  // Son güncelleme tarihi
+  // Son güncelleme
   @UpdateDateColumn()
   updated_at: Date;
 }

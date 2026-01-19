@@ -10,14 +10,14 @@ import { registerAs } from '@nestjs/config';
  * - gemini-3-flash-preview / gemini-3-pro-preview (en yeni sürümler)
  */
 export default registerAs('ai', () => ({
-  // Prompt 1-2: Ürün tanımlama ve içerik bulma (hızlı model)
+  // Prompt 1-2: Ürün tanımlama (hızlı model)
   modelFast: process.env.GEMINI_MODEL_FAST || 'gemini-3-flash-preview',
 
   // Prompt 3: Sağlık analizi (akıllı model)
   modelSmart: process.env.GEMINI_MODEL_SMART || 'gemini-3-pro-preview',
 }));
 
-// Tip tanımı (ConfigService için)
+// Tip tanımı
 export interface AiConfig {
   modelFast: string;
   modelSmart: string;
