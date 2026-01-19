@@ -38,7 +38,7 @@ const getApiConfig = () => {
       return {
         apiUrl: null,
         apiHost: process.env.API_HOST || null,
-        apiPort: process.env.API_PORT || "3200",
+        apiPort: process.env.API_PORT || "50101",
       };
 
     case "development":
@@ -47,7 +47,7 @@ const getApiConfig = () => {
       return {
         apiUrl: null,
         apiHost: process.env.DEV_API_HOST || null,
-        apiPort: process.env.DEV_API_PORT || "3200",
+        apiPort: process.env.DEV_API_PORT || "50101",
       };
   }
 };

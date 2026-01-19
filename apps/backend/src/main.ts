@@ -38,10 +38,14 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  // Port seçimi:
-  // - PORT env variable varsa onu kullan
-  // - PORT=0 ile dinamik port seçilebilir
-  const port = process.env.PORT ?? 3200;
+  // Port seçimi
+  const port = process.env.PORT;
+  if (!port) {
+    throw new Error(
+      'PORT environment variable is required. Please set it in your .env file.',
+    );
+  }
+
   await app.listen(port);
 
   logger.log(`🚀 Server running on port ${port}`);

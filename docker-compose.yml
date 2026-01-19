@@ -1,12 +1,12 @@
 # Besin-Denetle Docker Compose
-# Sadece PostgreSQL veritabanı için kullanılır
+# PostgreSQL ve Redis için kullanılır
 # Backend PM2 ile doğrudan çalıştırılır (bkz: docs/server-ubuntu-deployment.md)
 #
 # Kullanım:
-#   docker compose up -d db        # Veritabanını başlat
-#   docker compose logs -f db      # DB logları
-#   docker compose down            # Servisleri durdur
-#   docker compose down -v         # Servisleri ve volumeleri sil
+#   docker compose up -d            # Tüm servisleri başlat
+#   docker compose logs -f          # Logları izle
+#   docker compose down             # Servisleri durdur
+#   docker compose down -v          # Servisleri ve volumeleri sil
 
 # Backend .env dosyası PostgreSQL değişkenlerini içerir
 # Not: Bu dosya apps/backend/.env yolunda olmalı
@@ -26,7 +26,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:50103:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -45,9 +45,39 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  # ============================================
+  # Redis (Rate Limiting için)
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: besin_denetle_redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:50102:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
 # ============================================
 # Volumes
 # ============================================
 volumes:
   postgres_data:
+    driver: local
+  redis_data:
     driver: local

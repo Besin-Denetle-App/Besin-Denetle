@@ -60,7 +60,7 @@ pnpm dev:backend
 docker compose ps
 
 # Health check
-curl http://localhost:3200/health
+curl http://localhost:50101/api/health
 ```
 
 ---
@@ -92,7 +92,7 @@ curl http://localhost:3200/health
 
 ### PostgreSQL (db)
 
-- **Port:** 5432
+- **Port:** 50103
 - **Container:** `besin_denetle_db`
 - **Volume:** `postgres_data` (veriler kalıcı)
 
@@ -103,8 +103,8 @@ docker compose exec db psql -U myuser -d besindenetle
 
 ### Backend API
 
-- **Port:** 3200 (doğrudan Node.js)
-- **Health endpoint:** `http://localhost:3200/health`
+- **Port:** 50101 (doğrudan Node.js)
+- **Health endpoint:** `http://localhost:50101/api/health`
 
 ---
 

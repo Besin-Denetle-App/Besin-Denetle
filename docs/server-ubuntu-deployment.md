@@ -180,7 +180,7 @@ pm2 delete besin-backend
 - [ ] **JWT_SECRET:** Güçlü, rastgele bir değer (min 32 karakter)
 - [ ] **DB_PASSWORD:** Güçlü veritabanı şifresi
 - [ ] **MOCK_AUTH:** `false` olarak ayarla
-- [ ] **Firewall:** Sadece 80/443 portları açık, 5432 kapalı
+- [ ] **Firewall:** Sadece 80/443 portları açık, 50103 kapalı
 - [ ] **SSL:** Caddy veya Nginx ile HTTPS aktif
 - [ ] **Backup:** Otomatik yedekleme cron'u kurulu
 
@@ -258,7 +258,7 @@ besindenetle.furkanpasa.com {
 
     # /api/* isteklerini backend'e yönlendir
     handle /api/* {
-        reverse_proxy localhost:3200
+        reverse_proxy localhost:50101
     }
 
     # Ana sayfa yanıtı
@@ -376,7 +376,7 @@ pnpm restart:prod
 ### Health Check
 
 ```bash
-curl http://localhost:3200/health
+curl http://localhost:50101/api/health
 ```
 
 ### PM2 Monitoring

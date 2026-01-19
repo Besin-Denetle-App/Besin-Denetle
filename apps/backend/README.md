@@ -80,13 +80,13 @@ Backend'i çalıştırmak için `.env` dosyasını oluşturmanız **zorunludur**
 
 ```env
 # --- SUNUCU AYARLARI ---
-PORT=3200
+PORT=50101
 NODE_ENV=development
 
 # --- VERİTABANI ---
 # Docker Compose varsayılan ayarlarıdır
 DB_HOST=localhost
-DB_PORT=5432
+DB_PORT=50103
 DB_USER=myuser
 DB_PASSWORD=mypassword
 DB_NAME=besindenetle
@@ -156,7 +156,7 @@ pnpm start:prod
 ## 📡 API Endpointleri
 
 Uygulama çalıştığında Swagger dokümantasyonuna erişebilirsiniz:
-👉 **URL:** `http://localhost:3200/api/docs`
+👉 **URL:** `http://localhost:50101/api/docs`
 
 ### Auth Endpoints
 

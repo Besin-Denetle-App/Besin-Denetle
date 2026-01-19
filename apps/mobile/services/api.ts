@@ -1,15 +1,15 @@
 import axios, {
-    AxiosError,
-    InternalAxiosRequestConfig,
-    isAxiosError,
+  AxiosError,
+  InternalAxiosRequestConfig,
+  isAxiosError,
 } from "axios";
 import Constants from "expo-constants";
 import { router } from "expo-router";
 import {
-    clearAuthData,
-    getAccessToken,
-    getRefreshToken,
-    saveTokens,
+  clearAuthData,
+  getAccessToken,
+  getRefreshToken,
+  saveTokens,
 } from "../utils/storage";
 
 // API base URL belirleme
@@ -29,7 +29,7 @@ const getBaseUrl = (): string => {
 
   // Development host:port
   const apiHost = extra?.apiHost as string | undefined;
-  const apiPort = (extra?.apiPort as string) || "3200";
+  const apiPort = (extra?.apiPort as string) || "50101";
 
   if (apiHost) {
     const url = `http://${apiHost}:${apiPort}/api`;

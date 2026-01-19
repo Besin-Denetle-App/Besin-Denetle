@@ -384,7 +384,7 @@ Local build için değişkenler `apps/mobile/eas.json` dosyasındaki `env` bloğ
       "env": {
         "APP_ENV": "preview",
         "API_HOST": "192.168.1.100",
-        "API_PORT": "3200"
+        "API_PORT": "50101"
       }
     },
     "production": {
