@@ -1,3 +1,4 @@
+import { COLORS } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
 import { makeRedirectUri } from "expo-auth-session";
 import * as Google from "expo-auth-session/providers/google";
@@ -18,7 +19,7 @@ import { useDebouncedNavigation } from "../../hooks/use-debounce";
 import { parseApiError } from "../../services/api";
 import { useAuthStore } from "../../stores/auth.store";
 
-// Expo Go'da ve standalone'da auth session'ı tamamlamak için gerekli
+// Auth session callback icin gerekli
 WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
@@ -27,11 +28,11 @@ export default function LoginScreen() {
   const { navigate } = useDebouncedNavigation();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const isProcessingRef = useRef(false); // Sonsuz döngü önleme için
+  const isProcessingRef = useRef(false);
 
   const googleConfig = Constants.expoConfig?.extra?.google || {};
 
-  // Expo Go mu yoksa native build mi?
+  // Expo Go veya native build kontrolu
   const isExpoGo = Constants.appOwnership === "expo";
 
   // Redirect URI: Expo Go için proxy, native build için scheme
@@ -39,8 +40,7 @@ export default function LoginScreen() {
     ? "https://auth.expo.io/@furkanpasa/Besin-Denetle"
     : makeRedirectUri({ scheme: "besindenetle", path: "auth" });
 
-  // Google OAuth request
-  // Expo Go'da sadece webClientId kullanılır, native build'de platform'a göre seçilir
+  // Google OAuth request konfigurasyonu
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId: googleConfig.webClientId,
     androidClientId: isExpoGo ? undefined : googleConfig.androidClientId,
@@ -49,9 +49,8 @@ export default function LoginScreen() {
     scopes: ["openid", "email", "profile"],
   });
 
-  // Google OAuth response'ını useEffect ile yakala
+  // Google OAuth response handler
   useEffect(() => {
-    // Response değiştiğinde logla (debug için)
     if (response?.type === "error") {
       console.error("Google OAuth Error:", response.error);
     }
@@ -59,7 +58,7 @@ export default function LoginScreen() {
     async function handleGoogleResponse() {
       if (response?.type === "success") {
         const { authentication } = response;
-        // Backend Google verifyIdToken API'si idToken bekliyor, accessToken değil
+        // Backend idToken bekliyor
         if (authentication?.idToken && !isProcessingRef.current) {
           isProcessingRef.current = true;
           setIsProcessing(true);
@@ -90,11 +89,11 @@ export default function LoginScreen() {
     handleGoogleResponse();
   }, [response, loginWithGoogle, navigate]);
 
-  // Google giriş butonuna tıklandığında
+  // Google giris butonu handler
   const handleGoogleLogin = async () => {
     try {
       setError(null);
-      // showInRecents: true - Android'de callback'in düzgün çalışmasını sağlar
+      // showInRecents: Android callback icin gerekli
       const result = await promptAsync({ showInRecents: true });
 
       if (result?.type === "success") {
@@ -178,11 +177,7 @@ export default function LoginScreen() {
         {/* Logo ve Başlık */}
         <View className="items-center mb-12">
           <View className="w-24 h-24 bg-primary/10 rounded-full items-center justify-center mb-6">
-            <Ionicons
-              name="nutrition"
-              size={48}
-              color={colorScheme === "dark" ? "#8B5CF6" : "#8B5CF6"}
-            />
+            <Ionicons name="nutrition" size={48} color={COLORS.primary} />
           </View>
           <Text className="text-3xl font-bold text-foreground mb-2">
             Besin Denetle

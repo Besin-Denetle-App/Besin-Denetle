@@ -23,7 +23,7 @@ export const emailSignup = async (request: {
   const response = await api.post<OAuthResponse>("/auth/email-signup", request);
   const data = response.data;
 
-  // Mevcut kullanıcı ise token'ları kaydet
+  // Mevcut kullanıcıysa token kaydet
   if (!data.isNewUser) {
     await saveTokens(data.accessToken, data.refreshToken);
     await saveUser(data.user);
@@ -39,7 +39,7 @@ export const oauth = async (request: OAuthRequest): Promise<OAuthResponse> => {
   const response = await api.post<OAuthResponse>("/auth/oauth", request);
   const data = response.data;
 
-  // Mevcut kullanıcı ise token'ları kaydet
+  // Mevcut kullanıcıysa token kaydet
   if (!data.isNewUser) {
     await saveTokens(data.accessToken, data.refreshToken);
     await saveUser(data.user);
@@ -49,7 +49,7 @@ export const oauth = async (request: OAuthRequest): Promise<OAuthResponse> => {
 };
 
 /**
- * Yeni kullanıcı kaydı tamamla
+ * Yeni kullanıcı kaydını tamamla
  */
 export const register = async (
   request: RegisterRequest,
@@ -57,7 +57,7 @@ export const register = async (
   const response = await api.post<RegisterResponse>("/auth/register", request);
   const data = response.data;
 
-  // Token'ları ve kullanıcı bilgisini kaydet
+  // Token ve kullanıcı bilgisini kaydet
   await saveTokens(data.accessToken, data.refreshToken);
   await saveUser(data.user);
 
@@ -65,7 +65,7 @@ export const register = async (
 };
 
 /**
- * Token yenile
+ * Access token yenile
  */
 export const refresh = async (): Promise<RefreshTokenResponse | null> => {
   try {
@@ -85,13 +85,13 @@ export const refresh = async (): Promise<RefreshTokenResponse | null> => {
 };
 
 /**
- * Çıkış yap
+ * Logout
  */
 export const logout = async (): Promise<void> => {
   try {
     await api.post<LogoutResponse>("/auth/logout");
   } catch {
-    // Hata olsa bile yerel verileri sil
+    // Hata olsa bile yerel verileri temizle
   }
   await clearAuthData();
 };

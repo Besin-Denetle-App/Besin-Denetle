@@ -1,45 +1,47 @@
-import type { INutritionTable } from '@besin-denetle/shared';
-import { Ionicons } from '@expo/vector-icons';
-import { useColorScheme } from 'nativewind';
-import { Text, View } from 'react-native';
+import { COLORS } from "@/constants";
+import type { INutritionTable } from "@besin-denetle/shared";
+import { Ionicons } from "@expo/vector-icons";
+import { useColorScheme } from "nativewind";
+import { Text, View } from "react-native";
 
 interface NutritionTableProps {
   nutrition: INutritionTable | null;
 }
 
-// Besin değeri etiketleri (Türkçe)
+// Besin değeri label'ları (Türkçe)
 const NUTRITION_LABELS: Record<string, string> = {
-  servingSize: 'Porsiyon',
-  calories: 'Kalori',
-  protein: 'Protein',
-  carbohydrates: 'Karbonhidrat',
-  sugars: 'Şeker',
-  fat: 'Yağ',
-  saturatedFat: 'Doymuş Yağ',
-  fiber: 'Lif',
-  sodium: 'Sodyum',
-  salt: 'Tuz',
+  servingSize: "Porsiyon",
+  calories: "Kalori",
+  protein: "Protein",
+  carbohydrates: "Karbonhidrat",
+  sugars: "Şeker",
+  fat: "Yağ",
+  saturatedFat: "Doymuş Yağ",
+  fiber: "Lif",
+  sodium: "Sodyum",
+  salt: "Tuz",
 };
 
-// Birimler
+// Besin değeri birimleri
 const NUTRITION_UNITS: Record<string, string> = {
-  servingSize: '',
-  calories: 'kcal',
-  protein: 'g',
-  carbohydrates: 'g',
-  sugars: 'g',
-  fat: 'g',
-  saturatedFat: 'g',
-  fiber: 'g',
-  sodium: 'mg',
-  salt: 'g',
+  servingSize: "",
+  calories: "kcal",
+  protein: "g",
+  carbohydrates: "g",
+  sugars: "g",
+  fat: "g",
+  saturatedFat: "g",
+  fiber: "g",
+  sodium: "mg",
+  salt: "g",
 };
 
 /**
- * Besin değerleri tablosu componenti
+ * Besin değerleri tablosu
  */
 export function NutritionTable({ nutrition }: NutritionTableProps) {
   const { colorScheme } = useColorScheme();
+  const themeColors = colorScheme === "dark" ? COLORS.dark : COLORS.light;
 
   if (!nutrition) {
     return (
@@ -47,7 +49,7 @@ export function NutritionTable({ nutrition }: NutritionTableProps) {
         <Ionicons
           name="nutrition-outline"
           size={40}
-          color={colorScheme === 'dark' ? '#404040' : '#D4D4D4'}
+          color={themeColors.divider}
         />
         <Text className="text-muted-foreground mt-3 text-center">
           Besin değerleri bulunamadı
@@ -58,16 +60,16 @@ export function NutritionTable({ nutrition }: NutritionTableProps) {
 
   // Gösterilecek değerlerin sırası
   const orderedKeys = [
-    'servingSize',
-    'calories',
-    'protein',
-    'carbohydrates',
-    'sugars',
-    'fat',
-    'saturatedFat',
-    'fiber',
-    'sodium',
-    'salt',
+    "servingSize",
+    "calories",
+    "protein",
+    "carbohydrates",
+    "sugars",
+    "fat",
+    "saturatedFat",
+    "fiber",
+    "sodium",
+    "salt",
   ];
 
   return (
@@ -85,16 +87,17 @@ export function NutritionTable({ nutrition }: NutritionTableProps) {
         if (value === undefined || value === null) return null;
 
         const label = NUTRITION_LABELS[key] || key;
-        const unit = NUTRITION_UNITS[key] || '';
-        const displayValue = typeof value === 'number' 
-          ? `${value}${unit ? ' ' + unit : ''}`
-          : String(value);
+        const unit = NUTRITION_UNITS[key] || "";
+        const displayValue =
+          typeof value === "number"
+            ? `${value}${unit ? " " + unit : ""}`
+            : String(value);
 
         return (
           <View
             key={key}
             className={`flex-row justify-between px-4 py-3 ${
-              index % 2 === 0 ? 'bg-card' : 'bg-secondary/20'
+              index % 2 === 0 ? "bg-card" : "bg-secondary/20"
             }`}
           >
             <Text className="text-foreground">{label}</Text>

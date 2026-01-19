@@ -1,11 +1,13 @@
 /**
- * Feedback components
- * Kullanıcı geri bildirimi ile ilgili componentler
+ * Geri bildirim componentleri (toast, error boundary vb.)
  */
 
-export { ErrorBoundary } from './error-boundary';
+export { ErrorBoundary } from "./error-boundary";
 export {
-    ToastContainer, showErrorToast,
-    showInfoToast, showSuccessToast, showToast
-} from './toast';
+    ToastContainer,
+    showErrorToast,
+    showInfoToast,
+    showSuccessToast,
+    showToast
+} from "./toast";
 

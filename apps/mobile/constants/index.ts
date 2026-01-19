@@ -3,6 +3,6 @@
  * Uygulama genelinde kullanılan sabit değerler
  */
 
-export * from './config';
-export * from './theme';
+export * from "./config";
+export * from "./theme";
 

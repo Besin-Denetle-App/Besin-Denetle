@@ -1,38 +1,39 @@
-import { Ionicons } from '@expo/vector-icons';
-import { useColorScheme } from 'nativewind';
-import { Image, View } from 'react-native';
+import { COLORS } from "@/constants";
+import { Ionicons } from "@expo/vector-icons";
+import { useColorScheme } from "nativewind";
+import { Image, View } from "react-native";
 
 interface ProductImageProps {
   url?: string | null;
-  localPath?: string; // Telefona indirilmiş resim yolu
+  localPath?: string; // Offline kullanım için local dosya yolu
   size?: number;
   borderRadius?: number;
   className?: string;
 }
 
 /**
- * Ürün resmi componenti
- * - localPath varsa local dosyadan gösterir (offline destek)
- * - Yoksa URL'den gösterir
- * - Hiçbiri yoksa placeholder icon gösterir
+ * Ürün resmi gösterici
+ * Önce localPath, yoksa URL, hiçbiri yoksa placeholder.
  */
 export function ProductImage({
   url,
   localPath,
   size = 80,
   borderRadius = 12,
-  className = '',
+  className = "",
 }: ProductImageProps) {
   const { colorScheme } = useColorScheme();
+  // Temaya göre renkleri al
+  const themeColors = colorScheme === "dark" ? COLORS.dark : COLORS.light;
 
-  // Önce local path, sonra URL
+  // Kaynak önceliği: local > URL
   const imageSource = localPath || url;
 
-  // Resim varsa göster
+  // Resim mevcutsa göster
   if (imageSource) {
-    // Border sadece borderRadius > 0 ise göster (bağımsız kullanımda)
+    // Border sadece bağımsız kullanımda (borderRadius > 0) göster
     const showBorder = borderRadius > 0;
-    
+
     return (
       <View
         style={{
@@ -41,16 +42,16 @@ export function ProductImage({
           borderRadius,
           ...(showBorder && {
             borderWidth: 1,
-            borderColor: colorScheme === 'dark' ? '#3f3f46' : '#e4e4e7',
+            borderColor: themeColors.border,
           }),
-          overflow: 'hidden',
+          overflow: "hidden",
         }}
       >
         <Image
           source={{ uri: imageSource }}
           style={{
-            width: '100%',
-            height: '100%',
+            width: "100%",
+            height: "100%",
           }}
           resizeMode="cover"
         />
@@ -58,7 +59,7 @@ export function ProductImage({
     );
   }
 
-  // Resim yoksa placeholder icon
+  // Placeholder ikon
   return (
     <View
       className={`items-center justify-center bg-secondary/50 ${className}`}
@@ -71,7 +72,7 @@ export function ProductImage({
       <Ionicons
         name="nutrition-outline"
         size={size / 2.5}
-        color={colorScheme === 'dark' ? '#404040' : '#D4D4D4'}
+        color={themeColors.divider}
       />
     </View>
   );

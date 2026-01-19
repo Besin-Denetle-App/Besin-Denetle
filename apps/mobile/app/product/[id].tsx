@@ -1,21 +1,22 @@
 import {
-    HealthScore,
-    NutritionTable,
-    ProductImage,
+  HealthScore,
+  NutritionTable,
+  ProductImage,
 } from "@/components/product";
 import { Skeleton } from "@/components/ui/skeleton";
+import { COLORS } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useColorScheme } from "nativewind";
 import { useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Animated,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    useWindowDimensions,
-    View,
+  ActivityIndicator,
+  Animated,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
 } from "react-native";
 import PagerView from "react-native-pager-view";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -27,17 +28,20 @@ export default function ProductDetailScreen() {
     id: string;
     readonly?: string;
   }>();
-  const isReadonly = readonly === "true"; // Geçmişten açıldıysa salt okunur
+  const isReadonly = readonly === "true";
   const { colorScheme } = useColorScheme();
+
+  // Tema renklerini merkezi dosyadan al
+  const themeColors = colorScheme === "dark" ? COLORS.dark : COLORS.light;
   const pagerRef = useRef<PagerView>(null);
   const contentScrollRef = useRef<ScrollView>(null);
   const aiScrollRef = useRef<ScrollView>(null);
 
-  // Store'dan product ve barcode al
+  // Store'dan urun ve barkod bilgisini al
   const { currentProduct: product, currentBarcode: barcode } =
     useProductStore();
 
-  // Custom hook ile API logic'i
+  // API logic - custom hook
   const {
     content,
     analysis,
@@ -50,13 +54,13 @@ export default function ProductDetailScreen() {
     retryAnalysis,
   } = useProductDetails(id!, isReadonly);
 
-  // Tab state
+  // Tab durumu
   const [activeTab, setActiveTab] = useState(0);
   const tabIndicatorPosition = useRef(new Animated.Value(0)).current;
   const { width: windowWidth } = useWindowDimensions();
   const tabWidth = windowWidth / 2;
 
-  // Tab değiştiğinde indicator animasyonu
+  // Tab degistiginde indicator animasyonu
   const handleTabPress = (index: number) => {
     pagerRef.current?.setPage(index);
     setActiveTab(index);
@@ -68,7 +72,7 @@ export default function ProductDetailScreen() {
     }).start();
   };
 
-  // Swipe ile sayfa değiştiğinde
+  // Swipe ile sayfa degistiginde
   const handlePageChange = (e: { nativeEvent: { position: number } }) => {
     const newIndex = e.nativeEvent.position;
     setActiveTab(newIndex);
@@ -80,14 +84,14 @@ export default function ProductDetailScreen() {
     }).start();
   };
 
-  // Analiz değiştiğinde scroll'u en üste al
+  // Analiz degistiginde scroll'u uste al
   useEffect(() => {
     if (analysis && aiScrollRef.current) {
       aiScrollRef.current.scrollTo({ y: 0, animated: true });
     }
   }, [analysis]);
 
-  // İçerik değiştiğinde scroll'u en üste al
+  // Icerik degistiginde scroll'u uste al
   useEffect(() => {
     if (content && contentScrollRef.current) {
       contentScrollRef.current.scrollTo({ y: 0, animated: true });
@@ -155,7 +159,11 @@ export default function ProductDetailScreen() {
   if (error && !product) {
     return (
       <SafeAreaView className="flex-1 bg-background items-center justify-center px-6">
-        <Ionicons name="alert-circle-outline" size={64} color="#EF5350" />
+        <Ionicons
+          name="alert-circle-outline"
+          size={64}
+          color={COLORS.semantic.error.dark}
+        />
         <Text className="text-foreground text-lg font-bold mt-4">Hata</Text>
         <Text className="text-muted-foreground text-center mt-2">{error}</Text>
         <TouchableOpacity
@@ -181,7 +189,7 @@ export default function ProductDetailScreen() {
           <Ionicons
             name="arrow-back"
             size={24}
-            color={colorScheme === "dark" ? "#E0E0E0" : "#212121"}
+            color={themeColors.foreground}
           />
         </TouchableOpacity>
         <Text
@@ -212,7 +220,7 @@ export default function ProductDetailScreen() {
               {index === 1 && isAnalysisLoading && (
                 <ActivityIndicator
                   size="small"
-                  color="#8B5CF6"
+                  color={COLORS.primary}
                   style={{ marginLeft: 6 }}
                 />
               )}
@@ -272,7 +280,7 @@ export default function ProductDetailScreen() {
                 <Ionicons
                   name="barcode-outline"
                   size={14}
-                  color={colorScheme === "dark" ? "#A3A3A3" : "#737373"}
+                  color={themeColors.muted}
                 />
                 <Text className="text-muted-foreground font-mono text-sm ml-1">
                   {barcode}
@@ -288,7 +296,7 @@ export default function ProductDetailScreen() {
             </Text>
             {isLoading && !content ? (
               <View className="bg-card border border-border rounded-2xl p-4 items-center py-8">
-                <ActivityIndicator size="small" color="#8B5CF6" />
+                <ActivityIndicator size="small" color={COLORS.primary} />
                 <Text className="text-muted-foreground mt-2 text-sm">
                   AI içerik çıkarıyor...
                 </Text>
@@ -304,7 +312,7 @@ export default function ProductDetailScreen() {
                 <Ionicons
                   name="document-text-outline"
                   size={32}
-                  color={colorScheme === "dark" ? "#525252" : "#A3A3A3"}
+                  color={themeColors.muted}
                 />
                 <Text className="text-muted-foreground mt-2 text-center">
                   İçerik bilgisi bulunamadı
@@ -320,7 +328,7 @@ export default function ProductDetailScreen() {
             </Text>
             {isLoading && !content ? (
               <View className="bg-card border border-border rounded-2xl p-4 items-center py-6">
-                <ActivityIndicator size="small" color="#8B5CF6" />
+                <ActivityIndicator size="small" color={COLORS.primary} />
               </View>
             ) : content?.allergens ? (
               <View className="flex-row flex-wrap gap-2">
@@ -340,7 +348,7 @@ export default function ProductDetailScreen() {
                 <Ionicons
                   name="checkmark-circle-outline"
                   size={32}
-                  color="#22C55E"
+                  color={COLORS.semantic.successAlt}
                 />
                 <Text className="text-green-600 dark:text-green-400 mt-2 font-medium">
                   Alerjen içermiyor
@@ -356,7 +364,7 @@ export default function ProductDetailScreen() {
             </Text>
             {isLoading && !content ? (
               <View className="bg-card border border-border rounded-2xl p-4 items-center py-8">
-                <ActivityIndicator size="small" color="#8B5CF6" />
+                <ActivityIndicator size="small" color={COLORS.primary} />
                 <Text className="text-muted-foreground mt-2 text-sm">
                   Besin değerleri yükleniyor...
                 </Text>
@@ -401,7 +409,7 @@ export default function ProductDetailScreen() {
             >
               {isLoading ? (
                 <View className="flex-row items-center">
-                  <ActivityIndicator size="small" color="#8B5CF6" />
+                  <ActivityIndicator size="small" color={COLORS.primary} />
                   <Text className="text-muted-foreground font-semibold ml-2">
                     Yeni içerik yükleniyor...
                   </Text>
@@ -516,7 +524,7 @@ export default function ProductDetailScreen() {
               {/* Loading Overlay - Yeni analiz yüklenirken */}
               {isAnalysisLoading && (
                 <View className="absolute inset-0 bg-background/70 items-center justify-center rounded-2xl">
-                  <ActivityIndicator size="large" color="#8B5CF6" />
+                  <ActivityIndicator size="large" color={COLORS.primary} />
                   <Text className="text-foreground font-medium mt-3">
                     Yeni analiz yükleniyor...
                   </Text>
@@ -527,14 +535,18 @@ export default function ProductDetailScreen() {
             <View className="flex-1 items-center justify-center py-12">
               {isAnalysisLoading ? (
                 <>
-                  <ActivityIndicator size="large" color="#8B5CF6" />
+                  <ActivityIndicator size="large" color={COLORS.primary} />
                   <Text className="text-muted-foreground mt-4">
                     AI analizi yükleniyor...
                   </Text>
                 </>
               ) : analysisError ? (
                 <>
-                  <Ionicons name="warning-outline" size={64} color="#EF4444" />
+                  <Ionicons
+                    name="warning-outline"
+                    size={64}
+                    color={COLORS.semantic.errorAlt}
+                  />
                   <Text className="text-muted-foreground mt-4 text-center">
                     Analiz yüklenemedi
                   </Text>
@@ -552,7 +564,7 @@ export default function ProductDetailScreen() {
                   <Ionicons
                     name="analytics-outline"
                     size={64}
-                    color={colorScheme === "dark" ? "#404040" : "#D4D4D4"}
+                    color={themeColors.divider}
                   />
                   <Text className="text-muted-foreground mt-4 text-center">
                     AI analizi bekleniyor...
@@ -575,7 +587,7 @@ export default function ProductDetailScreen() {
             >
               {isAnalysisLoading ? (
                 <View className="flex-row items-center">
-                  <ActivityIndicator size="small" color="#8B5CF6" />
+                  <ActivityIndicator size="small" color={COLORS.primary} />
                   <Text className="text-muted-foreground font-semibold ml-2">
                     Yeni analiz yükleniyor...
                   </Text>

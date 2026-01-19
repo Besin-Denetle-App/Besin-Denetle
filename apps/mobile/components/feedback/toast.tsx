@@ -1,8 +1,8 @@
-import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
-import { Animated, Text, View } from 'react-native';
+import { Ionicons } from "@expo/vector-icons";
+import { useEffect, useState } from "react";
+import { Animated, Text, View } from "react-native";
 
-type ToastType = 'success' | 'error' | 'info';
+type ToastType = "success" | "error" | "info";
 
 interface Toast {
   id: number;
@@ -11,25 +11,26 @@ interface Toast {
 }
 
 let toastId = 0;
-let addToastCallback: ((message: string, type: ToastType) => void) | null = null;
+let addToastCallback: ((message: string, type: ToastType) => void) | null =
+  null;
 
 /**
- * Toast gösterme fonksiyonu
- * Herhangi bir yerden çağrılabilir
+ * Global toast gösterici. Uygulama genelinde erişilebilir.
  */
-export const showToast = (message: string, type: ToastType = 'info') => {
+export const showToast = (message: string, type: ToastType = "info") => {
   if (addToastCallback) {
     addToastCallback(message, type);
   }
 };
 
-// Kısayol fonksiyonları
-export const showSuccessToast = (message: string) => showToast(message, 'success');
-export const showErrorToast = (message: string) => showToast(message, 'error');
-export const showInfoToast = (message: string) => showToast(message, 'info');
+// Tip bazlı kısayol fonksiyonları
+export const showSuccessToast = (message: string) =>
+  showToast(message, "success");
+export const showErrorToast = (message: string) => showToast(message, "error");
+export const showInfoToast = (message: string) => showToast(message, "info");
 
 /**
- * Toast Container - _layout.tsx'te kullanılır
+ * Toast container. _layout.tsx'e mount edilmeli.
  */
 export function ToastContainer() {
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -39,7 +40,7 @@ export function ToastContainer() {
       const id = ++toastId;
       setToasts((prev) => [...prev, { id, message, type }]);
 
-      // 3 saniye sonra kaldır
+      // Auto-dismiss: 3 saniye
       setTimeout(() => {
         setToasts((prev) => prev.filter((t) => t.id !== id));
       }, 3000);
@@ -65,14 +66,14 @@ function ToastItem({ toast }: { toast: Toast }) {
   const [opacity] = useState(new Animated.Value(0));
 
   useEffect(() => {
-    // Fade in
+    // Giriş animasyonu
     Animated.timing(opacity, {
       toValue: 1,
       duration: 200,
       useNativeDriver: true,
     }).start();
 
-    // Fade out before removal
+    // Çıkış animasyonu (dismiss öncesi)
     const timeout = setTimeout(() => {
       Animated.timing(opacity, {
         toValue: 0,
@@ -86,12 +87,12 @@ function ToastItem({ toast }: { toast: Toast }) {
 
   const getStyle = () => {
     switch (toast.type) {
-      case 'success':
-        return { bg: 'bg-green-600/95', icon: 'checkmark-circle' as const };
-      case 'error':
-        return { bg: 'bg-destructive/95', icon: 'alert-circle' as const };
+      case "success":
+        return { bg: "bg-green-600/95", icon: "checkmark-circle" as const };
+      case "error":
+        return { bg: "bg-destructive/95", icon: "alert-circle" as const };
       default:
-        return { bg: 'bg-primary/95', icon: 'information-circle' as const };
+        return { bg: "bg-primary/95", icon: "information-circle" as const };
     }
   };
 
@@ -103,7 +104,9 @@ function ToastItem({ toast }: { toast: Toast }) {
       className={`${style.bg} px-4 py-3 rounded-xl flex-row items-center`}
     >
       <Ionicons name={style.icon} size={20} color="#FFFFFF" />
-      <Text className="text-white font-medium ml-2 flex-1">{toast.message}</Text>
+      <Text className="text-white font-medium ml-2 flex-1">
+        {toast.message}
+      </Text>
     </Animated.View>
   );
 }

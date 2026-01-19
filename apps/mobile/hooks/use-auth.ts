@@ -1,4 +1,4 @@
-import { useAuthStore } from '../stores/auth.store';
+import { useAuthStore } from "../stores/auth.store";
 
 /**
  * Auth store'a kolay erişim için hook

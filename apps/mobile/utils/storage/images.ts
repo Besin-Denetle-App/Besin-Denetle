@@ -1,36 +1,33 @@
 /**
  * Resim depolama işlemleri
- * Ürün resimlerinin telefona indirilmesi ve yönetimi
  */
-import * as FileSystem from 'expo-file-system';
-import { APP_CONFIG } from '../../constants';
+import * as FileSystem from "expo-file-system";
+import { APP_CONFIG } from "../../constants";
 
 /**
- * Resim dizini yolunu al
- * Expo Go'da bazen documentDirectory null olabilir
- * @returns Dizin yolu veya null (hazır değilse)
+ * Resim dizini yolu
  */
 function getImageDir(): string | null {
-  // expo-file-system'da documentDirectory nullable olabilir
-  const docDir = (FileSystem as unknown as { documentDirectory: string | null }).documentDirectory;
+  // documentDirectory nullable olabilir
+  const docDir = (FileSystem as unknown as { documentDirectory: string | null })
+    .documentDirectory;
   if (!docDir) {
-    // Expo Go'da uygulama tam başlatılmadan null dönebilir
-    console.warn('[ImageStorage] documentDirectory is not available yet');
+    // Expo Go'da başlangıçta null olabilir
+    console.warn("[ImageStorage] documentDirectory is not available yet");
     return null;
   }
   return `${docDir}${APP_CONFIG.fileSystem.imageDirectory}`;
 }
 
 /**
- * Resim dizininin var olduğundan emin ol
- * @returns true başarılı, false dizin hazır değil
+ * Resim dizinini oluştur
  */
 export async function ensureImageDirectory(): Promise<boolean> {
   const imageDir = getImageDir();
   if (!imageDir) {
     return false;
   }
-  
+
   try {
     const dirInfo = await FileSystem.getInfoAsync(imageDir);
     if (!dirInfo.exists) {
@@ -44,20 +41,17 @@ export async function ensureImageDirectory(): Promise<boolean> {
 
 /**
  * Resmi telefona indir
- * @param imageUrl - Uzak resim URL'si
- * @param productId - Ürün ID'si (dosya adı için)
- * @returns Local dosya yolu veya undefined
  */
 export async function downloadImage(
   imageUrl: string | null,
-  productId: string
+  productId: string,
 ): Promise<string | undefined> {
   if (!imageUrl) return undefined;
 
-  // Dizin hazır mı kontrol et
+  // Dizin kontrolü
   const imageDir = getImageDir();
   if (!imageDir) {
-    // documentDirectory henüz hazır değil, resim indirmeyi atla
+    // Henüz hazır değil
     return undefined;
   }
 
@@ -68,11 +62,11 @@ export async function downloadImage(
       return undefined;
     }
 
-    // Dosya uzantısını al (varsayılan jpg)
-    const extension = imageUrl.split('.').pop()?.split('?')[0] || 'jpg';
+    // Dosya uzantısı (varsayılan jpg)
+    const extension = imageUrl.split(".").pop()?.split("?")[0] || "jpg";
     const localPath = `${imageDir}${productId}.${extension}`;
 
-    // Zaten varsa tekrar indirme
+    // Varsa tekrar indirme
     const fileInfo = await FileSystem.getInfoAsync(localPath);
     if (fileInfo.exists) {
       return localPath;
@@ -87,16 +81,17 @@ export async function downloadImage(
 
     return undefined;
   } catch (error) {
-    console.error('[ImageStorage] Download error:', error);
+    console.error("[ImageStorage] Download error:", error);
     return undefined;
   }
 }
 
 /**
  * Local resmi sil
- * @param localPath - Silinecek dosya yolu
  */
-export async function deleteImage(localPath: string | undefined): Promise<void> {
+export async function deleteImage(
+  localPath: string | undefined,
+): Promise<void> {
   if (!localPath) return;
 
   try {
@@ -105,7 +100,7 @@ export async function deleteImage(localPath: string | undefined): Promise<void> 
       await FileSystem.deleteAsync(localPath, { idempotent: true });
     }
   } catch (error) {
-    console.error('[ImageStorage] Delete error:', error);
+    console.error("[ImageStorage] Delete error:", error);
   }
 }
 
@@ -117,20 +112,19 @@ export async function clearAllImages(): Promise<void> {
   if (!imageDir) {
     return;
   }
-  
+
   try {
     const dirInfo = await FileSystem.getInfoAsync(imageDir);
     if (dirInfo.exists) {
       await FileSystem.deleteAsync(imageDir, { idempotent: true });
     }
   } catch (error) {
-    console.error('[ImageStorage] Clear all error:', error);
+    console.error("[ImageStorage] Clear all error:", error);
   }
 }
 
 /**
- * Resim dizini yolunu al (dışarıya export)
- * @returns Dizin yolu veya null
+ * Resim dizini yolu (public)
  */
 export function getImageDirectory(): string | null {
   return getImageDir();

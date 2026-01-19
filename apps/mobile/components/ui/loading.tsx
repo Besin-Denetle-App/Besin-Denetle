@@ -1,22 +1,23 @@
-import { ActivityIndicator, Text, View } from 'react-native';
+import { COLORS } from "@/constants";
+import { ActivityIndicator, Text, View } from "react-native";
 
 interface LoadingProps {
-  size?: 'small' | 'large';
+  size?: "small" | "large";
   message?: string;
   fullScreen?: boolean;
 }
 
 /**
- * Loading/spinner componenti
+ * Loading spinner componenti
  */
 export function Loading({
-  size = 'large',
+  size = "large",
   message,
   fullScreen = false,
 }: LoadingProps) {
   const content = (
     <>
-      <ActivityIndicator size={size} color="#8B5CF6" />
+      <ActivityIndicator size={size} color={COLORS.primary} />
       {message && (
         <Text className="text-muted-foreground mt-4 text-center">
           {message}
@@ -33,9 +34,5 @@ export function Loading({
     );
   }
 
-  return (
-    <View className="items-center justify-center py-8">
-      {content}
-    </View>
-  );
+  return <View className="items-center justify-center py-8">{content}</View>;
 }

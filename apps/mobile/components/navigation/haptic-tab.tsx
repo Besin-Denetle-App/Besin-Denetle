@@ -1,10 +1,9 @@
-import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
-import { PlatformPressable } from '@react-navigation/elements';
-import { useHapticsStore } from '../../stores/haptics.store';
+import { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
+import { PlatformPressable } from "@react-navigation/elements";
+import { useHapticsStore } from "../../stores/haptics.store";
 
 /**
- * Haptic feedback'li tab butonu
- * Selection titreşimi - çok hafif, sadece hissettiren
+ * Tab butonu - basınca hafif titreşim verir (selection feedback).
  */
 export function HapticTab(props: BottomTabBarButtonProps) {
   const selection = useHapticsStore((state) => state.selection);
@@ -13,12 +12,10 @@ export function HapticTab(props: BottomTabBarButtonProps) {
     <PlatformPressable
       {...props}
       onPressIn={(ev) => {
-        // Çok hafif selection titreşimi
+        // Haptic selection feedback
         selection();
         props.onPressIn?.(ev);
       }}
     />
   );
 }
-
-

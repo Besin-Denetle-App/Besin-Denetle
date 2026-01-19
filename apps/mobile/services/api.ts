@@ -1,77 +1,91 @@
-import axios, { AxiosError, InternalAxiosRequestConfig, isAxiosError } from 'axios';
-import Constants from 'expo-constants';
-import { router } from 'expo-router';
-import { clearAuthData, getAccessToken, getRefreshToken, saveTokens } from '../utils/storage';
+import axios, {
+    AxiosError,
+    InternalAxiosRequestConfig,
+    isAxiosError,
+} from "axios";
+import Constants from "expo-constants";
+import { router } from "expo-router";
+import {
+    clearAuthData,
+    getAccessToken,
+    getRefreshToken,
+    saveTokens,
+} from "../utils/storage";
 
-// API URL'ini belirliyoruz
+// API base URL belirleme
 const getBaseUrl = (): string => {
-  // expo config'den extra'yı çek (eski SDK'lar için fallback'ler var)
+  // expo config'den extra'yı al
   const extra =
     Constants.expoConfig?.extra ||
-    (Constants.manifest2 as { extra?: Record<string, unknown> } | null)?.extra ||
+    (Constants.manifest2 as { extra?: Record<string, unknown> } | null)
+      ?.extra ||
     (Constants.manifest as { extra?: Record<string, unknown> } | null)?.extra;
-  
-  // prod'da tam URL varsa onu kullan
-  if (extra?.apiUrl && typeof extra.apiUrl === 'string') {
-    console.log('[API] Using production URL:', extra.apiUrl);
+
+  // Production URL
+  if (extra?.apiUrl && typeof extra.apiUrl === "string") {
+    console.log("[API] Using production URL:", extra.apiUrl);
     return extra.apiUrl;
   }
-  
-  // dev'de host:port kullan
+
+  // Development host:port
   const apiHost = extra?.apiHost as string | undefined;
-  const apiPort = (extra?.apiPort as string) || '3200';
-  
+  const apiPort = (extra?.apiPort as string) || "3200";
+
   if (apiHost) {
     const url = `http://${apiHost}:${apiPort}/api`;
-    console.log('[API] Using custom host:', url);
+    console.log("[API] Using custom host:", url);
     return url;
   }
-  
-  // expo'nun debugger host'unu dene
+
+  // Expo debugger host
   const hostUri =
     Constants.expoConfig?.hostUri ||
-    (Constants.manifest2 as { extra?: { expoGo?: { debuggerHost?: string } } } | null)?.extra?.expoGo?.debuggerHost ||
+    (
+      Constants.manifest2 as {
+        extra?: { expoGo?: { debuggerHost?: string } };
+      } | null
+    )?.extra?.expoGo?.debuggerHost ||
     (Constants.manifest as { debuggerHost?: string } | null)?.debuggerHost;
-  
-  const debuggerHost = hostUri?.split(':')[0];
-  
+
+  const debuggerHost = hostUri?.split(":")[0];
+
   if (debuggerHost) {
     const url = `http://${debuggerHost}:${apiPort}/api`;
-    console.log('[API] Using debugger host:', url);
+    console.log("[API] Using debugger host:", url);
     return url;
-  }  
-  
-  // hiçbiri yoksa android emülatör IP'si
+  }
+
+  // Fallback: Android emulator IP
   const fallbackUrl = `http://10.0.2.2:${apiPort}/api`;
-  console.log('[API] Using emulator fallback:', fallbackUrl);
+  console.log("[API] Using emulator fallback:", fallbackUrl);
   return fallbackUrl;
 };
 
 const BASE_URL = getBaseUrl();
-console.log('API Base URL:', BASE_URL);
+console.log("API Base URL:", BASE_URL);
 
-// retry ayarları
+// Retry konfigürasyonu
 const RETRY_CONFIG = {
   maxRetries: 3,
   baseDelay: 1000, // 1sn
   maxDelay: 8000, // max 8sn
 };
 
-// retry count tutmak için
+// Retry sayıcı için extended config
 interface RetryConfig extends InternalAxiosRequestConfig {
   _retryCount?: number;
 }
 
-// axios instance
+// Axios instance
 export const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 30000, // 30 saniye (AI işlemleri uzun sürebilir)
+  timeout: 30000, // 30sn (AI işlemleri uzun sürebilir)
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
-// her istekte token ekle
+// Request interceptor - token ekleme
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     const token = await getAccessToken();
@@ -80,10 +94,10 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
-// hata yönetimi ve retry
+// Response interceptor - hata yönetimi ve retry
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
@@ -92,10 +106,10 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // retry sayacı
+    // Retry sayıcı
     config._retryCount = config._retryCount ?? 0;
 
-    // 401: token'ı yenilemeyi dene
+    // 401: Token yenileme dene
     if (error.response?.status === 401) {
       try {
         const refreshToken = await getRefreshToken();
@@ -113,46 +127,52 @@ api.interceptors.response.use(
           return api(config);
         }
       } catch (refreshError) {
-        // refresh olmadı, login'e at
-        console.warn('[API] Token refresh failed:', refreshError);
+        // Refresh başarısız, login'e yönlendir
+        console.warn("[API] Token refresh failed:", refreshError);
         await clearAuthData();
-        router.replace('/(auth)/login');
+        router.replace("/(auth)/login");
       }
       return Promise.reject(error);
     }
 
-    // 4xx client hataları - retry yapma
-    if (error.response?.status && error.response.status >= 400 && error.response.status < 500) {
+    // 4xx client hataları - retry yok
+    if (
+      error.response?.status &&
+      error.response.status >= 400 &&
+      error.response.status < 500
+    ) {
       return Promise.reject(error);
     }
 
-    // 5xx veya network hatası - retry yap
-    const shouldRetry = 
+    // 5xx veya network hatası - retry
+    const shouldRetry =
       (error.response?.status && error.response.status >= 500) ||
-      error.code === 'ECONNABORTED' ||
-      error.message === 'Network Error';
+      error.code === "ECONNABORTED" ||
+      error.message === "Network Error";
 
     if (shouldRetry && config._retryCount < RETRY_CONFIG.maxRetries) {
       config._retryCount += 1;
 
-      // exponential backoff hesapla (1s, 2s, 4s)
+      // Exponential backoff (1s, 2s, 4s)
       const delay = Math.min(
         RETRY_CONFIG.baseDelay * Math.pow(2, config._retryCount - 1),
-        RETRY_CONFIG.maxDelay
+        RETRY_CONFIG.maxDelay,
       );
 
-      console.log(`Retry ${config._retryCount}/${RETRY_CONFIG.maxRetries} - ${delay}ms sonra tekrar denenecek`);
+      console.log(
+        `Retry ${config._retryCount}/${RETRY_CONFIG.maxRetries} - ${delay}ms sonra tekrar denenecek`,
+      );
 
-      // bekle vetekrar dene
+      // Bekle ve tekrar dene
       await new Promise((resolve) => setTimeout(resolve, delay));
       return api(config);
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
-// hata response tipi
+// API hata response tipi
 export interface ApiError {
   success: false;
   error: {
@@ -162,16 +182,16 @@ export interface ApiError {
   };
 }
 
-// başarılı response tipi
+// API başarılı response tipi
 export interface ApiSuccess<T> {
   success: true;
   data: T;
 }
 
-// genel response tipi
+// Genel response union tipi
 export type ApiResponse<T> = ApiSuccess<T> | ApiError;
 
-// 429 rate limit hatası mı diye bak
+// Rate limit hatası kontrolü
 export const isRateLimitError = (error: unknown): boolean => {
   if (isAxiosError(error)) {
     return error.response?.status === 429;
@@ -180,57 +200,57 @@ export const isRateLimitError = (error: unknown): boolean => {
 };
 
 /**
- * API hatalarını parse et
+ * API hata mesajı parse edici
  */
 export const parseApiError = (error: unknown): string => {
   if (isAxiosError(error)) {
-    // rate limit
+    // Rate limit
     if (error.response?.status === 429) {
-      return 'Çok fazla istek! Lütfen birkaç saniye bekleyin.';
+      return "Çok fazla istek! Lütfen birkaç saniye bekleyin.";
     }
 
-    // backend'den gelen hata
+    // Backend hata response'u
     const apiError = error.response?.data as ApiError | undefined;
     const errorCode = apiError?.error?.code;
     const errorMessage = apiError?.error?.message;
 
-    // bilinen hata kodları
+    // Bilinen hata kodlarını çevir
     if (errorCode) {
       switch (errorCode) {
-        case 'PRODUCT_NOT_FOUND':
-          return 'Ürün bulunamadı ve AI hizmetine ulaşılamıyor. Lütfen daha sonra tekrar deneyin.';
-        case 'AI_SERVICE_ERROR':
-          return 'AI hizmeti şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.';
-        case 'AI_PARSE_ERROR':
-          return 'AI yanıtı işlenemedi. Lütfen tekrar sorgulayın.';
-        case 'INVALID_BARCODE':
-          return 'Geçersiz barkod formatı. Lütfen kontrol edip tekrar deneyin.';
-        case 'UNAUTHORIZED':
-          return 'Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.';
+        case "PRODUCT_NOT_FOUND":
+          return "Ürün bulunamadı ve AI hizmetine ulaşılamıyor. Lütfen daha sonra tekrar deneyin.";
+        case "AI_SERVICE_ERROR":
+          return "AI hizmeti şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.";
+        case "AI_PARSE_ERROR":
+          return "AI yanıtı işlenemedi. Lütfen tekrar sorgulayın.";
+        case "INVALID_BARCODE":
+          return "Geçersiz barkod formatı. Lütfen kontrol edip tekrar deneyin.";
+        case "UNAUTHORIZED":
+          return "Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.";
         default:
           if (errorMessage) return errorMessage;
       }
     }
 
-    // backend mesajı varsa onu göster
+    // Backend mesajı
     if (errorMessage) {
       return errorMessage;
     }
 
-    // network hatası
-    if (error.message === 'Network Error') {
-      return 'Sunucuya bağlanılamadı. İnternet bağlantınızı ve backend\'in çalıştığını kontrol edin.';
+    // Network hatası
+    if (error.message === "Network Error") {
+      return "Sunucuya bağlanılamadı. İnternet bağlantınızı ve backend'in çalıştığını kontrol edin.";
     }
 
     // timeout
-    if (error.code === 'ECONNABORTED') {
-      return 'İstek zaman aşımına uğradı. Lütfen tekrar deneyin.';
+    if (error.code === "ECONNABORTED") {
+      return "İstek zaman aşımına uğradı. Lütfen tekrar deneyin.";
     }
 
-    // 5xx hatası
+    // 5xx sunucu hatası
     if (error.response?.status && error.response.status >= 500) {
-      return 'Sunucu hatası oluştu. Lütfen daha sonra tekrar deneyin.';
+      return "Sunucu hatası oluştu. Lütfen daha sonra tekrar deneyin.";
     }
   }
-  return 'Beklenmeyen bir hata oluştu.';
+  return "Beklenmeyen bir hata oluştu.";
 };

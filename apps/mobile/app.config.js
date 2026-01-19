@@ -1,9 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 require("dotenv").config();
 
-// ============================================================
-// Environment Konfigürasyonu
-// ============================================================
+//  Environment Config
 //
 // ┌─────────────────┬─────────────────┬────────────────────────────┐
 // │ Senaryo         │ Env Kaynağı     │ API Değişkenleri           │
@@ -18,20 +16,17 @@ require("dotenv").config();
 // ============================================================
 
 /**
- * Build profile (eas.json'dan geliyor)
- * - development: expo start → .env'den DEV_API_* kullanır
- * - preview: eas build --profile preview → eas.json'dan API_HOST:PORT kullanır
- * - production: eas build --profile production → eas.json veya EAS Secrets'tan API_URL kullanır
+ * Build profile
  */
 const APP_ENV = process.env.APP_ENV || "development";
 
 /**
- * API konfigürasyonu - Build profile'a göre seçilir
+ * API config
  */
 const getApiConfig = () => {
   switch (APP_ENV) {
     case "production":
-      // Production: Tam URL kullan
+      // Production
       return {
         apiUrl: process.env.API_URL || null,
         apiHost: null,
@@ -39,7 +34,7 @@ const getApiConfig = () => {
       };
 
     case "preview":
-      // Preview: Host + Port kullan (test sunucusu)
+      // Preview
       return {
         apiUrl: null,
         apiHost: process.env.API_HOST || null,
@@ -48,7 +43,7 @@ const getApiConfig = () => {
 
     case "development":
     default:
-      // Development: DEV_API_HOST + DEV_API_PORT kullan (local)
+      // Development (local)
       return {
         apiUrl: null,
         apiHost: process.env.DEV_API_HOST || null,
@@ -58,7 +53,7 @@ const getApiConfig = () => {
 };
 
 /**
- * Google OAuth konfigürasyonu
+ * Google OAuth
  */
 const getGoogleConfig = () => ({
   webClientId: process.env.GOOGLE_WEB_CLIENT_ID || null,
@@ -66,7 +61,7 @@ const getGoogleConfig = () => ({
   iosClientId: process.env.GOOGLE_IOS_CLIENT_ID || null,
 });
 
-// Debug logları
+// Debug
 if (!global.__BUILD_CONFIG_LOGGED__) {
   global.__BUILD_CONFIG_LOGGED__ = true;
   console.log("=== BUILD CONFIG ===");
@@ -75,13 +70,11 @@ if (!global.__BUILD_CONFIG_LOGGED__) {
   console.log("====================");
 }
 
-// ============================================================
-// Expo Konfigürasyonu
-// ============================================================
+// Expo Config
 
 module.exports = {
   expo: {
-    // Uygulama Bilgileri
+    // Uygulama
     name: "Besin Denetle",
     slug: "Besin-Denetle",
     scheme: "besindenetle",
@@ -90,10 +83,10 @@ module.exports = {
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
 
-    // Görsel Öğeler
+    // Görseller
     icon: "./assets/images/icon.png",
 
-    // iOS Ayarları
+    // iOS
     ios: {
       supportsTablet: true,
       bundleIdentifier: "app.besindenetle.ios",
@@ -104,7 +97,7 @@ module.exports = {
       },
     },
 
-    // Android Ayarları
+    // Android
     android: {
       package: "app.besindenetle.android",
       versionCode: 1,
@@ -117,13 +110,13 @@ module.exports = {
       predictiveBackGestureEnabled: false,
     },
 
-    // Web Ayarları
+    // Web
     web: {
       output: "static",
       favicon: "./assets/images/favicon.png",
     },
 
-    // Eklentiler
+    // Plugins
     plugins: [
       "expo-router",
       [
@@ -149,13 +142,13 @@ module.exports = {
       ],
     ],
 
-    // Deneysel Özellikler
+    // Experiments
     experiments: {
       typedRoutes: true,
       reactCompiler: true,
     },
 
-    // Runtime Değişkenleri (uygulama içinden erişilebilir)
+    // Runtime vars
     extra: {
       appEnv: APP_ENV,
       ...getApiConfig(),

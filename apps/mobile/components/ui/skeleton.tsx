@@ -1,22 +1,22 @@
-import { useEffect, useRef } from 'react';
-import { Animated, View, ViewProps } from 'react-native';
+import { useEffect, useRef } from "react";
+import { Animated, View, ViewProps } from "react-native";
 
 interface SkeletonProps extends ViewProps {
   width?: number | string;
   height?: number;
   borderRadius?: number;
-  variant?: 'text' | 'circular' | 'rectangular';
+  variant?: "text" | "circular" | "rectangular";
 }
 
 /**
- * Skeleton/placeholder componenti - içerik yüklenirken gösterilir
+ * Skeleton placeholder componenti
  */
 export function Skeleton({
-  width = '100%',
+  width = "100%",
   height = 20,
   borderRadius,
-  variant = 'rectangular',
-  className = '',
+  variant = "rectangular",
+  className = "",
   style,
   ...props
 }: SkeletonProps) {
@@ -36,19 +36,19 @@ export function Skeleton({
           duration: 800,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     );
     animation.start();
     return () => animation.stop();
   }, [opacity]);
 
-  // Variant'a göre borderRadius
+  // Variant'a göre borderRadius hesapla
   const getRadius = () => {
     if (borderRadius !== undefined) return borderRadius;
     switch (variant) {
-      case 'circular':
-        return typeof height === 'number' ? height / 2 : 9999;
-      case 'text':
+      case "circular":
+        return typeof height === "number" ? height / 2 : 9999;
+      case "text":
         return 4;
       default:
         return 8;
@@ -60,12 +60,12 @@ export function Skeleton({
       className={`bg-secondary ${className}`}
       style={[
         {
-          width: typeof width === 'number' ? width : undefined,
+          width: typeof width === "number" ? width : undefined,
           height,
           borderRadius: getRadius(),
           opacity,
         },
-        typeof width === 'string' ? { width: width as any } : undefined,
+        typeof width === "string" ? { width: width as any } : undefined,
         style,
       ]}
       {...props}
@@ -74,7 +74,7 @@ export function Skeleton({
 }
 
 /**
- * Skeleton grubu - birden fazla skeleton için
+ * Skeleton grubu wrapper'ı
  */
 export function SkeletonGroup({ children }: { children: React.ReactNode }) {
   return <View className="gap-3">{children}</View>;

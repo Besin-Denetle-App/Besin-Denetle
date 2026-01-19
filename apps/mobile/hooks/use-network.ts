@@ -1,36 +1,28 @@
-import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
-import { useEffect, useRef, useState } from 'react';
+import NetInfo, { NetInfoState } from "@react-native-community/netinfo";
+import { useEffect, useRef, useState } from "react";
 
 /**
- * Network durumunu takip eden hook
- *
- * Kullanım:
- * const { isConnected, showBanner } = useNetwork();
- *
- * Özellikler:
- * - Bağlantı durumunu takip eder
- * - Offline/Online geçişlerinde geçici banner gösterir (3 saniye)
- * - Kalıcı uyarı yok (kullanıcı local geçmişe bakıyor olabilir)
+ * Network durumu hook'u
+ * Offline/online geçişlerinde geçici banner gösterir (3sn).
  */
 export function useNetwork() {
   const [isConnected, setIsConnected] = useState<boolean | null>(true);
   const [showOfflineBanner, setShowOfflineBanner] = useState(false);
   const [showOnlineBanner, setShowOnlineBanner] = useState(false);
 
-  // Stale closure'ı önlemek için ref kullan
-  // Event listener callback'i her zaman güncel değeri okur
+  // Stale closure önleme için ref
   const isConnectedRef = useRef(isConnected);
   isConnectedRef.current = isConnected;
 
   useEffect(() => {
-    // İlk bağlantı durumunu al
+    // İlk durum
     NetInfo.fetch().then((state) => {
       setIsConnected(state.isConnected);
     });
 
     // Bağlantı değişikliklerini dinle
     const unsubscribe = NetInfo.addEventListener((state: NetInfoState) => {
-      // Ref üzerinden güncel değeri oku (stale closure yok)
+      // Güncel değeri ref'ten oku
       const wasConnected = isConnectedRef.current;
       const nowConnected = state.isConnected;
 

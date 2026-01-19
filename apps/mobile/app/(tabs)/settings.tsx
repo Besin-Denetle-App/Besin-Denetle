@@ -1,4 +1,5 @@
 import { showInfoToast } from "@/components/feedback";
+import { COLORS } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import * as WebBrowser from "expo-web-browser";
@@ -20,6 +21,8 @@ import { useThemeStore, type ThemeMode } from "../../stores/theme.store";
 
 export default function SettingsScreen() {
   const { colorScheme } = useColorScheme();
+  // Tema renklerini merkezi dosyadan al
+  const themeColors = colorScheme === "dark" ? COLORS.dark : COLORS.light;
   const { user, logout, deleteAccount } = useAuthStore();
   const { clearHistory, history } = useHistoryStore();
   const {
@@ -38,7 +41,7 @@ export default function SettingsScreen() {
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { mode: themeMode, setMode: setThemeMode } = useThemeStore();
 
-  // Geri sayım temizliği
+  // Component unmount olunca timer'i temizle
   useEffect(() => {
     return () => {
       if (countdownRef.current) clearInterval(countdownRef.current);
@@ -196,7 +199,7 @@ export default function SettingsScreen() {
           <View className="bg-primary/5 border border-primary/30 rounded-2xl p-4">
             <View className="flex-row items-center">
               <View className="w-12 h-12 bg-primary/10 rounded-full items-center justify-center">
-                <Ionicons name="person" size={24} color="#8B5CF6" />
+                <Ionicons name="person" size={24} color={COLORS.primary} />
               </View>
               <View className="ml-4 flex-1">
                 <Text className="text-foreground font-semibold text-lg">
@@ -216,7 +219,11 @@ export default function SettingsScreen() {
             activeOpacity={0.7}
           >
             <View className="w-12 h-12 bg-destructive/10 rounded-full items-center justify-center">
-              <Ionicons name="log-out-outline" size={24} color="#EF4444" />
+              <Ionicons
+                name="log-out-outline"
+                size={24}
+                color={COLORS.semantic.errorAlt}
+              />
             </View>
             <View className="ml-4 flex-1">
               <Text className="text-destructive font-semibold text-lg">
@@ -229,7 +236,7 @@ export default function SettingsScreen() {
             <Ionicons
               name="chevron-forward"
               size={20}
-              color={colorScheme === "dark" ? "#525252" : "#A3A3A3"}
+              color={themeColors.muted}
             />
           </TouchableOpacity>
 
@@ -248,7 +255,11 @@ export default function SettingsScreen() {
           <View className="bg-card border border-border rounded-2xl p-4">
             <View className="flex-row items-center mb-3">
               <View className="w-12 h-12 bg-yellow-500/10 rounded-full items-center justify-center">
-                <Ionicons name="sunny-outline" size={24} color="#EAB308" />
+                <Ionicons
+                  name="sunny-outline"
+                  size={24}
+                  color={COLORS.semantic.warningAlt}
+                />
               </View>
               <View className="ml-4 flex-1">
                 <Text className="text-foreground font-semibold text-lg">
@@ -313,7 +324,7 @@ export default function SettingsScreen() {
             <Switch
               value={hapticEnabled}
               onValueChange={handleHapticToggle}
-              trackColor={{ false: "#767577", true: "#8B5CF6" }}
+              trackColor={{ false: "#767577", true: COLORS.primary }}
               thumbColor={hapticEnabled ? "#FFFFFF" : "#F4F3F4"}
             />
           </View>
@@ -350,7 +361,11 @@ export default function SettingsScreen() {
               activeOpacity={0.7}
             >
               <View className="w-12 h-12 bg-amber-500/10 rounded-full items-center justify-center">
-                <Ionicons name="trash-outline" size={24} color="#F59E0B" />
+                <Ionicons
+                  name="trash-outline"
+                  size={24}
+                  color={COLORS.semantic.warning}
+                />
               </View>
               <View className="ml-4 flex-1">
                 <Text className="text-amber-500 font-semibold text-lg">
@@ -365,7 +380,7 @@ export default function SettingsScreen() {
               <Ionicons
                 name="chevron-forward"
                 size={20}
-                color={colorScheme === "dark" ? "#525252" : "#A3A3A3"}
+                color={themeColors.muted}
               />
             </TouchableOpacity>
 
@@ -377,7 +392,11 @@ export default function SettingsScreen() {
                 activeOpacity={0.7}
               >
                 <View className="w-12 h-12 bg-destructive/20 rounded-full items-center justify-center">
-                  <Ionicons name="skull-outline" size={24} color="#DC2626" />
+                  <Ionicons
+                    name="skull-outline"
+                    size={24}
+                    color={COLORS.semantic.errorDanger}
+                  />
                 </View>
                 <View className="ml-4 flex-1">
                   <Text className="text-red-600 font-semibold text-lg">
@@ -390,14 +409,18 @@ export default function SettingsScreen() {
                 <Ionicons
                   name="chevron-forward"
                   size={20}
-                  color={colorScheme === "dark" ? "#525252" : "#A3A3A3"}
+                  color={themeColors.muted}
                 />
               </TouchableOpacity>
             ) : (
               // Geri Sayım Ekranı
               <View className="bg-destructive/20 border-2 border-destructive rounded-2xl p-4">
                 <View className="items-center mb-4">
-                  <Ionicons name="warning" size={48} color="#DC2626" />
+                  <Ionicons
+                    name="warning"
+                    size={48}
+                    color={COLORS.semantic.errorDanger}
+                  />
                   <Text className="text-destructive font-bold text-xl mt-2">
                     Hesap Siliniyor...
                   </Text>

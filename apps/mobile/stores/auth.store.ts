@@ -35,7 +35,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const tokenExists = await hasToken();
       if (tokenExists) {
-        // Token var, kullanıcı bilgisini al
+        // Token var, kullanıcıyı yükle
         const user = await getUser<UserPublicInfo>();
         if (user) {
           set({ user, isAuthenticated: true });
@@ -53,7 +53,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  // Google ile giriş
+  // Google login
   loginWithGoogle: async (accessToken: string) => {
     set({ isLoading: true });
     try {
@@ -63,12 +63,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
 
       if (response.isNewUser) {
-        // Yeni kullanıcı, kayıt gerekli
+        // Yeni kullanıcı, kayıt ekranına yönlendir
         set({ tempToken: response.tempToken, isLoading: false });
         return { needsRegistration: true };
       }
 
-      // Mevcut kullanıcı, giriş başarılı
+      // Mevcut kullanıcı, login başarılı
       set({
         user: response.user,
         isAuthenticated: true,
@@ -81,7 +81,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  // E-posta ile kayıt/login (Beta test için)
+  // E-posta login (Beta)
   signupWithEmail: async (email: string) => {
     set({ isLoading: true });
     try {
@@ -90,12 +90,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
 
       if (response.isNewUser) {
-        // Yeni kullanıcı, kayıt gerekli
+        // Yeni kullanıcı, kayıt ekranına yönlendir
         set({ tempToken: response.tempToken, isLoading: false });
         return { needsRegistration: true };
       }
 
-      // Mevcut kullanıcı, giriş başarılı
+      // Mevcut kullanıcı, login başarılı
       set({
         user: response.user,
         isAuthenticated: true,
@@ -107,9 +107,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       throw error;
     }
   },
-  // Apple ile giriş - İleride aktif edilecek
-  // Aktif etmek için: pnpm --filter mobile add expo-apple-authentication
-  // AuthState interface'ine loginWithApple tipini ekle
+  // Apple login - İleride aktif edilecek
   /*
   loginWithApple: async (identityToken: string) => {
     set({ isLoading: true });
@@ -137,7 +135,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
   */
 
-  // Kayıt tamamla
+  // Kayıtı tamamla
   completeRegistration: async (username: string) => {
     const { tempToken } = get();
     if (!tempToken) {
@@ -194,7 +192,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  // Geçici token ayarla
+  // Temp token setter
   setTempToken: (token: string | null) => {
     set({ tempToken: token });
   },

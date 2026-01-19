@@ -1,26 +1,23 @@
 /**
- * Tema değiştirme butonu
- * Aydınlık/karanlık mod arasında geçiş yapar
+ * Tema değiştirme butonu - light/dark mod geçişi
  */
-import { Ionicons } from '@expo/vector-icons';
-import { useColorScheme } from 'nativewind';
-import { TouchableOpacity } from 'react-native';
-import { SHADOWS } from '../../constants';
+import { Ionicons } from "@expo/vector-icons";
+import { useColorScheme } from "nativewind";
+import { TouchableOpacity } from "react-native";
+import { SHADOWS } from "../../constants";
 
 interface ThemeToggleProps {
-  /** Butonun konumu */
-  position?: 'bottom-right' | 'bottom-left';
+  /** Buton pozisyonu */
+  position?: "bottom-right" | "bottom-left";
 }
 
 /**
- * Floating tema değiştirme butonu
+ * Floating tema butonu
  */
-export function ThemeToggle({ position = 'bottom-right' }: ThemeToggleProps) {
+export function ThemeToggle({ position = "bottom-right" }: ThemeToggleProps) {
   const { colorScheme, toggleColorScheme } = useColorScheme();
 
-  const positionClass = position === 'bottom-right'
-    ? 'right-6'
-    : 'left-6';
+  const positionClass = position === "bottom-right" ? "right-6" : "left-6";
 
   return (
     <TouchableOpacity
@@ -29,7 +26,7 @@ export function ThemeToggle({ position = 'bottom-right' }: ThemeToggleProps) {
       style={SHADOWS.md}
     >
       <Ionicons
-        name={colorScheme === 'dark' ? 'sunny' : 'moon'}
+        name={colorScheme === "dark" ? "sunny" : "moon"}
         size={24}
         color="#FFFFFF"
       />

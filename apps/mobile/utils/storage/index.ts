@@ -1,49 +1,43 @@
 /**
- * Storage modülü
- * Tüm depolama işlemlerinin merkezi dışa aktarımı
+ * Storage modülü - merkezi export
  */
 
 // Token işlemleri
 export {
-    clearTokens, getAccessToken,
+    clearTokens,
+    getAccessToken,
     getRefreshToken,
-    hasToken, saveTokens
-} from './tokens';
+    hasToken,
+    saveTokens
+} from "./tokens";
 
 // Kullanıcı işlemleri
-export {
-    clearUser, getUser, saveUser
-} from './user';
+export { clearUser, getUser, saveUser } from "./user";
 
 // Resim işlemleri
 export {
-    clearAllImages, deleteImage, downloadImage, ensureImageDirectory,
+    clearAllImages,
+    deleteImage,
+    downloadImage,
+    ensureImageDirectory,
     getImageDirectory
-} from './images';
+} from "./images";
 
 /**
- * Tüm auth verilerini temizle (logout için)
- * Token, kullanıcı ve resimleri temizler
+ * Auth verilerini temizle (logout)
  */
 export async function clearAuthData(): Promise<void> {
-  const { clearTokens } = await import('./tokens');
-  const { clearUser } = await import('./user');
+  const { clearTokens } = await import("./tokens");
+  const { clearUser } = await import("./user");
 
-  await Promise.all([
-    clearTokens(),
-    clearUser(),
-  ]);
+  await Promise.all([clearTokens(), clearUser()]);
 }
 
 /**
  * Tüm uygulama verilerini temizle
- * Auth + resimler dahil her şeyi temizler
  */
 export async function clearAllData(): Promise<void> {
-  const { clearAllImages } = await import('./images');
+  const { clearAllImages } = await import("./images");
 
-  await Promise.all([
-    clearAuthData(),
-    clearAllImages(),
-  ]);
+  await Promise.all([clearAuthData(), clearAllImages()]);
 }

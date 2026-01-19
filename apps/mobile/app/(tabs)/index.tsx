@@ -1,5 +1,6 @@
 import { HistoryCard } from "@/components/product";
 import { Skeleton } from "@/components/ui/skeleton";
+import { COLORS } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
 import { useColorScheme } from "nativewind";
 import { useEffect, useMemo, useState } from "react";
@@ -18,20 +19,22 @@ import { useProductStore } from "../../stores/product.store";
 
 export default function HomeScreen() {
   const { colorScheme } = useColorScheme();
+  // Tema renklerini merkezi dosyadan al
+  const themeColors = colorScheme === "dark" ? COLORS.dark : COLORS.light;
   const { history, isLoading, loadHistory } = useHistoryStore();
   const { setProduct, setBarcode, setContent, setAnalysis } = useProductStore();
   const selection = useHapticsStore((state) => state.selection);
   const { navigate } = useDebouncedNavigation();
 
-  // Arama state
+  // Arama input degeri
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Uygulama başlangıcında geçmişi yükle
+  // Sayfa yuklendiginde gecmisi getir
   useEffect(() => {
     loadHistory();
   }, [loadHistory]);
 
-  // Filtrelenmiş geçmiş (barkod, marka, isim, gramaj üzerinde arama)
+  // Arama filtrelemesi - barkod, marka, isim, gramaj
   const filteredHistory = useMemo(() => {
     if (!searchQuery.trim()) return history;
 
@@ -47,10 +50,10 @@ export default function HomeScreen() {
     });
   }, [history, searchQuery]);
 
-  // Geçmiş kartına tıklandığında (debounced - çift tıklama engellenir)
+  // Gecmis kartina tiklandiginda detay sayfasina git
   const handleHistoryPress = (item: HistoryItem) => {
-    selection(); // Hafif titreşim
-    // Store'a verileri yükle
+    selection();
+    // Store'a urun verilerini yukle
     setProduct(item.product);
     setBarcode(item.barcode);
     setContent(item.content);
@@ -60,13 +63,13 @@ export default function HomeScreen() {
     navigate(`/product/${item.id}?readonly=true`);
   };
 
-  // Boş liste komponenti
+  // Gecmis bos oldugunda gosterilen placeholder
   const EmptyList = () => (
     <View className="flex-1 items-center justify-center py-12">
       <Ionicons
         name={searchQuery ? "search-outline" : "time-outline"}
         size={64}
-        color={colorScheme === "dark" ? "#404040" : "#E5E5E5"}
+        color={themeColors.divider}
       />
       <Text className="text-muted-foreground mt-4 text-center px-8">
         {searchQuery
@@ -76,7 +79,7 @@ export default function HomeScreen() {
     </View>
   );
 
-  // Loading skeleton
+  // Yukleme animasyonu
   const LoadingSkeleton = () => (
     <View className="px-4">
       {[1, 2, 3].map((i) => (
@@ -97,7 +100,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
-      {/* Başlık Alanı */}
+      {/* Baslik */}
       <View className="px-6 pt-6 pb-2">
         <Text className="text-3xl font-bold text-foreground mb-2">
           Besin Denetle
@@ -107,22 +110,16 @@ export default function HomeScreen() {
         </Text>
       </View>
 
-      {/* Arama Çubuğu */}
+      {/* Arama Cubugu */}
       <View className="px-6 py-2">
         <View className="flex-row items-center bg-secondary/50 rounded-2xl px-4 py-3 border border-primary/50">
-          <Ionicons
-            name="search"
-            size={20}
-            color={colorScheme === "dark" ? "#A3A3A3" : "#737373"}
-          />
+          <Ionicons name="search" size={20} color={themeColors.muted} />
           <TextInput
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder="Geçmişte ara (barkod, marka, isim...)"
             className="flex-1 ml-3 text-foreground text-base"
-            placeholderTextColor={
-              colorScheme === "dark" ? "#A3A3A3" : "#737373"
-            }
+            placeholderTextColor={themeColors.muted}
             returnKeyType="search"
           />
           {searchQuery.length > 0 && (
@@ -130,14 +127,14 @@ export default function HomeScreen() {
               <Ionicons
                 name="close-circle"
                 size={20}
-                color={colorScheme === "dark" ? "#525252" : "#A3A3A3"}
+                color={themeColors.muted}
               />
             </TouchableOpacity>
           )}
         </View>
       </View>
 
-      {/* Geçmiş Başlığı */}
+      {/* Gecmis Basligi */}
       {filteredHistory.length > 0 && (
         <View className="flex-row items-center justify-between px-6 py-2">
           <Text className="text-foreground font-semibold text-lg">
@@ -149,7 +146,7 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Geçmiş Listesi */}
+      {/* Gecmis Listesi */}
       {isLoading ? (
         <LoadingSkeleton />
       ) : (

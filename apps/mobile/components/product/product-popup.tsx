@@ -1,3 +1,4 @@
+import { COLORS } from "@/constants";
 import type { IProduct } from "@besin-denetle/shared";
 import { Ionicons } from "@expo/vector-icons";
 import { useColorScheme } from "nativewind";
@@ -11,14 +12,14 @@ import {
 } from "react-native";
 import { ProductImage } from "./product-image";
 
-// AI arama mesajı gösterme gecikmesi (ms)
+// AI arama mesajını gösterme gecikmesi (ms)
 const AI_SEARCH_DELAY_MS = 2000;
 
 interface ProductPopupProps {
   visible: boolean;
   product: IProduct | null;
   isLoading: boolean;
-  isFromAI?: boolean; // Ürün AI tarafından mı bulundu
+  isFromAI?: boolean; // AI tarafından mı bulundu
   mode?: "confirm" | "non-food";
   onConfirm: () => void;
   onReject: () => void;
@@ -28,8 +29,7 @@ interface ProductPopupProps {
 
 /**
  * Ürün onay popup'ı
- * - confirm: Normal onay akışı (Evet/Hayır)
- * - non-food: Yiyecek/içecek olmayan ürün (Geri Dön/Bildir)
+ * confirm: Normal onay akışı, non-food: Gıda dışı ürün uyarısı
  */
 export function ProductPopup({
   visible,
@@ -43,9 +43,14 @@ export function ProductPopup({
   onFlag,
 }: ProductPopupProps) {
   const { colorScheme } = useColorScheme();
+  // Temaya göre error rengi
+  const errorColor =
+    colorScheme === "dark"
+      ? COLORS.semantic.error.dark
+      : COLORS.semantic.error.light;
   const isNonFood = mode === "non-food";
 
-  // AI arama mesajı için state
+  // AI arama mesajı state'i
   const [showAISearchMessage, setShowAISearchMessage] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -98,7 +103,7 @@ export function ProductPopup({
           {/* Loading State */}
           {isLoading && (
             <View className="items-center py-12">
-              <ActivityIndicator size="large" color="#8B5CF6" />
+              <ActivityIndicator size="large" color={COLORS.primary} />
               <Text className="text-muted-foreground mt-4">
                 {showAISearchMessage
                   ? "Ürün DB'de bulunamadı, AI ile aranıyor..."
@@ -117,7 +122,11 @@ export function ProductPopup({
             <>
               <View className="items-center mb-6">
                 <View className="w-20 h-20 bg-amber-500/20 rounded-full items-center justify-center mb-4">
-                  <Ionicons name="warning" size={40} color="#F59E0B" />
+                  <Ionicons
+                    name="warning"
+                    size={40}
+                    color={COLORS.semantic.warning}
+                  />
                 </View>
                 <Text className="text-foreground text-xl font-bold text-center">
                   Gıda Ürünü Değil
@@ -152,7 +161,11 @@ export function ProductPopup({
                   className="bg-amber-500/10 border border-amber-500/20 py-4 rounded-2xl items-center flex-row justify-center"
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="flag" size={24} color="#F59E0B" />
+                  <Ionicons
+                    name="flag"
+                    size={24}
+                    color={COLORS.semantic.warning}
+                  />
                   <Text className="text-amber-600 dark:text-amber-400 font-bold text-base ml-2">
                     Bu Ürünü Bildir
                   </Text>
@@ -194,7 +207,11 @@ export function ProductPopup({
               {isFromAI && (
                 <View className="items-center mb-4">
                   <View className="bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-full flex-row items-center">
-                    <Ionicons name="sparkles" size={14} color="#8B5CF6" />
+                    <Ionicons
+                      name="sparkles"
+                      size={14}
+                      color={COLORS.primary}
+                    />
                     <Text className="text-primary text-xs font-medium ml-1.5">
                       AI ile bulundu
                     </Text>
@@ -227,11 +244,7 @@ export function ProductPopup({
                   className="bg-destructive/10 border border-destructive/20 py-4 rounded-2xl items-center flex-row justify-center"
                   activeOpacity={0.7}
                 >
-                  <Ionicons
-                    name="close-circle"
-                    size={24}
-                    color={colorScheme === "dark" ? "#EF5350" : "#D32F2F"}
-                  />
+                  <Ionicons name="close-circle" size={24} color={errorColor} />
                   <Text className="text-destructive font-bold text-base ml-2">
                     Hayır, Yanlış
                   </Text>
@@ -240,13 +253,13 @@ export function ProductPopup({
             </>
           )}
 
-          {/* Ürün Bulunamadı */}
+          {/* Ürün bulunamadı durumu */}
           {!isLoading && !isNonFood && !product && (
             <View className="items-center py-8">
               <Ionicons
                 name="alert-circle-outline"
                 size={64}
-                color={colorScheme === "dark" ? "#EF5350" : "#D32F2F"}
+                color={errorColor}
               />
               <Text className="text-foreground text-lg font-bold mt-4">
                 Ürün Bulunamadı

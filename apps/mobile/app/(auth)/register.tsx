@@ -1,15 +1,16 @@
+import { COLORS } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useColorScheme } from "nativewind";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    KeyboardAvoidingView,
-    Platform,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { parseApiError } from "../../services/api";
@@ -23,9 +24,8 @@ export default function RegisterScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
 
-  // tempToken kontrolünü useEffect içinde yap (race condition önleme)
+  // tempToken yoksa login'e yonlendir (race condition onleme)
   useEffect(() => {
-    // Kısa bir gecikme ile tempToken'ın set edilmesini bekle
     const timer = setTimeout(() => {
       if (!tempToken) {
         console.log("[Register] No tempToken found, redirecting to login");
@@ -34,16 +34,16 @@ export default function RegisterScreen() {
         console.log("[Register] tempToken found, ready to register");
         setIsReady(true);
       }
-    }, 100); // 100ms bekle
+    }, 100);
 
     return () => clearTimeout(timer);
   }, [tempToken]);
 
-  // Henüz hazır değilse loading göster
+  // Henuz hazir degilse loading goster
   if (!isReady) {
     return (
       <SafeAreaView className="flex-1 bg-background items-center justify-center">
-        <ActivityIndicator size="large" color="#8B5CF6" />
+        <ActivityIndicator size="large" color={COLORS.primary} />
       </SafeAreaView>
     );
   }
@@ -51,7 +51,7 @@ export default function RegisterScreen() {
   const isValid = username.trim().length >= 3 && termsAccepted;
 
   const handleRegister = async () => {
-    if (!isValid || isLoading) return; // Çift tıklama koruması
+    if (!isValid || isLoading) return;
 
     try {
       setError(null);
@@ -81,7 +81,7 @@ export default function RegisterScreen() {
             />
           </TouchableOpacity>
 
-          {/* Başlık */}
+          {/* Baslik */}
           <View className="mt-8 mb-8">
             <Text className="text-3xl font-bold text-foreground mb-2">
               Hesabını Oluştur

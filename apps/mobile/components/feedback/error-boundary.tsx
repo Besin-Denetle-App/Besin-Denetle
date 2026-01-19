@@ -1,6 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Component, ErrorInfo, ReactNode } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from "@expo/vector-icons";
+import { Component, ErrorInfo, ReactNode } from "react";
+import { Text, TouchableOpacity, View } from "react-native";
 
 interface Props {
   children: ReactNode;
@@ -13,11 +13,9 @@ interface State {
 
 /**
  * React Error Boundary
- * 
- * Uygulama genelinde yakalanmamış hataları yakalar ve
- * kullanıcıya güzel bir hata ekranı gösterir.
- * 
- * Kullanım: _layout.tsx'te root component'i wrap et
+ *
+ * Yakalanmamış hataları global olarak yakalar.
+ * _layout.tsx'te root component'i sarmalıyor.
  */
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
@@ -30,8 +28,8 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Hata loglama - Production'da analytics'e gönderilebilir
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    // Production'da buraya analytics entegrasyonu eklenebilir
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
   }
 
   handleReset = () => {
@@ -42,7 +40,7 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <View className="flex-1 bg-background items-center justify-center px-6">
-          {/* Hata İkonu */}
+          {/* Hata ikonu */}
           <View className="bg-destructive/10 w-24 h-24 rounded-full items-center justify-center mb-6">
             <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
           </View>
@@ -54,11 +52,11 @@ export class ErrorBoundary extends Component<Props, State> {
 
           {/* Açıklama */}
           <Text className="text-muted-foreground text-center mb-6">
-            Beklenmeyen bir hata oluştu.{'\n'}
+            Beklenmeyen bir hata oluştu.{"\n"}
             Lütfen uygulamayı yeniden başlatmayı deneyin.
           </Text>
 
-          {/* DEV: Hata Detayı */}
+          {/* Dev modda hata detayı göster */}
           {__DEV__ && this.state.error && (
             <View className="bg-secondary/50 border border-border rounded-xl px-4 py-3 mb-6 w-full">
               <Text className="text-muted-foreground text-xs font-mono">

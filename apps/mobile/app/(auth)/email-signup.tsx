@@ -3,13 +3,13 @@ import { router } from "expo-router";
 import { useColorScheme } from "nativewind";
 import { useState } from "react";
 import {
-    ActivityIndicator,
-    KeyboardAvoidingView,
-    Platform,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDebouncedNavigation } from "../../hooks/use-debounce";
@@ -23,14 +23,14 @@ export default function EmailSignupScreen() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  // Gmail kontrolü
+  // Gmail domain kontrolu
   const isGmail = email.toLowerCase().trim().endsWith("@gmail.com");
 
-  // Form geçerli mi kontrol et (sadece Gmail kabul ediliyor)
+  // Form validasyonu - sadece Gmail kabul ediliyor
   const isValid = email.trim().length >= 5 && email.includes("@") && isGmail;
 
   const handleSubmit = async () => {
-    if (!isValid || isLoading) return; // Çift tıklama koruması
+    if (!isValid || isLoading) return;
 
     console.log("[EmailSignup] Submitting:", { email });
 
@@ -41,11 +41,11 @@ export default function EmailSignupScreen() {
       console.log("[EmailSignup] Result:", result);
 
       if (result.needsRegistration) {
-        // Yeni kullanıcı - username belirleme ekranına yönlendir
+        // Yeni kullanici - username belirleme ekranina yonlendir
         console.log("[EmailSignup] Navigating to register screen");
         navigate("/(auth)/register");
       } else {
-        // Mevcut kullanıcı - ana ekrana yönlendir
+        // Mevcut kullanici - ana ekrana yonlendir
         console.log("[EmailSignup] Navigating to tabs (existing user)");
         router.replace("/(tabs)");
       }
@@ -74,7 +74,7 @@ export default function EmailSignupScreen() {
             />
           </TouchableOpacity>
 
-          {/* Başlık */}
+          {/* Baslik */}
           <View className="mt-8 mb-8">
             <Text className="text-3xl font-bold text-foreground mb-2">
               E-posta ile Giriş
@@ -93,7 +93,7 @@ export default function EmailSignupScreen() {
 
           {/* Form */}
           <View className="gap-4">
-            {/* E-posta */}
+            {/* E-posta Input */}
             <View>
               <Text className="text-foreground font-medium mb-2">
                 Gmail Adresi

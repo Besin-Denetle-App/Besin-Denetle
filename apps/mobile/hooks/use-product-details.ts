@@ -1,8 +1,6 @@
 /**
- * Ürün detay sayfası için custom hook
- *
+ * Ürün detay sayfası hook'u
  * İki aşamalı fetch: önce content, sonra analysis.
- * İçerik veya analiz reddedildiğinde geçmiş otomatik güncellenir.
  */
 import { showErrorToast, showInfoToast } from "@/components/feedback";
 import type { IContentAnalysis, IProductContent } from "@besin-denetle/shared";
@@ -14,7 +12,7 @@ import { useHistoryStore } from "../stores/history.store";
 import { useProductStore } from "../stores/product.store";
 
 interface UseProductDetailsResult {
-  // State
+  // State fields
   content: IProductContent | null;
   analysis: IContentAnalysis | null;
   isLoading: boolean;
@@ -22,22 +20,20 @@ interface UseProductDetailsResult {
   analysisError: boolean;
   error: string | null;
 
-  // Actions
+  // Action methods
   rejectContent: () => Promise<void>;
   rejectAnalysis: () => Promise<void>;
   retryAnalysis: () => void;
 }
 
 /**
- * Ürün detaylarını yükler ve yönetir
- * @param productId - Ürün ID'si
- * @param isReadonly - Salt okunur mod (geçmişten açıldı mı)
+ * Ürün detaylarını yükler
  */
 export function useProductDetails(
   productId: string,
   isReadonly: boolean,
 ): UseProductDetailsResult {
-  // Store'dan product ve barcode al
+  // Store'dan gerekli değerleri al
   const { currentProduct: product, currentBarcode: barcode } =
     useProductStore();
   const { addToHistory, updateHistoryAnalysis } = useHistoryStore();
@@ -55,7 +51,7 @@ export function useProductDetails(
   const [rejectedContentIds, setRejectedContentIds] = useState<string[]>([]);
   const [rejectedAnalysisIds, setRejectedAnalysisIds] = useState<string[]>([]);
 
-  // Analiz yükle (content'ten sonra çağrılır)
+  // Analiz yükleyici
   const loadAnalysis = useCallback(
     async (contentId: string) => {
       setIsAnalysisLoading(true);
@@ -79,7 +75,7 @@ export function useProductDetails(
     [product, isReadonly, updateHistoryAnalysis],
   );
 
-  // Analizi tekrar yükle
+  // Analiz retry
   const retryAnalysis = useCallback(() => {
     if (content) {
       loadAnalysis(content.id);
@@ -88,7 +84,7 @@ export function useProductDetails(
 
   // Ürün detaylarını yükle (iki aşamalı)
   const loadProductDetails = useCallback(async () => {
-    // Readonly modda API çağırma (geçmişten geldi, veriler store'da var)
+    // Readonly modda API çağırmadan store'dan al
     if (isReadonly) {
       const { currentContent, currentAnalysis } = useProductStore.getState();
       setContent(currentContent);
@@ -151,7 +147,7 @@ export function useProductDetails(
     }
   }, [productId, loadProductDetails]);
 
-  // İçerik reddet - sonraki content al, sonra analysis
+  // İçerik reddet - yeni content + analysis al
   const rejectContent = useCallback(async () => {
     if (!content || isLoading) return; // Çift tıklama koruması
 
@@ -208,7 +204,7 @@ export function useProductDetails(
     hapticError,
   ]);
 
-  // Analiz reddet (sadece analysis değişir, content aynı kalır)
+  // Analiz reddet (content aynı kalır)
   const rejectAnalysis = useCallback(async () => {
     if (!analysis || isAnalysisLoading) return; // Çift tıklama koruması
 

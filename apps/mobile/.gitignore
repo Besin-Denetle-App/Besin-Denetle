@@ -4,11 +4,11 @@
 expo-env.d.ts
 # @end expo-cli
 
-# Native build klasörleri (expo prebuild ile oluşur)
+# Native build klasörleri
 /android
 /ios
 
-# Environment variables (gizli bilgiler)
+# Environment variables
 .env
 .env.local
 .env.*.local

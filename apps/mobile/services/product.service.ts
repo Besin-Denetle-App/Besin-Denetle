@@ -17,7 +17,7 @@ import type {
 import { api } from "./api";
 
 /**
- * Barkod tara - Ürün bilgisi getir veya AI ile oluştur
+ * Barkod tara ve ürün getir
  */
 export const scanBarcode = async (barcode: string): Promise<ScanResponse> => {
   const request: ScanRequest = { barcode };
@@ -26,7 +26,7 @@ export const scanBarcode = async (barcode: string): Promise<ScanResponse> => {
 };
 
 /**
- * Ürün onayla - İçerik getir
+ * Ürünü onayla ve içerik getir
  */
 export const confirmProduct = async (
   productId: string,
@@ -40,7 +40,7 @@ export const confirmProduct = async (
 };
 
 /**
- * Analiz üret - İçerik için analiz getir veya oluştur
+ * İçerik için analiz üret
  */
 export const generateAnalysis = async (
   contentId: string,
@@ -54,7 +54,7 @@ export const generateAnalysis = async (
 };
 
 /**
- * Ürün reddet - Sonraki varyant veya yeni AI ürünü getir
+ * Ürünü reddet, sonraki varyantı getir
  */
 export const rejectProduct = async (
   productId: string,
@@ -69,7 +69,7 @@ export const rejectProduct = async (
 };
 
 /**
- * İçerik reddet - Sonraki içerik varyantı getir
+ * İçeriği reddet, sonraki varyantı getir
  */
 export const rejectContent = async (
   contentId: string,
@@ -84,7 +84,7 @@ export const rejectContent = async (
 };
 
 /**
- * Analiz reddet - Sonraki analiz varyantı getir
+ * Analizi reddet, sonraki varyantı getir
  */
 export const rejectAnalysis = async (
   analysisId: string,
@@ -99,7 +99,7 @@ export const rejectAnalysis = async (
 };
 
 /**
- * Barkod bildir - Non-food ürünü bildir
+ * Non-food barkodu bildir
  */
 export const flagBarcode = async (
   barcodeId: string,

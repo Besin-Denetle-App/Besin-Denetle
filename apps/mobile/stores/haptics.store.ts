@@ -23,22 +23,22 @@ interface HapticsState {
   initialize: () => Promise<void>;
   setEnabled: (enabled: boolean) => Promise<void>;
 
-  // Impact Feedback - Farklı yoğunluklar
+  // Impact Feedback
   selection: () => Promise<void>;
   light: () => Promise<void>;
   medium: () => Promise<void>;
   heavy: () => Promise<void>;
 
-  // Notification Feedback - Durum bildirimleri
+  // Notification Feedback
   success: () => Promise<void>;
   error: () => Promise<void>;
 }
 
 export const useHapticsStore = create<HapticsState>((set, get) => ({
-  enabled: true, // Varsayılan: açık
+  enabled: true, // Varsayılan açık
   isLoading: true,
 
-  // Uygulama başlangıcında ayarı yükle
+  // Başlangıçta ayarı yükle
   initialize: async () => {
     try {
       const saved = await AsyncStorage.getItem(STORAGE_KEY);
@@ -52,7 +52,7 @@ export const useHapticsStore = create<HapticsState>((set, get) => ({
     }
   },
 
-  // Titreşimi aç/kapat ve kaydet
+  // Titreşim toggle
   setEnabled: async (enabled: boolean) => {
     set({ enabled });
     try {
@@ -62,7 +62,7 @@ export const useHapticsStore = create<HapticsState>((set, get) => ({
     }
   },
 
-  // Selection
+  // Selection feedback
   selection: async () => {
     const { enabled } = get();
     if (!enabled) return;
@@ -70,11 +70,11 @@ export const useHapticsStore = create<HapticsState>((set, get) => ({
     try {
       await Haptics.selectionAsync();
     } catch {
-      // Haptics desteklenmiyor
+      // Cihaz desteklemiyor
     }
   },
 
-  // Light
+  // Light impact
   light: async () => {
     const { enabled } = get();
     if (!enabled) return;
@@ -82,11 +82,11 @@ export const useHapticsStore = create<HapticsState>((set, get) => ({
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch {
-      // Haptics desteklenmiyor
+      // Cihaz desteklemiyor
     }
   },
 
-  // Medium
+  // Medium impact
   medium: async () => {
     const { enabled } = get();
     if (!enabled) return;
@@ -94,11 +94,11 @@ export const useHapticsStore = create<HapticsState>((set, get) => ({
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     } catch {
-      // Haptics desteklenmiyor
+      // Cihaz desteklemiyor
     }
   },
 
-  // Heavy
+  // Heavy impact
   heavy: async () => {
     const { enabled } = get();
     if (!enabled) return;
@@ -106,11 +106,11 @@ export const useHapticsStore = create<HapticsState>((set, get) => ({
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     } catch {
-      // Haptics desteklenmiyor
+      // Cihaz desteklemiyor
     }
   },
 
-  // Success - Başarı bildirimi
+  // Success notification
   success: async () => {
     const { enabled } = get();
     if (!enabled) return;
@@ -118,11 +118,11 @@ export const useHapticsStore = create<HapticsState>((set, get) => ({
     try {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch {
-      // Haptics desteklenmiyor
+      // Cihaz desteklemiyor
     }
   },
 
-  // Error - Hata bildirimi
+  // Error notification
   error: async () => {
     const { enabled } = get();
     if (!enabled) return;
@@ -130,7 +130,7 @@ export const useHapticsStore = create<HapticsState>((set, get) => ({
     try {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } catch {
-      // Haptics desteklenmiyor
+      // Cihaz desteklemiyor
     }
   },
 }));

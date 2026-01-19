@@ -1,6 +1,7 @@
 import { showInfoToast } from "@/components/feedback";
 import { ProductPopup } from "@/components/product";
 import { BarcodeScanner } from "@/components/scanner";
+import { COLORS } from "@/constants";
 import type { IProduct } from "@besin-denetle/shared";
 import { Ionicons } from "@expo/vector-icons";
 import { useColorScheme } from "nativewind";
@@ -21,13 +22,14 @@ import { useProductStore } from "../../stores/product.store";
 
 export default function ScanScreen() {
   const { colorScheme } = useColorScheme();
+  const themeColors = colorScheme === "dark" ? COLORS.dark : COLORS.light;
   const { setProduct, setBarcode } = useProductStore();
   const { error: hapticError } = useHapticsStore();
   const { navigate } = useDebouncedNavigation();
   const [showScanner, setShowScanner] = useState(false);
   const [barcodeInput, setBarcodeInput] = useState("");
 
-  // API state
+  // API durumu
   const [isLoading, setIsLoading] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<IProduct | null>(null);
@@ -35,15 +37,15 @@ export default function ScanScreen() {
   const [popupMode, setPopupMode] = useState<"confirm" | "non-food">("confirm");
   const [error, setError] = useState<string | null>(null);
   const [rejectedProductIds, setRejectedProductIds] = useState<string[]>([]);
-  const [isFromAI, setIsFromAI] = useState(false); // Ürün AI tarafından mı bulundu
+  const [isFromAI, setIsFromAI] = useState(false);
 
-  // Kameradan barkod okunduğunda
+  // Kameradan barkod tarandiginda
   const handleBarcodeScanned = (barcode: string) => {
     setBarcodeInput(barcode);
     setShowScanner(false);
   };
 
-  // Sorgula butonuna basıldığında
+  // Sorgula butonuna basildiginda
   const handleSearch = async () => {
     if (!barcodeInput.trim()) return;
 
@@ -55,7 +57,7 @@ export default function ScanScreen() {
     try {
       const response = await productService.scanBarcode(barcodeInput.trim());
 
-      // barcodeType kontrolü: 1=yiyecek, 2=içecek, diğerleri=non-food
+      // Barkod tipi: 1=yiyecek, 2=icecek, digerleri=non-food
       if (response.barcodeType !== 1 && response.barcodeType !== 2) {
         setPopupMode("non-food");
         setCurrentBarcodeId(response.product.barcode_id);
@@ -64,12 +66,12 @@ export default function ScanScreen() {
         setPopupMode("confirm");
         setCurrentProduct(response.product);
         setCurrentBarcodeId(response.product.barcode_id);
-        setIsFromAI(response.isNew); // AI tarafından mı bulundu
+        setIsFromAI(response.isNew);
       }
     } catch (err) {
       const errorMessage = parseApiError(err);
-      hapticError(); // Hata titreşimi
-      // Rate limit hatası ise popup'ı kapat, ana ekranda göster
+      hapticError();
+      // Rate limit hatasi - popup'i kapat
       if (isRateLimitError(err)) {
         setShowPopup(false);
       }
@@ -80,12 +82,11 @@ export default function ScanScreen() {
     }
   };
 
-  // Ürün onaylandığında - detay sayfasına git (debounced - çift tıklama engellenir)
-  // Geçmişe kaydetme detay sayfasında (use-product-details) yapılıyor
+  // Urun onaylandiginda detay sayfasina yonlendir
   const handleConfirm = async () => {
     if (!currentProduct) return;
 
-    // Detay sayfasında kullanılmak üzere store'a kaydet
+    // Store'a urun verilerini yukle
     setProduct(currentProduct);
     setBarcode(barcodeInput.trim());
 
@@ -93,15 +94,14 @@ export default function ScanScreen() {
     navigate(`/product/${currentProduct.id}`);
   };
 
-  // Ürün reddedildiğinde - sonraki varyantı getir
-  // Bu aşamada geçmişe kayıt yapılmaz (henüz detay sayfasına gidilmedi)
+  // Urun reddedildiginde sonraki varyanti getir
   const handleReject = async () => {
-    if (!currentProduct || isLoading) return; // Çift tıklama koruması
+    if (!currentProduct || isLoading) return;
 
     setIsLoading(true);
     setError(null);
     try {
-      // Şu anki ürünü reddedilenler listesine ekle
+      // Mevcut urunu reddedilenler listesine ekle
       const currentRejectedIds = [...rejectedProductIds, currentProduct.id];
       setRejectedProductIds(currentRejectedIds);
 
@@ -110,7 +110,7 @@ export default function ScanScreen() {
         currentRejectedIds,
       );
       if (response.nextProduct) {
-        // Farklı ürün varyantı geldi, popup'ta göster
+        // Farkli urun varyanti bulundu
         setCurrentProduct(response.nextProduct);
         showInfoToast("Sonraki ürün yüklendi");
       } else if (response.noMoreVariants) {
@@ -129,9 +129,9 @@ export default function ScanScreen() {
     }
   };
 
-  // Non-food barkod bildir
+  // Non-food barkod bildirimi
   const handleFlag = async () => {
-    if (!currentBarcodeId || isLoading) return; // Çift tıklama koruması
+    if (!currentBarcodeId || isLoading) return;
 
     setIsLoading(true);
     try {
@@ -145,15 +145,15 @@ export default function ScanScreen() {
     }
   };
 
-  // Popup kapatıldığında
+  // Popup kapatildiginda state'leri sifirla
   const handleClosePopup = () => {
     setShowPopup(false);
     setCurrentProduct(null);
     setCurrentBarcodeId(null);
     setPopupMode("confirm");
     setError(null);
-    setRejectedProductIds([]); // Yeni arama için listeyi sıfırla
-    setIsFromAI(false); // AI state'ini sıfırla
+    setRejectedProductIds([]);
+    setIsFromAI(false);
   };
 
   return (
@@ -183,9 +183,7 @@ export default function ScanScreen() {
             value={barcodeInput}
             onChangeText={setBarcodeInput}
             placeholder="Örn: 8690632006314"
-            placeholderTextColor={
-              colorScheme === "dark" ? "#A0A0A0" : "#757575"
-            }
+            placeholderTextColor={themeColors.muted}
             keyboardType="numeric"
             className="bg-secondary/50 border border-primary/50 rounded-2xl px-4 py-4 text-foreground text-base font-mono"
             editable={!isLoading}

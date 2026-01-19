@@ -1,7 +1,6 @@
 /**
- * Navigasyon için tip tanımlamaları
- * Expo Router typed routes ile otomatik oluşturulur,
- * bu dosya ek tipler için kullanılabilir
+ * Navigasyon tip tanımlamaları
+ * Expo Router typed routes ile otomatik oluşturulur.
  */
 
 // Ürün detay sayfası parametreleri
@@ -10,10 +9,10 @@ export interface ProductDetailParams {
 }
 
 // Tab navigasyon tipleri
-export type TabRoutes = '/' | '/scan';
+export type TabRoutes = "/" | "/scan";
 
-// Auth navigasyon tipleri  
-export type AuthRoutes = '/(auth)/login' | '/(auth)/register';
+// Auth navigasyon tipleri
+export type AuthRoutes = "/(auth)/login" | "/(auth)/register";
 
 // Product navigasyon tipleri
 export type ProductRoutes = `/product/${string}`;

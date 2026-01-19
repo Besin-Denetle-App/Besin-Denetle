@@ -1,6 +1,6 @@
 /**
- * Scanner components
- * Barkod tarayıcı ile ilgili componentler
+ * Barkod tarayıcı componentleri
  */
 
-export { BarcodeScanner } from './barcode-scanner';
+export { BarcodeScanner } from "./barcode-scanner";
+

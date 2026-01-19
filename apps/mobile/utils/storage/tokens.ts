@@ -1,16 +1,18 @@
 /**
  * Token işlemleri
- * Access ve refresh token'ların güvenli saklanması
  */
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { APP_CONFIG } from '../../constants';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { APP_CONFIG } from "../../constants";
 
 const { storageKeys } = APP_CONFIG;
 
 /**
  * Token'ları kaydet
  */
-export async function saveTokens(accessToken: string, refreshToken: string): Promise<void> {
+export async function saveTokens(
+  accessToken: string,
+  refreshToken: string,
+): Promise<void> {
   await AsyncStorage.multiSet([
     [storageKeys.accessToken, accessToken],
     [storageKeys.refreshToken, refreshToken],
