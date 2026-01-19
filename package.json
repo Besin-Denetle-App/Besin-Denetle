@@ -1,10 +1,18 @@
 {
   "name": "@besin-denetle/root",
-  "version": "0.10.0",
-  "description": "Besin Denetle - Monorepo with mobile app and backend",
-  "author": "Furkan Çelik",
-  "license": "UNLICENSED",
+  "version": "0.10.1",
+  "description": "Besin Denetle - AI-powered food nutrition analysis platform (monorepo)",
+  "author": "Furkan Çelik <iletisim.furkancelik@gmail.com> (https://furkanpasa.com)",
+  "license": "GPL-3.0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Besin-Denetle-App/Besin-Denetle.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Besin-Denetle-App/Besin-Denetle/issues"
+  },
+  "homepage": "https://besindenetle.furkanpasa.com",
   "scripts": {
     "build:shared": "pnpm --filter @besin-denetle/shared build",
     "build:backend": "pnpm --filter @besin-denetle/backend build",
@@ -20,7 +28,7 @@
     "typescript": "^5.7.3"
   },
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=20.0.0",
     "pnpm": ">=8.0.0"
   }
 }

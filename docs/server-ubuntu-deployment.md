@@ -156,6 +156,7 @@ pm2 status
 
 # Logları izle
 pm2 logs besin-backend
+pm2 monit
 
 # Sırayla yeniden başlat (kesintisiz)
 pm2 reload besin-backend
@@ -288,7 +289,7 @@ sudo systemctl restart caddy
 
 | Type | Name           | Content            | Proxy Status |
 | ---- | -------------- | ------------------ | ------------ |
-| A    | `besindenetle` | `SUNUCU_IP_ADRESI` | Proxied (🟠)  |
+| A    | `besindenetle` | `SUNUCU_IP_ADRESI` | Proxied (🟠) |
 
 > **Not:** `besindenetle` subdomain'i `besindenetle.furkanpasa.com` olarak çözümlenir.
 
