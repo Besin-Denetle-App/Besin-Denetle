@@ -193,12 +193,6 @@ sudo ufw enable
 # SSH'e izin ver
 sudo ufw allow ssh
 
-# HTTP/HTTPS sadece Cloudflare IP'lerinden
-# (Aşağıdaki bölüme bakın)
-
-# PostgreSQL portunu KAPATILI tut (dışarıdan erişim yok)
-# 5432 portu sadece localhost'tan erişilebilir
-
 # Durumu kontrol et
 sudo ufw status
 ```

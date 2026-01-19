@@ -10,6 +10,7 @@
 **NestJS (v11)** framework'ü ile geliştirilmiş, modüler ve mikroservis mimarisine uygun tasarlanmıştır.
 
 ## 📑 İçindekiler
+
 - [Besin Denetle - Backend API](#besin-denetle---backend-api)
   - [📑 İçindekiler](#-i̇çindekiler)
   - [📂 Dosya Yapısı](#-dosya-yapısı)
@@ -46,14 +47,14 @@ apps/backend/src/
 
 Sistem, ilişkisel bütünlüğü koruyan **6 ana PostgreSQL tablosundan** oluşur.
 
-| Tablo | Açıklama | İlişki |
-|-------|----------|--------|
-| `barcode` | Taranmış barkod numaraları (tekil) | → product |
-| `product` | Ürün varyantları (ad, marka, gramaj) | → product_content |
-| `product_content` | İçindekiler ve besin değerleri | → content_analysis |
-| `content_analysis` | AI sağlık yorumu ve puan | - |
-| `user` | Kullanıcı bilgileri | → vote |
-| `vote` | Ürün oylamaları (up/down) | - |
+| Tablo              | Açıklama                             | İlişki             |
+| ------------------ | ------------------------------------ | ------------------ |
+| `barcode`          | Taranmış barkod numaraları (tekil)   | → product          |
+| `product`          | Ürün varyantları (ad, marka, gramaj) | → product_content  |
+| `product_content`  | İçindekiler ve besin değerleri       | → content_analysis |
+| `content_analysis` | AI sağlık yorumu ve puan             | -                  |
+| `user`             | Kullanıcı bilgileri                  | → vote             |
+| `vote`             | Ürün oylamaları (up/down)            | -                  |
 
 > **Varyant Sistemi:** AI farklı zamanlarda farklı sonuçlar üretebileceği için, her barkodun altında birden fazla `Product` olabilir. Kullanıcılar oylamalarla en doğru varyantı seçer.
 
@@ -159,31 +160,31 @@ Uygulama çalıştığında Swagger dokümantasyonuna erişebilirsiniz:
 
 ### Auth Endpoints
 
-| Metot | Endpoint | Açıklama |
-| :--- | :--- | :--- |
-| `POST` | `/auth/oauth` | Google/Apple OAuth ile giriş |
+| Metot  | Endpoint             | Açıklama                       |
+| :----- | :------------------- | :----------------------------- |
+| `POST` | `/auth/oauth`        | Google/Apple OAuth ile giriş   |
 | `POST` | `/auth/email-signup` | E-posta ile kayıt/giriş (Beta) |
-| `POST` | `/auth/register` | Kayıt tamamla (username seç) |
-| `POST` | `/auth/refresh` | Access token yenile |
-| `POST` | `/auth/logout` | Çıkış yap |
+| `POST` | `/auth/register`     | Kayıt tamamla (username seç)   |
+| `POST` | `/auth/refresh`      | Access token yenile            |
+| `POST` | `/auth/logout`       | Çıkış yap                      |
 
 ### Product Endpoints
 
-| Metot | Endpoint | Açıklama |
-| :--- | :--- | :--- |
-| `POST` | `/products/scan` | Barkod tara (AI tetikler) |
-| `POST` | `/products/confirm` | Ürünü onayla, içerik getir |
-| `POST` | `/products/reject` | Ürün varyantını reddet |
-| `POST` | `/content/reject` | İçerik bilgisini reddet |
-| `POST` | `/analysis/reject` | AI analizini reddet |
-| `POST` | `/barcodes/flag` | Barkodu yiyecek değil olarak işaretle |
+| Metot  | Endpoint             | Açıklama                                          |
+| :----- | :------------------- | :------------------------------------------------ |
+| `POST` | `/products/scan`     | Barkod tara, Ürün getir veya AI üret              |
+| `POST` | `/products/confirm`  | Ürün onayı, içerik getir veya AI üret             |
+| `POST` | `/products/reject`   | Ürün reddi, sonraki product varyant veya AI üret  |
+| `POST` | `/barcodes/flag`     | Barkodu "Hatalı Bilgi" olarak bildir              |
+| `POST` | `/content/reject`    | İçerik reddi, sonraki içerik varyant veya AI üret |
+| `POST` | `/analysis/generate` | İçerik için AI analizi getir veya analiz üret     |
+| `POST` | `/analysis/reject`   | Analiz reddi, sonraki analiz varyant veya AI üret |
 
 ### Health Check
 
-| Metot | Endpoint | Açıklama |
-| :--- | :--- | :--- |
+| Metot | Endpoint  | Açıklama             |
+| :---- | :-------- | :------------------- |
 | `GET` | `/health` | Sunucu sağlık durumu |
-
 
 ---
 
@@ -205,6 +206,7 @@ pnpm import-csv
 ### ⏰ Otomatik Skor Hesaplama
 
 Sistem her gece **02:00** (Türkiye saati) otomatik olarak tüm skorları yeniden hesaplar:
+
 - `Product`, `ProductContent` ve `ContentAnalysis` tabloları
 - `Vote` tablosundaki oylardan güncel skorlar hesaplanır
 - User silme sonrası oluşan tutarsızlıklar düzeltilir
@@ -229,6 +231,6 @@ pnpm test:cov
 
 ## 🔗 İlgili Dökümanlar
 
-*   🐳 [Docker Development Rehberi](../../docs/docker-development.md)
-*   🖥️ [Server Deployment Rehberi](../../docs/server-ubuntu-deployment.md)
-*   📦 [Shared Paket](../../packages/shared/README.md)
+- 🐳 [Docker Development Rehberi](../../docs/docker-development.md)
+- 🖥️ [Server Deployment Rehberi](../../docs/server-ubuntu-deployment.md)
+- 📦 [Shared Paket](../../packages/shared/README.md)
