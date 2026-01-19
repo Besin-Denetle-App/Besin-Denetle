@@ -1,10 +1,12 @@
-// Temel tipler
+/**
+ * Types - barrel export
+ */
 export type UUID = string;
 export type Timestamp = Date;
 
-// Barkod tipleri
-export * from './barcode.types';
-export * from './product.types';
-export * from './user.types';
-export * from './vote.types';
+// Export
+export * from "./barcode.types";
+export * from "./product.types";
+export * from "./user.types";
+export * from "./vote.types";
 

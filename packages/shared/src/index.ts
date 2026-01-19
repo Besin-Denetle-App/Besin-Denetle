@@ -1,8 +1,7 @@
-// Tipler
-export * from './types';
+/**
+ * Shared - barrel export
+ */
+export * from "./constants";
+export * from "./dto";
+export * from "./types";
 
-// DTO'lar
-export * from './dto';
-
-// Sabitler
-export * from './constants';

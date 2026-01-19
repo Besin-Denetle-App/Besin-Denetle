@@ -1,22 +1,19 @@
 /**
- * Sistem DTO'ları
- * Health check ve error response tipleri
+ * System DTO
  */
 
 /**
  * Health Check yanıtı
- * GET /api/health endpoint'i için
  */
 export interface HealthCheckResponse {
-  status: 'ok' | 'error';
+  status: "ok" | "error";
   timestamp: string;
   uptime: number; // Saniye cinsinden
   environment?: string;
 }
 
 /**
- * Standart API hata formatı
- * Global Exception Filter tarafından döndürülür
+ * API hata formatı
  */
 export interface ApiErrorResponse {
   success: false;
@@ -30,7 +27,7 @@ export interface ApiErrorResponse {
 }
 
 /**
- * Standart API başarı formatı
+ * API başarı formatı
  */
 export interface ApiSuccessResponse<T = unknown> {
   success: true;
@@ -39,6 +36,6 @@ export interface ApiSuccessResponse<T = unknown> {
 }
 
 /**
- * Genel API yanıt tipi
+ * API yanıt tipi
  */
 export type ApiResponse<T = unknown> = ApiSuccessResponse<T> | ApiErrorResponse;

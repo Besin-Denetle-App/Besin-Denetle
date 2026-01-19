@@ -1,28 +1,25 @@
 /**
- * Her seviyede maksimum varyant sayısı
- * (Product, ProductContent, ContentAnalysis için)
+ * Max varyant (Product, Content, Analysis)
  */
 export const MAX_VARIANTS = 3;
 
 /**
  * Geçici token (tempToken) geçerlilik süresi (milisaniye)
- * 5 dakika = 5 * 60 * 1000
  */
-export const TEMP_TOKEN_EXPIRY_MS = 5 * 60 * 1000;
+export const TEMP_TOKEN_EXPIRY_MS = 5 * 60 * 1000; // 5 Dakika
 
 /**
  * AI çağrıları arası minimum bekleme süresi (milisaniye)
- * Rate limiting için kullanılır
  */
-export const AI_RATE_LIMIT_MS = 10 * 1000;
+export const AI_RATE_LIMIT_MS = 10 * 1000; // 10 Saniye
 
 /**
  * Varsayılan ürün görseli
  */
-export const DEFAULT_PRODUCT_IMAGE = '/images/placeholder-product.png';
+export const DEFAULT_PRODUCT_IMAGE = "/images/placeholder-product.png";
 
 /**
- * Score değişim kuralları
+ * Score değişimi
  */
 export const SCORE_CHANGES = {
   NEW_UP: 1, // Yeni UP oyu
@@ -32,24 +29,24 @@ export const SCORE_CHANGES = {
 } as const;
 
 /**
- * API endpoint'leri
+ * API endpoints
  */
 export const API_ENDPOINTS = {
   AUTH: {
-    OAUTH: '/api/auth/oauth',
-    REGISTER: '/api/auth/register',
-    REFRESH: '/api/auth/refresh',
-    LOGOUT: '/api/auth/logout',
+    OAUTH: "/api/auth/oauth",
+    REGISTER: "/api/auth/register",
+    REFRESH: "/api/auth/refresh",
+    LOGOUT: "/api/auth/logout",
   },
   PRODUCTS: {
-    SCAN: '/api/products/scan',
-    CONFIRM: '/api/products/confirm',
-    REJECT: '/api/products/reject',
+    SCAN: "/api/products/scan",
+    CONFIRM: "/api/products/confirm",
+    REJECT: "/api/products/reject",
   },
   CONTENT: {
-    REJECT: '/api/content/reject',
+    REJECT: "/api/content/reject",
   },
   ANALYSIS: {
-    REJECT: '/api/analysis/reject',
+    REJECT: "/api/analysis/reject",
   },
 } as const;

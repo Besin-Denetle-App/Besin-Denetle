@@ -28,7 +28,6 @@ export interface ICreateProduct {
 
 /**
  * Besin değerleri tablosu (JSONB)
- * Index signature ile Record<string, unknown> uyumlu
  */
 export interface INutritionTable {
   [key: string]: string | number | undefined;

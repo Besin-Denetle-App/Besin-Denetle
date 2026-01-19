@@ -1,5 +1,5 @@
 /**
- * Ürün tipi enum
+ * Ürün tipi;
  * 0: Kararsız (AI emin değil)
  * 1: İnsan yiyeceği
  * 2: İnsan içeceği
