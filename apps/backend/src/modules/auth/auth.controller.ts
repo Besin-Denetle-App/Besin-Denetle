@@ -19,8 +19,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
-import { THROTTLE_AUTH, THROTTLE_AUTH_NORMAL } from '../../config';
+
 import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import {
@@ -41,10 +40,6 @@ interface AuthenticatedRequest {
 /**
  * Auth Controller
  * OAuth, register, refresh, logout endpoint'leri
- *
- * Rate Limiting:
- * - oauth, register: 5/dk (IP bazlı, brute-force koruması)
- * - refresh, logout: 20/dk (User bazlı)
  */
 @ApiTags('auth')
 @Controller('auth')
@@ -54,11 +49,9 @@ export class AuthController {
   /**
    * POST /api/auth/oauth
    * OAuth token gönder, login veya tempToken al
-   * Rate Limit: 5/dk (IP bazlı - brute-force koruması)
    */
   @Post('oauth')
   @HttpCode(HttpStatus.OK)
-  @Throttle(THROTTLE_AUTH)
   @ApiOperation({ summary: 'OAuth ile giriş' })
   @ApiResponse({
     status: 200,
@@ -95,11 +88,9 @@ export class AuthController {
    * POST /api/auth/email-signup
    * E-posta ile kayıt/login (Beta test için)
    * Kayıtlı kullanıcı varsa JWT döner, yoksa tempToken ile kayıt akışı başlatır
-   * Rate Limit: 5/dk (IP bazlı - brute-force koruması)
    */
   @Post('email-signup')
   @HttpCode(HttpStatus.OK)
-  @Throttle(THROTTLE_AUTH)
   @ApiOperation({ summary: 'E-posta ile kayıt/login (Beta)' })
   @ApiResponse({
     status: 200,
@@ -134,11 +125,9 @@ export class AuthController {
   /**
    * POST /api/auth/register
    * Kayıt tamamla, JWT al
-   * Rate Limit: 5/dk (IP bazlı - brute-force koruması)
    */
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  @Throttle(THROTTLE_AUTH)
   @ApiOperation({ summary: 'Kayıt tamamla' })
   @ApiResponse({ status: 201, description: 'Kayıt başarılı' })
   async register(@Body() dto: RegisterRequestDto): Promise<RegisterResponse> {
@@ -163,11 +152,9 @@ export class AuthController {
   /**
    * POST /api/auth/refresh
    * JWT yenile
-   * Rate Limit: 20/dk (User bazlı)
    */
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @Throttle(THROTTLE_AUTH_NORMAL)
   @ApiOperation({ summary: 'Token yenile' })
   @ApiResponse({ status: 200, description: 'Yeni token döner' })
   async refresh(
@@ -184,11 +171,9 @@ export class AuthController {
   /**
    * POST /api/auth/logout
    * Çıkış (client-side token silme)
-   * Rate Limit: 20/dk (User bazlı)
    */
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  @Throttle(THROTTLE_AUTH_NORMAL)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Çıkış yap' })
@@ -207,11 +192,9 @@ export class AuthController {
   /**
    * DELETE /api/auth/delete-account
    * Hesabı kalıcı olarak sil
-   * Rate Limit: 5/dk (User bazlı - kritik işlem)
    */
   @Delete('delete-account')
   @HttpCode(HttpStatus.OK)
-  @Throttle(THROTTLE_AUTH)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Hesabı kalıcı olarak sil' })

@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WinstonModule } from 'nest-winston';
 
@@ -9,17 +8,14 @@ import {
   HttpExceptionFilter,
   LastActiveInterceptor,
   LoggingInterceptor,
-  UserThrottlerGuard,
 } from './common';
 
-// Config
 import {
   aiConfig,
   createLoggerConfig,
   databaseConfig,
   jwtConfig,
   oauthConfig,
-  throttlerConfig,
 } from './config';
 
 // Entity'ler
@@ -45,21 +41,7 @@ import { VoteModule } from './modules/vote';
     WinstonModule.forRoot(createLoggerConfig()),
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [aiConfig, databaseConfig, jwtConfig, oauthConfig, throttlerConfig],
-    }),
-    // API güvenliği için Rate Limiting ayarları
-    // Katman 1: IP bazlı global limit (DDoS/CGNAT koruması)
-    ThrottlerModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        throttlers: [
-          {
-            name: 'global',
-            ttl: configService.get<number>('throttler.global.ttl') || 60000,
-            limit: configService.get<number>('throttler.global.limit') || 1000,
-          },
-        ],
-      }),
+      load: [aiConfig, databaseConfig, jwtConfig, oauthConfig],
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -106,12 +88,6 @@ import { VoteModule } from './modules/vote';
     {
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
-    },
-    // Global rate limiting guard - brute-force koruması
-    // Authenticated: user ID bazlı, Anonymous: IP bazlı
-    {
-      provide: APP_GUARD,
-      useClass: UserThrottlerGuard,
     },
   ],
 })

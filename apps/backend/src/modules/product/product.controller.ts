@@ -1,31 +1,30 @@
 import {
-    ConfirmResponse,
-    GenerateAnalysisResponse,
-    RejectAnalysisResponse,
-    RejectContentResponse,
-    RejectProductResponse,
-    ScanResponse,
-    VoteTarget,
-    VoteType,
+  ConfirmResponse,
+  GenerateAnalysisResponse,
+  RejectAnalysisResponse,
+  RejectContentResponse,
+  RejectProductResponse,
+  ScanResponse,
+  VoteTarget,
+  VoteType,
 } from '@besin-denetle/shared';
 import {
-    BadRequestException,
-    Body,
-    Controller,
-    HttpCode,
-    HttpStatus,
-    NotFoundException,
-    Post,
-    UseGuards,
+  BadRequestException,
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  NotFoundException,
+  Post,
+  UseGuards,
 } from '@nestjs/common';
 import {
-    ApiBearerAuth,
-    ApiOperation,
-    ApiResponse,
-    ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
-import { THROTTLE_CONFIRM, THROTTLE_FLAG, THROTTLE_REJECT } from '../../config';
+
 import { AiService } from '../ai/ai.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -34,13 +33,13 @@ import { AnalysisService } from './analysis.service';
 import { BarcodeService } from './barcode.service';
 import { ContentService } from './content.service';
 import {
-    ConfirmRequestDto,
-    FlagBarcodeRequestDto,
-    GenerateAnalysisRequestDto,
-    RejectAnalysisRequestDto,
-    RejectContentRequestDto,
-    RejectProductRequestDto,
-    ScanRequestDto,
+  ConfirmRequestDto,
+  FlagBarcodeRequestDto,
+  GenerateAnalysisRequestDto,
+  RejectAnalysisRequestDto,
+  RejectContentRequestDto,
+  RejectProductRequestDto,
+  ScanRequestDto,
 } from './dto';
 import { ProductService } from './product.service';
 
@@ -64,15 +63,11 @@ export class ProductController {
    */
   @Post('products/scan')
   @HttpCode(HttpStatus.OK)
-  @Throttle(THROTTLE_CONFIRM)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Barkod tara' })
   @ApiResponse({ status: 200, description: 'Ürün bulundu veya oluşturuldu' })
-  async scan(
-    @Body() dto: ScanRequestDto,
-    @CurrentUser('id') userId: string,
-  ): Promise<ScanResponse> {
+  async scan(@Body() dto: ScanRequestDto): Promise<ScanResponse> {
     const { barcode } = dto;
 
     if (!barcode || barcode.trim() === '') {
@@ -98,11 +93,7 @@ export class ProductController {
     }
 
     // AI devreye giriyor
-    const aiResult = await this.aiService.identifyProduct(
-      barcode,
-      userId,
-      true, // Rate limit uygula
-    );
+    const aiResult = await this.aiService.identifyProduct(barcode);
 
     if (!aiResult.isFood || !aiResult.product) {
       throw new NotFoundException(
@@ -141,7 +132,6 @@ export class ProductController {
    */
   @Post('products/confirm')
   @HttpCode(HttpStatus.OK)
-  @Throttle(THROTTLE_CONFIRM)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Ürün onayla, içerik getir' })
@@ -209,7 +199,6 @@ export class ProductController {
    */
   @Post('products/reject')
   @HttpCode(HttpStatus.OK)
-  @Throttle(THROTTLE_REJECT)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Ürün reddet, sonraki varyant getir' })
@@ -260,11 +249,7 @@ export class ProductController {
       throw new NotFoundException('Barkod bulunamadı');
     }
 
-    const aiResult = await this.aiService.identifyProduct(
-      barcode.code,
-      userId,
-      true, // Rate limit uygula
-    );
+    const aiResult = await this.aiService.identifyProduct(barcode.code);
 
     if (!aiResult.isFood || !aiResult.product) {
       return {
@@ -298,7 +283,6 @@ export class ProductController {
    */
   @Post('content/reject')
   @HttpCode(HttpStatus.OK)
-  @Throttle(THROTTLE_REJECT)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'İçerik reddet, sonraki içerik getir' })
@@ -382,7 +366,6 @@ export class ProductController {
    */
   @Post('analysis/generate')
   @HttpCode(HttpStatus.OK)
-  @Throttle(THROTTLE_CONFIRM)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'İçerik için analiz üret' })
@@ -441,11 +424,9 @@ export class ProductController {
   /**
    * POST /api/analysis/reject
    * Analiz reddi - sonraki varyant getir
-   * Rate Limit: 6/dk (reject akışı - AI maliyeti yüksek)
    */
   @Post('analysis/reject')
   @HttpCode(HttpStatus.OK)
-  @Throttle(THROTTLE_REJECT)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Analiz reddet' })
@@ -530,11 +511,9 @@ export class ProductController {
   /**
    * POST /api/barcodes/flag
    * Non-food barkodu bildir
-   * Rate Limit: 5/dk
    */
   @Post('barcodes/flag')
   @HttpCode(HttpStatus.OK)
-  @Throttle(THROTTLE_FLAG)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Barkodu bildir (non-food)' })

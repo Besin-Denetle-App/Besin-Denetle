@@ -1,8 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
 import { DataSource } from 'typeorm';
-import { THROTTLE_HEALTH } from '../../config';
 
 /**
  * Health check endpoint
@@ -15,7 +13,6 @@ export class HealthController {
   constructor(private readonly dataSource: DataSource) {}
 
   @Get()
-  @Throttle(THROTTLE_HEALTH)
   @ApiOperation({ summary: 'Sunucu sağlık kontrolü' })
   @ApiResponse({ status: 200, description: 'Sunucu sağlıklı' })
   async check() {

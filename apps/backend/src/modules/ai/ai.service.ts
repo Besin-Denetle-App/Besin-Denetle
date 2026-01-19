@@ -1,5 +1,4 @@
 import {
-  AI_RATE_LIMIT_MS,
   AIAnalysisResult,
   AIContentResult,
   AIProductResult,
@@ -25,9 +24,6 @@ export class AiService {
   private readonly modelFast: string;
   private readonly modelSmart: string;
 
-  // Rate limit map (userId -> timestamp)
-  private readonly lastCallTime: Map<string, number> = new Map();
-
   constructor(private readonly configService: ConfigService) {
     this.apiKey = this.configService.get<string>('GEMINI_API_KEY');
     this.isMockMode = !this.apiKey || this.apiKey.trim() === '';
@@ -47,67 +43,6 @@ export class AiService {
       this.genai = null;
       this.logger.warn('AI Service running in MOCK MODE - no API key provided');
     }
-
-    // Rate limit temizleme (1 saat)
-    setInterval(
-      () => {
-        this.cleanupOldRateLimitEntries();
-      },
-      60 * 60 * 1000,
-    );
-  }
-
-  /**
-   * Eski rate limit kayıtlarını temizle (1 saatten eski)
-   */
-  private cleanupOldRateLimitEntries(): void {
-    const now = Date.now();
-    const maxAge = 60 * 60 * 1000; // 1 saat
-    let deleted = 0;
-
-    for (const [key, timestamp] of this.lastCallTime) {
-      if (now - timestamp > maxAge) {
-        this.lastCallTime.delete(key);
-        deleted++;
-      }
-    }
-
-    if (deleted > 0) {
-      this.logger.debug(
-        `Rate limit cleanup: ${deleted} eski kayıt silindi, ${this.lastCallTime.size} kayıt kaldı`,
-      );
-    }
-  }
-
-  /**
-   * Rate limit kontrolü
-   */
-  private enforceRateLimit(userId?: string): void {
-    const key = userId || 'global';
-    const lastCall = this.lastCallTime.get(key) || 0;
-    const elapsed = Date.now() - lastCall;
-    const remaining = AI_RATE_LIMIT_MS - elapsed;
-
-    if (remaining > 0) {
-      this.logger.warn(
-        `Rate limit active for ${key}. ${Math.ceil(remaining / 1000)}s remaining`,
-      );
-      throw new HttpException(
-        `Lütfen ${Math.ceil(remaining / 1000)} saniye bekleyin`,
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
-    }
-
-    // Zamanı güncelle
-    this.lastCallTime.set(key, Date.now());
-  }
-
-  /**
-   * Rate limit uygulama olmadan sadece zaman güncelle
-   */
-  private updateLastCallTime(userId?: string): void {
-    const key = userId || 'global';
-    this.lastCallTime.set(key, Date.now());
   }
 
   // ==================== PROMPT 1 ====================
@@ -115,17 +50,7 @@ export class AiService {
   /**
    * Prompt 1: Ürün kimliği (barkoddan marka, isim, gramaj)
    */
-  async identifyProduct(
-    barcode: string,
-    userId?: string,
-    enforceLimit: boolean = false,
-  ): Promise<AIProductResult> {
-    if (enforceLimit) {
-      this.enforceRateLimit(userId);
-    } else {
-      this.updateLastCallTime(userId);
-    }
-
+  async identifyProduct(barcode: string): Promise<AIProductResult> {
     // Mock modda sahte veri döndür
     if (this.isMockMode || !this.genai) {
       return this.mockIdentifyProduct(barcode);
@@ -212,15 +137,7 @@ Yanıt formatı:
     brand: string | null,
     name: string | null,
     quantity: string | null,
-    userId?: string,
-    enforceLimit: boolean = false,
   ): Promise<AIContentResult> {
-    if (enforceLimit) {
-      this.enforceRateLimit(userId);
-    } else {
-      this.updateLastCallTime(userId);
-    }
-
     // Mock modda sahte veri döndür
     if (this.isMockMode || !this.genai) {
       return this.mockGetProductContent(brand, name);
@@ -324,15 +241,7 @@ Yanıt formatı:
     ingredients: string | null,
     allergens: string | null,
     nutrition: Record<string, unknown> | null,
-    userId?: string,
-    enforceLimit: boolean = false,
   ): Promise<AIAnalysisResult> {
-    if (enforceLimit) {
-      this.enforceRateLimit(userId);
-    } else {
-      this.updateLastCallTime(userId);
-    }
-
     // Mock modda sahte veri döndür
     if (this.isMockMode || !this.genai) {
       return this.mockAnalyzeContent(name);

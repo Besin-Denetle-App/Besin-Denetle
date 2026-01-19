@@ -9,11 +9,6 @@ export const MAX_VARIANTS = 3;
 export const TEMP_TOKEN_EXPIRY_MS = 5 * 60 * 1000; // 5 Dakika
 
 /**
- * AI çağrıları arası minimum bekleme süresi (milisaniye)
- */
-export const AI_RATE_LIMIT_MS = 10 * 1000; // 10 Saniye
-
-/**
  * Varsayılan ürün görseli
  */
 export const DEFAULT_PRODUCT_IMAGE = "/images/placeholder-product.png";
