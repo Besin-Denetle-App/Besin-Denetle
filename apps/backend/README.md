@@ -72,11 +72,11 @@ Google Gemini API (Search Grounding özellikli) kullanılarak 3 aşamalı bir an
 
 ## ⚙️ Kurulum ve Yapılandırma
 
-Backend'i çalıştırmak için `.env` dosyasını oluşturmanız **zorunludur**.
+Backend'i çalıştırmak için root dizinde `.env` dosyası oluşturmanız **zorunludur**.
 
 ### 1. Ortam Değişkenleri (.env)
 
-`apps/backend` klasöründe `.env` dosyasını oluşturun:
+Proje root dizininde `.env` dosyasını oluşturun:
 
 ```env
 # --- SUNUCU AYARLARI ---

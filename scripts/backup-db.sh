@@ -13,7 +13,7 @@ set -e
 # Proje dizini
 PROJECT_DIR="/opt/besin-denetle"
 BACKUP_DIR="/opt/backups/besin-denetle"
-ENV_FILE="$PROJECT_DIR/apps/backend/.env"
+ENV_FILE="$PROJECT_DIR/.env"
 
 # .env dosyasından değişkenleri oku
 if [ -f "$ENV_FILE" ]; then

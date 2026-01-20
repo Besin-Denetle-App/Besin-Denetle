@@ -25,10 +25,10 @@ Bu rehber, Besin-Denetle projesini **local development** ortamında Docker ile n
 
 ### 1. Environment Dosyasını Hazırla
 
-Backend klasöründe `.env` dosyası oluştur:
+Root dizinde `.env` dosyası oluştur:
 
 ```bash
-cp apps/backend/.env.example apps/backend/.env
+cp .env.example .env
 ```
 
 > [!IMPORTANT]

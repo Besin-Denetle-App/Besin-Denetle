@@ -47,6 +47,7 @@ import { VoteModule } from './modules/vote';
     WinstonModule.forRoot(createLoggerConfig()),
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: ['../../.env', '.env'],
       load: [aiConfig, databaseConfig, jwtConfig, oauthConfig, rateLimitConfig],
     }),
     TypeOrmModule.forRootAsync({

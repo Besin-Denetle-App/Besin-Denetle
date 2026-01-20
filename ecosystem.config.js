@@ -11,7 +11,7 @@
  *   pm2 reload besin-backend  - Sırayla yeniden başlat (kesintisiz)
  *   pm2 restart besin-backend - Tamamen yeniden başlat
  *
- * Not: .env dosyası apps/backend/.env yolunda olmalı
+ * Not: .env dosyası root dizininde olmalı
  */
 const path = require("path");
 const fs = require("fs");
@@ -35,8 +35,8 @@ function loadEnvFile(envPath) {
   return env;
 }
 
-// .env dosyasının yolunu belirle
-const envPath = path.join(__dirname, "apps", "backend", ".env");
+// .env dosyasının yolunu belirle (root dizin)
+const envPath = path.join(__dirname, ".env");
 const envVars = loadEnvFile(envPath);
 
 module.exports = {

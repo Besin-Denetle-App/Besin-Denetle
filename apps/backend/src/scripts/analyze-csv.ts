@@ -17,8 +17,8 @@ import {
   Vote,
 } from '../entities';
 
-// .env dosyasını yükle
-config();
+// .env dosyasını yükle (root dizinden)
+config({ path: path.resolve(__dirname, '../../../../.env') });
 
 // CSV row tip tanımı
 interface CsvRow {

@@ -8,8 +8,8 @@
 #   docker compose down             # Servisleri durdur
 #   docker compose down -v          # Servisleri ve volumeleri sil
 
-# Backend .env dosyası PostgreSQL değişkenlerini içerir
-# Not: Bu dosya apps/backend/.env yolunda olmalı
+# Root dizindeki .env dosyasından değişkenler okunur
+# Not: .env.example dosyasını .env olarak kopyalayıp düzenleyin
 
 services:
   # ============================================
@@ -19,8 +19,6 @@ services:
     image: postgres:18-alpine
     container_name: besin_denetle_db
     restart: unless-stopped
-    env_file:
-      - apps/backend/.env
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -30,7 +28,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
       timeout: 5s
       retries: 5

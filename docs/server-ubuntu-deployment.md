@@ -98,8 +98,8 @@ git clone git@github.com:Besin-Denetle-App/Besin-Denetle.git .
 ### 5. Environment Dosyasını Hazırla
 
 ```bash
-cp apps/backend/.env.example apps/backend/.env
-nano apps/backend/.env
+cp .env.example .env
+nano .env
 ```
 
 > [!IMPORTANT]
@@ -112,7 +112,7 @@ nano apps/backend/.env
 ### 6. PostgreSQL ve Redis Container'larını Başlat
 
 ```bash
-export $(grep -v '^#' apps/backend/.env | xargs)
+export $(grep -v '^#' .env | xargs)
 docker compose up -d
 docker compose ps
 ```

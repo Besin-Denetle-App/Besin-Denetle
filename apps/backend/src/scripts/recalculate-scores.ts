@@ -5,10 +5,11 @@
 
 import { VoteType } from '@besin-denetle/shared';
 import { config } from 'dotenv';
+import { resolve } from 'path';
 import { DataSource } from 'typeorm';
 
-// .env dosyasını yükle
-config();
+// .env dosyasını yükle (root dizinden)
+config({ path: resolve(__dirname, '../../../../.env') });
 
 // Veritabanı bağlantısı oluştur
 const dataSource = new DataSource({
