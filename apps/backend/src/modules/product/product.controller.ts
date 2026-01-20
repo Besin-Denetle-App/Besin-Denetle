@@ -1,8 +1,4 @@
 import {
-  ConfirmResponse,
-  GenerateAnalysisResponse,
-  RejectAnalysisResponse,
-  RejectContentResponse,
   RejectProductResponse,
   ScanResponse,
   VoteTarget,
@@ -25,26 +21,22 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { RateLimitHelper } from '../../common/rate-limit';
+
 import { AiService } from '../ai/ai.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { BarcodeService } from '../barcode/barcode.service';
 import { VoteService } from '../vote/vote.service';
-import { AnalysisService } from './analysis.service';
-import { BarcodeService } from './barcode.service';
-import { ContentService } from './content.service';
 import {
-  ConfirmRequestDto,
   FlagBarcodeRequestDto,
-  GenerateAnalysisRequestDto,
-  RejectAnalysisRequestDto,
-  RejectContentRequestDto,
   RejectProductRequestDto,
   ScanRequestDto,
-} from './dto';
+} from './product.dto';
 import { ProductService } from './product.service';
 
 /**
- * Product controller
+ * Product controller - Ürün işlemleri
  */
 @ApiTags('products')
 @Controller()
@@ -52,10 +44,9 @@ export class ProductController {
   constructor(
     private readonly barcodeService: BarcodeService,
     private readonly productService: ProductService,
-    private readonly contentService: ContentService,
-    private readonly analysisService: AnalysisService,
     private readonly voteService: VoteService,
     private readonly aiService: AiService,
+    private readonly rateLimitHelper: RateLimitHelper,
   ) {}
 
   /**
@@ -67,12 +58,18 @@ export class ProductController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Barkod tara' })
   @ApiResponse({ status: 200, description: 'Ürün bulundu veya oluşturuldu' })
-  async scan(@Body() dto: ScanRequestDto): Promise<ScanResponse> {
+  async scan(
+    @CurrentUser('id') userId: string,
+    @Body() dto: ScanRequestDto,
+  ): Promise<ScanResponse> {
     const { barcode } = dto;
 
     if (!barcode || barcode.trim() === '') {
       throw new BadRequestException('Barkod numarası gerekli');
     }
+
+    // Rate limit kontrolü
+    await this.rateLimitHelper.checkScan(userId);
 
     // Veritabanında barkod var mı kontrol et
     let barcodeEntity = await this.barcodeService.findByCode(barcode);
@@ -84,6 +81,9 @@ export class ProductController {
       );
 
       if (bestProduct) {
+        // DB HIT
+        await this.rateLimitHelper.incrementScanDb(userId);
+
         return {
           product: bestProduct,
           isNew: false,
@@ -93,6 +93,8 @@ export class ProductController {
     }
 
     // AI devreye giriyor
+    await this.rateLimitHelper.incrementScanAi(userId);
+
     const aiResult = await this.aiService.identifyProduct(barcode);
 
     if (!aiResult.isFood || !aiResult.product) {
@@ -128,73 +130,6 @@ export class ProductController {
   }
 
   /**
-   * Ürün onayla, içerik getir
-   */
-  @Post('products/confirm')
-  @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Ürün onayla, içerik getir' })
-  @ApiResponse({ status: 200, description: 'İçerik döner' })
-  async confirm(
-    @CurrentUser('id') userId: string,
-    @Body() dto: ConfirmRequestDto,
-  ): Promise<ConfirmResponse> {
-    const { productId } = dto;
-
-    // Ürünü bul
-    const product = await this.productService.findById(productId);
-    if (!product) {
-      throw new NotFoundException('Ürün bulunamadı');
-    }
-
-    // UPVOTE - ürün onaylandı
-    void this.voteService.vote(
-      userId,
-      VoteTarget.PRODUCT,
-      productId,
-      VoteType.UP,
-    );
-
-    // En iyi içerik varyantını bul
-    let content = await this.contentService.findBestByProductId(productId);
-    let isContentNew = false;
-
-    if (!content) {
-      // AI ile oluştur
-      const aiContent = await this.aiService.getProductContent(
-        product.brand,
-        product.name,
-        product.quantity,
-      );
-
-      content = await this.contentService.create({
-        product_id: productId,
-        ingredients: aiContent.ingredients,
-        allergens: aiContent.allergens,
-        nutrition_table: aiContent.nutrition
-          ? { ...aiContent.nutrition, _source: aiContent.model }
-          : null,
-        is_manual: false,
-      });
-      isContentNew = true;
-    }
-
-    // UPVOTE
-    void this.voteService.vote(
-      userId,
-      VoteTarget.CONTENT,
-      content.id,
-      VoteType.UP,
-    );
-
-    return {
-      content,
-      isContentNew,
-    };
-  }
-
-  /**
    * Ürün reddet, sonraki varyant getir
    */
   @Post('products/reject')
@@ -218,6 +153,12 @@ export class ProductController {
       throw new NotFoundException('Ürün bulunamadı');
     }
 
+    // Rate limit kontrolü
+    await this.rateLimitHelper.checkScanReject(userId);
+
+    // scan_reject hemen artırılır (endpoint limiti)
+    await this.rateLimitHelper.incrementScanRejectEndpoint(userId);
+
     // DOWNVOTE - ürün reddedildi
     void this.voteService.vote(
       userId,
@@ -236,6 +177,9 @@ export class ProductController {
     );
 
     if (nextProduct) {
+      // DB HIT
+      await this.rateLimitHelper.incrementScanRejectDb(userId);
+
       return {
         nextProduct,
         isNew: false,
@@ -248,6 +192,9 @@ export class ProductController {
     if (!barcode) {
       throw new NotFoundException('Barkod bulunamadı');
     }
+
+    // AI HIT
+    await this.rateLimitHelper.incrementScanRejectAi(userId);
 
     const aiResult = await this.aiService.identifyProduct(barcode.code);
 
@@ -279,236 +226,6 @@ export class ProductController {
   }
 
   /**
-   * İçerik reddet (Domino etkisi: analiz de yenilenir)
-   */
-  @Post('content/reject')
-  @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'İçerik reddet, sonraki içerik getir' })
-  @ApiResponse({ status: 200, description: 'Yeni içerik' })
-  async rejectContent(
-    @CurrentUser('id') userId: string,
-    @Body() dto: RejectContentRequestDto,
-  ): Promise<RejectContentResponse> {
-    const { contentId, excludeIds = [] } = dto;
-
-    // İçeriği bul
-    const content = await this.contentService.findById(contentId);
-    if (!content) {
-      throw new NotFoundException('İçerik bulunamadı');
-    }
-
-    // DOWNVOTE - içerik reddedildi (arka planda)
-    void this.voteService.vote(
-      userId,
-      VoteTarget.CONTENT,
-      contentId,
-      VoteType.DOWN,
-    );
-
-    // Tüm hariç tutulacak ID'leri birleştir (şu anki + önceki redler)
-    const allExcludeIds = [...new Set([contentId, ...excludeIds])];
-
-    // Sonraki en yüksek skorlu içeriği bul
-    let nextContent = await this.contentService.findBestExcluding(
-      content.product_id,
-      allExcludeIds,
-    );
-    let isContentNew = false;
-
-    if (!nextContent) {
-      // Alternatif yok - AI ile yeni içerik oluştur
-      const product = await this.productService.findById(content.product_id);
-      if (!product) {
-        throw new NotFoundException('Ürün bulunamadı');
-      }
-
-      // Varyant limitini kontrol et
-      await this.contentService.enforceVariantLimit(content.product_id);
-
-      const aiContent = await this.aiService.getProductContent(
-        product.brand,
-        product.name,
-        product.quantity,
-      );
-
-      nextContent = await this.contentService.create({
-        product_id: content.product_id,
-        ingredients: aiContent.ingredients,
-        allergens: aiContent.allergens,
-        nutrition_table: aiContent.nutrition
-          ? { ...aiContent.nutrition, _source: aiContent.model }
-          : null,
-        is_manual: false,
-      });
-      isContentNew = true;
-    }
-
-    // Yeni içerik için UPVOTE (arka planda)
-    void this.voteService.vote(
-      userId,
-      VoteTarget.CONTENT,
-      nextContent.id,
-      VoteType.UP,
-    );
-
-    return {
-      nextContent,
-      isContentNew,
-      noMoreVariants: false,
-    };
-  }
-
-  /**
-   * POST /api/analysis/generate
-   * İçerik için analiz üret veya mevcut en iyisini getir
-   */
-  @Post('analysis/generate')
-  @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'İçerik için analiz üret' })
-  @ApiResponse({ status: 200, description: 'Analiz döner' })
-  async generateAnalysis(
-    @CurrentUser('id') userId: string,
-    @Body() dto: GenerateAnalysisRequestDto,
-  ): Promise<GenerateAnalysisResponse> {
-    const contentId = dto.contentId;
-
-    // İçeriği bul
-    const content = await this.contentService.findById(contentId);
-    if (!content) {
-      throw new NotFoundException('İçerik bulunamadı');
-    }
-
-    // En iyi analizi bul
-    let analysis = await this.analysisService.findBestByContentId(contentId);
-    let isNew = false;
-
-    if (!analysis) {
-      // Analiz yok - AI ile oluştur
-      const product = await this.productService.findById(content.product_id);
-
-      const aiAnalysis = await this.aiService.analyzeContent(
-        product?.brand ?? null,
-        product?.name ?? null,
-        content.ingredients,
-        content.allergens,
-        content.nutrition_table,
-      );
-
-      const newAnalysis = await this.analysisService.create({
-        product_content_id: contentId,
-        analysis_text: aiAnalysis,
-        is_manual: false,
-      });
-      analysis = newAnalysis;
-      isNew = true;
-    }
-
-    // Analiz için UPVOTE (arka planda)
-    void this.voteService.vote(
-      userId,
-      VoteTarget.ANALYSIS,
-      analysis.id,
-      VoteType.UP,
-    );
-
-    return {
-      analysis,
-      isNew,
-    };
-  }
-
-  /**
-   * POST /api/analysis/reject
-   * Analiz reddi - sonraki varyant getir
-   */
-  @Post('analysis/reject')
-  @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Analiz reddet' })
-  @ApiResponse({ status: 200, description: 'Yeni analiz' })
-  async rejectAnalysis(
-    @CurrentUser('id') userId: string,
-    @Body() dto: RejectAnalysisRequestDto,
-  ): Promise<RejectAnalysisResponse> {
-    const { analysisId, excludeIds = [] } = dto;
-
-    // Analizi bul
-    const analysis = await this.analysisService.findById(analysisId);
-    if (!analysis) {
-      throw new NotFoundException('Analiz bulunamadı');
-    }
-
-    // Otomatik DOWNVOTE - kullanıcı analizi reddetti (arka planda)
-    void this.voteService.vote(
-      userId,
-      VoteTarget.ANALYSIS,
-      analysisId,
-      VoteType.DOWN,
-    );
-
-    // Tüm hariç tutulacak ID'leri birleştir (şu anki + önceki redler)
-    const allExcludeIds = [...new Set([analysisId, ...excludeIds])];
-
-    // Sonraki en yüksek skorlu analizi bul
-    let nextAnalysis = await this.analysisService.findBestExcluding(
-      analysis.product_content_id,
-      allExcludeIds,
-    );
-    let isNew = false;
-
-    if (!nextAnalysis) {
-      // Alternatif yok - AI ile yeni analiz oluştur
-      const content = await this.contentService.findById(
-        analysis.product_content_id,
-      );
-      if (!content) {
-        throw new NotFoundException('İçerik bulunamadı');
-      }
-
-      const product = await this.productService.findById(content.product_id);
-
-      // Varyant limitini kontrol et
-      await this.analysisService.enforceVariantLimit(
-        analysis.product_content_id,
-      );
-
-      const aiAnalysis = await this.aiService.analyzeContent(
-        product?.brand ?? null,
-        product?.name ?? null,
-        content.ingredients,
-        content.allergens,
-        content.nutrition_table,
-      );
-
-      nextAnalysis = await this.analysisService.create({
-        product_content_id: analysis.product_content_id,
-        analysis_text: aiAnalysis,
-        is_manual: false,
-      });
-      isNew = true;
-    }
-
-    // Otomatik UPVOTE - yeni analize +1 puan (arka planda)
-    void this.voteService.vote(
-      userId,
-      VoteTarget.ANALYSIS,
-      nextAnalysis.id,
-      VoteType.UP,
-    );
-
-    return {
-      nextAnalysis,
-      isNew,
-      noMoreVariants: false,
-    };
-  }
-
-  /**
    * POST /api/barcodes/flag
    * Non-food barkodu bildir
    */
@@ -519,14 +236,21 @@ export class ProductController {
   @ApiOperation({ summary: 'Barkodu bildir (non-food)' })
   @ApiResponse({ status: 200, description: 'Bildirim alındı' })
   async flagBarcode(
+    @CurrentUser('id') userId: string,
     @Body() dto: FlagBarcodeRequestDto,
   ): Promise<{ success: boolean }> {
     const { barcodeId } = dto;
+
+    // Rate limit kontrolü
+    await this.rateLimitHelper.checkFlag(userId);
 
     const barcode = await this.barcodeService.findById(barcodeId);
     if (!barcode) {
       throw new NotFoundException('Barkod bulunamadı');
     }
+
+    // Rate limit sayacını artır
+    await this.rateLimitHelper.incrementFlag(userId);
 
     await this.barcodeService.flag(barcodeId);
 

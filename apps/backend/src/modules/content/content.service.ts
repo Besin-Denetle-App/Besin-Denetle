@@ -4,10 +4,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
 import { ProductContent } from '../../entities';
 
-/**
- * Content servisi
- * Ürün içeriği (ingredients, nutrition) CRUD işlemleri
- */
 @Injectable()
 export class ContentService {
   constructor(
@@ -15,9 +11,7 @@ export class ContentService {
     private readonly contentRepository: Repository<ProductContent>,
   ) {}
 
-  /**
-   * Product ID'sine göre en yüksek skorlu içeriği getir
-   */
+  /** Product'a ait en yüksek skorlu içeriği getir */
   async findBestByProductId(productId: string): Promise<ProductContent | null> {
     return this.contentRepository.findOne({
       where: { product_id: productId },
@@ -25,9 +19,7 @@ export class ContentService {
     });
   }
 
-  /**
-   * Belirli ID'ler hariç en yüksek skorlu içeriği getir
-   */
+  /** Belirli ID'ler hariç en iyi içeriği getir (reject akışı için) */
   async findBestExcluding(
     productId: string,
     excludeIds: string[],
@@ -45,9 +37,6 @@ export class ContentService {
     });
   }
 
-  /**
-   * ID'ye göre içerik bul
-   */
   async findById(id: string): Promise<ProductContent | null> {
     return this.contentRepository.findOne({
       where: { id },
@@ -55,18 +44,12 @@ export class ContentService {
     });
   }
 
-  /**
-   * Product için kaç içerik varyantı olduğunu say
-   */
   async countByProductId(productId: string): Promise<number> {
     return this.contentRepository.count({
       where: { product_id: productId },
     });
   }
 
-  /**
-   * Yeni içerik varyantı oluştur
-   */
   async create(data: ICreateProductContent): Promise<ProductContent> {
     const content = this.contentRepository.create({
       product_id: data.product_id,
@@ -80,9 +63,7 @@ export class ContentService {
     return this.contentRepository.save(content);
   }
 
-  /**
-   * Varyant limitini kontrol et ve en düşük skorluyu sil
-   */
+  /** Varyant sayısı MAX_VARIANTS'a ulaştıysa en düşük skorluyu sil */
   async enforceVariantLimit(productId: string): Promise<void> {
     const count = await this.countByProductId(productId);
 
@@ -98,9 +79,7 @@ export class ContentService {
     }
   }
 
-  /**
-   * Score güncelle
-   */
+  /** Oylama sonrası skor güncelle */
   async updateScore(
     id: string,
     scoreDelta: number,
@@ -110,9 +89,10 @@ export class ContentService {
       .createQueryBuilder()
       .update(ProductContent)
       .set({
-        score: () => `score + ${scoreDelta}`,
-        vote_count: () => `vote_count + ${voteCountDelta}`,
+        score: () => 'score + :scoreDelta',
+        vote_count: () => 'vote_count + :voteCountDelta',
       })
+      .setParameters({ scoreDelta, voteCountDelta })
       .where('id = :id', { id })
       .execute();
   }

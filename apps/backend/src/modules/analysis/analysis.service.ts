@@ -4,10 +4,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
 import { ContentAnalysis } from '../../entities';
 
-/**
- * Analysis servisi
- * AI sağlık analizi CRUD işlemleri
- */
 @Injectable()
 export class AnalysisService {
   constructor(
@@ -15,9 +11,7 @@ export class AnalysisService {
     private readonly analysisRepository: Repository<ContentAnalysis>,
   ) {}
 
-  /**
-   * Content ID'sine göre en yüksek skorlu analizi getir
-   */
+  /** Content'e ait en yüksek skorlu analizi getir */
   async findBestByContentId(
     contentId: string,
   ): Promise<ContentAnalysis | null> {
@@ -27,9 +21,7 @@ export class AnalysisService {
     });
   }
 
-  /**
-   * Belirli ID'ler hariç en yüksek skorlu analizi getir
-   */
+  /** Belirli ID'ler hariç en iyi analizi getir (reject akışı için) */
   async findBestExcluding(
     contentId: string,
     excludeIds: string[],
@@ -47,9 +39,6 @@ export class AnalysisService {
     });
   }
 
-  /**
-   * ID'ye göre analiz bul
-   */
   async findById(id: string): Promise<ContentAnalysis | null> {
     return this.analysisRepository.findOne({
       where: { id },
@@ -57,18 +46,12 @@ export class AnalysisService {
     });
   }
 
-  /**
-   * Content için kaç analiz varyantı olduğunu say
-   */
   async countByContentId(contentId: string): Promise<number> {
     return this.analysisRepository.count({
       where: { product_content_id: contentId },
     });
   }
 
-  /**
-   * Yeni analiz varyantı oluştur
-   */
   async create(data: ICreateContentAnalysis): Promise<ContentAnalysis> {
     const analysis = this.analysisRepository.create({
       product_content_id: data.product_content_id,
@@ -80,9 +63,7 @@ export class AnalysisService {
     return this.analysisRepository.save(analysis);
   }
 
-  /**
-   * Varyant limitini kontrol et ve en düşük skorluyu sil
-   */
+  /** Varyant sayısı MAX_VARIANTS'a ulaştıysa en düşük skorluyu sil */
   async enforceVariantLimit(contentId: string): Promise<void> {
     const count = await this.countByContentId(contentId);
 
@@ -98,9 +79,7 @@ export class AnalysisService {
     }
   }
 
-  /**
-   * Score güncelle
-   */
+  /** Oylama sonrası skor güncelle */
   async updateScore(
     id: string,
     scoreDelta: number,
@@ -110,9 +89,10 @@ export class AnalysisService {
       .createQueryBuilder()
       .update(ContentAnalysis)
       .set({
-        score: () => `score + ${scoreDelta}`,
-        vote_count: () => `vote_count + ${voteCountDelta}`,
+        score: () => 'score + :scoreDelta',
+        vote_count: () => 'vote_count + :voteCountDelta',
       })
+      .setParameters({ scoreDelta, voteCountDelta })
       .where('id = :id', { id })
       .execute();
   }

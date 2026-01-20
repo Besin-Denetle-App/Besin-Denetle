@@ -328,14 +328,14 @@ cat backup_20240101.sql | docker compose exec -T db psql -U myuser besindenetle
 
 ### Otomatik Yedekleme (Cron)
 
-Proje içinde hazır backup script'i bulunur: [`apps/backend/src/scripts/backup-db.sh`](../apps/backend/src/scripts/backup-db.sh)
+Proje içinde hazır backup script'i bulunur: [`scripts/backup-db.sh`](../scripts/backup-db.sh)
 
 ```bash
 # Backup klasörü oluştur
 sudo mkdir -p /opt/backups
 
 # Script'e çalıştırma izni ver
-chmod +x /opt/besin-denetle/apps/backend/src/scripts/backup-db.sh
+chmod +x /opt/besin-denetle/scripts/backup-db.sh
 
 # Cron'a ekle
 crontab -e
@@ -344,7 +344,7 @@ crontab -e
 Ekle (her gün gece 3'te):
 
 ```
-0 3 * * * /opt/besin-denetle/apps/backend/src/scripts/backup-db.sh >> /var/log/db-backup.log 2>&1
+0 3 * * * /opt/besin-denetle/scripts/backup-db.sh >> /var/log/db-backup.log 2>&1
 ```
 
 > **Not:** Script `.env` dosyasından `DB_USER` ve `DB_NAME` değerlerini otomatik okur.

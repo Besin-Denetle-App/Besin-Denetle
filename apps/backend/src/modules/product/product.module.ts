@@ -1,40 +1,25 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import {
-  Barcode,
-  ContentAnalysis,
-  Product,
-  ProductContent,
-  User,
-  Vote,
-} from '../../entities';
+import { Product } from '../../entities';
 import { AiModule } from '../ai/ai.module';
+import { BarcodeModule } from '../barcode/barcode.module';
 import { VoteModule } from '../vote/vote.module';
-import { AnalysisService } from './analysis.service';
-import { BarcodeService } from './barcode.service';
-import { ContentService } from './content.service';
 import { ProductController } from './product.controller';
 import { ProductService } from './product.service';
 
 /**
  * Product modülü
- * Barkod tarama, ürün onaylama/reddetme işlemlerini yönetir
+ * Ürün tarama ve reddetme işlemleri
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      Barcode,
-      Product,
-      ProductContent,
-      ContentAnalysis,
-      Vote,
-      User,
-    ]),
-    forwardRef(() => VoteModule), // Circular dependency
+    TypeOrmModule.forFeature([Product]),
+    BarcodeModule,
+    forwardRef(() => VoteModule),
     AiModule,
   ],
   controllers: [ProductController],
-  providers: [ProductService, BarcodeService, ContentService, AnalysisService],
-  exports: [ProductService, BarcodeService, ContentService, AnalysisService],
+  providers: [ProductService],
+  exports: [ProductService],
 })
 export class ProductModule {}

@@ -21,20 +21,15 @@ interface RecalculationResult {
   duration: number;
 }
 
-/**
- * Skor yeniden hesaplama servisi
- * Her gece 02:00'de çalışır.
- */
+/** Her gece 02:00'de tüm skorları yeniden hesaplar */
 @Injectable()
 export class ScoreRecalculationService {
   private readonly logger = new Logger(ScoreRecalculationService.name);
 
   constructor(private readonly dataSource: DataSource) {}
 
-  /**
-   * Cron: Her gece 02:00 (Türkiye)
-   */
   @Cron('0 2 * * *', {
+    // Her gece 02:00 (TR)
     name: 'score-recalculation',
     timeZone: 'Europe/Istanbul',
   })

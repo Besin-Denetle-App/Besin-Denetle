@@ -10,8 +10,10 @@ import { ConfigService } from '@nestjs/config';
 import { AiConfig } from '../../config';
 
 /**
- * Gemini AI entegrasyon servisi
- * Ürün tanımlama, içerik bulma ve sağlık analizi.
+ * Gemini API wrapper - 3 farklı prompt için:
+ * 1. identifyProduct - barkoddan ürün bilgisi (grounding açık)
+ * 2. getProductContent - içindekiler + besin değerleri (grounding açık)
+ * 3. analyzeContent - sağlık analizi (grounding kapalı, pro model)
  */
 @Injectable()
 export class AiService {
@@ -20,7 +22,6 @@ export class AiService {
   private readonly isMockMode: boolean;
   private readonly genai: GoogleGenAI | null;
 
-  // Model isimleri
   private readonly modelFast: string;
   private readonly modelSmart: string;
 
@@ -28,12 +29,10 @@ export class AiService {
     this.apiKey = this.configService.get<string>('GEMINI_API_KEY');
     this.isMockMode = !this.apiKey || this.apiKey.trim() === '';
 
-    // Model config
     const aiConfig = this.configService.get<AiConfig>('ai');
     this.modelFast = aiConfig?.modelFast || 'gemini-2.5-flash';
     this.modelSmart = aiConfig?.modelSmart || 'gemini-2.5-pro';
 
-    // Gemini client
     if (!this.isMockMode && this.apiKey) {
       this.genai = new GoogleGenAI({ apiKey: this.apiKey });
       this.logger.log(
@@ -45,13 +44,13 @@ export class AiService {
     }
   }
 
-  // ==================== PROMPT 1 ====================
+  // ========== PROMPT 1: Ürün Tanımlama ==========
 
   /**
-   * Prompt 1: Ürün kimliği (barkoddan marka, isim, gramaj)
+   * Barkoddan marka/isim/gramaj bilgisi çeker
+   * Google Search grounding ile web araması yapıyor
    */
   async identifyProduct(barcode: string): Promise<AIProductResult> {
-    // Mock modda sahte veri döndür
     if (this.isMockMode || !this.genai) {
       return this.mockIdentifyProduct(barcode);
     }
@@ -76,7 +75,6 @@ Yanıt formatı:
   }
 }`;
 
-      // Google Search grounding ile çağrı yap
       const response = await this.genai.models.generateContent({
         model: this.modelFast,
         contents: prompt,
@@ -87,58 +85,34 @@ Yanıt formatı:
 
       const text = response.text || '';
       if (!text.trim()) {
-        this.logger.warn('Gemini identifyProduct: Boş yanıt alındı');
+        this.logger.warn('Gemini identifyProduct: Boş yanıt');
         throw new HttpException('AI yanıtı boş döndü', HttpStatus.BAD_GATEWAY);
       }
       this.logger.debug(
         `Gemini identifyProduct response: ${text.substring(0, 200)}...`,
       );
 
-      // JSON parse et
       const result = this.parseJsonResponse<AIProductResult>(text);
       if (!result) {
         throw new HttpException('AI yanıtı işlenemedi', HttpStatus.BAD_GATEWAY);
       }
       return result;
     } catch (error) {
-      const errorMessage = (error as Error).message || 'Bilinmeyen AI hatası';
-      this.logger.error(`Gemini identifyProduct error: ${errorMessage}`);
-
-      // HttpException'ları tekrar fırlat
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      // 429 Rate Limit hatası
-      if (
-        errorMessage.includes('429') ||
-        errorMessage.includes('RESOURCE_EXHAUSTED')
-      ) {
-        throw new HttpException(
-          'AI servisi şu an yoğun, lütfen biraz sonra tekrar deneyin',
-          HttpStatus.TOO_MANY_REQUESTS,
-        );
-      }
-
-      // Diğer hatalar
-      throw new HttpException(
-        'AI servisi şu an kullanılamıyor',
-        HttpStatus.SERVICE_UNAVAILABLE,
-      );
+      return this.handleAiError(error, 'identifyProduct');
     }
   }
 
-  // ==================== PROMPT 2 ====================
+  // ========== PROMPT 2: İçerik Bilgisi ==========
 
   /**
-   * Prompt 2: İçerik bilgisi (içindekiler, alerjenler, besin değerleri)
+   * Ürünün içindekiler listesi + besin değerleri
+   * Google Search grounding ile
    */
   async getProductContent(
     brand: string | null,
     name: string | null,
     quantity: string | null,
   ): Promise<AIContentResult> {
-    // Mock modda sahte veri döndür
     if (this.isMockMode || !this.genai) {
       return this.mockGetProductContent(brand, name);
     }
@@ -174,7 +148,6 @@ Yanıt formatı:
   }
 }`;
 
-      // Google Search grounding ile çağrı yap
       const response = await this.genai.models.generateContent({
         model: this.modelFast,
         contents: prompt,
@@ -185,14 +158,13 @@ Yanıt formatı:
 
       const text = response.text || '';
       if (!text.trim()) {
-        this.logger.warn('Gemini getProductContent: Boş yanıt alındı');
+        this.logger.warn('Gemini getProductContent: Boş yanıt');
         throw new HttpException('AI yanıtı boş döndü', HttpStatus.BAD_GATEWAY);
       }
       this.logger.debug(
         `Gemini getProductContent response: ${text.substring(0, 200)}...`,
       );
 
-      // JSON parse + model ekle
       const parsed =
         this.parseJsonResponse<Omit<AIContentResult, 'model'>>(text);
       if (!parsed) {
@@ -200,40 +172,19 @@ Yanıt formatı:
       }
       return {
         ...parsed,
-        model: this.modelFast, // Kullanılan model
+        model: this.modelFast,
       };
     } catch (error) {
-      const errorMessage = (error as Error).message || 'Bilinmeyen AI hatası';
-      this.logger.error(`Gemini getProductContent error: ${errorMessage}`);
-
-      // HttpException ise tekrar fırlat
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      // 429 Rate Limit hatası
-      if (
-        errorMessage.includes('429') ||
-        errorMessage.includes('RESOURCE_EXHAUSTED')
-      ) {
-        throw new HttpException(
-          'AI servisi şu an yoğun, lütfen biraz sonra tekrar deneyin',
-          HttpStatus.TOO_MANY_REQUESTS,
-        );
-      }
-
-      // Diğer hatalar
-      throw new HttpException(
-        'AI servisi şu an kullanılamıyor',
-        HttpStatus.SERVICE_UNAVAILABLE,
-      );
+      return this.handleAiError(error, 'getProductContent');
     }
   }
 
-  // ==================== PROMPT 3 ====================
+  // ========== PROMPT 3: Sağlık Analizi ==========
 
   /**
-   * Prompt 3: Sağlık analizi (grounding yok)
+   * İçerik bilgisine göre sağlık değerlendirmesi
+   * Grounding yok - sadece model kendi bilgisiyle yanıt veriyor
+   * Pro model kullanıyor (daha akıllı)
    */
   async analyzeContent(
     brand: string | null,
@@ -242,7 +193,6 @@ Yanıt formatı:
     allergens: string | null,
     nutrition: Record<string, unknown> | null,
   ): Promise<AIAnalysisResult> {
-    // Mock modda sahte veri döndür
     if (this.isMockMode || !this.genai) {
       return this.mockAnalyzeContent(name);
     }
@@ -282,7 +232,6 @@ Yanıt formatı:
   "recommendation": "Tüketim önerisi"
 }`;
 
-      // Grounding kullanılmadan çağrı yap
       const response = await this.genai.models.generateContent({
         model: this.modelSmart,
         contents: prompt,
@@ -290,14 +239,13 @@ Yanıt formatı:
 
       const text = response.text || '';
       if (!text.trim()) {
-        this.logger.warn('Gemini analyzeContent: Boş yanıt alındı');
+        this.logger.warn('Gemini analyzeContent: Boş yanıt');
         throw new HttpException('AI yanıtı boş döndü', HttpStatus.BAD_GATEWAY);
       }
       this.logger.debug(
         `Gemini analyzeContent response: ${text.substring(0, 200)}...`,
       );
 
-      // JSON parse + model ekle
       const parsed =
         this.parseJsonResponse<Omit<AIAnalysisResult, 'model'>>(text);
       if (!parsed) {
@@ -305,47 +253,21 @@ Yanıt formatı:
       }
       return {
         ...parsed,
-        model: this.modelSmart, // Kullanılan model
+        model: this.modelSmart,
       };
     } catch (error) {
-      const errorMessage = (error as Error).message || 'Bilinmeyen AI hatası';
-      this.logger.error(`Gemini analyzeContent error: ${errorMessage}`);
-
-      // HttpException ise tekrar fırlat
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      // 429 Rate Limit hatası
-      if (
-        errorMessage.includes('429') ||
-        errorMessage.includes('RESOURCE_EXHAUSTED')
-      ) {
-        throw new HttpException(
-          'AI servisi şu an yoğun, lütfen biraz sonra tekrar deneyin',
-          HttpStatus.TOO_MANY_REQUESTS,
-        );
-      }
-
-      // Diğer hatalar
-      throw new HttpException(
-        'AI servisi şu an kullanılamıyor',
-        HttpStatus.SERVICE_UNAVAILABLE,
-      );
+      return this.handleAiError(error, 'analyzeContent');
     }
   }
 
-  // ==================== YARDIMCI ====================
+  // ========== Helpers ==========
 
-  /**
-   * JSON parse (markdown temizleme dahil)
-   */
+  /** Markdown code block formatını temizleyip JSON parse eder */
   private parseJsonResponse<T>(text: string): T | null {
     try {
-      // Markdown temizle
       let cleaned = text.trim();
 
-      // ```json ... ``` formatı
+      // ```json ... ``` formatını temizle
       if (cleaned.startsWith('```')) {
         cleaned = cleaned
           .replace(/^```(?:json)?\n?/, '')
@@ -360,25 +282,42 @@ Yanıt formatı:
     }
   }
 
-  /**
-   * Barkoddan ürün tipini belirle
-   */
-  getProductType(isFood: boolean): ProductType {
-    if (!isFood) {
-      return ProductType.OTHER;
+  /** Hata handling - 429, genel hatalar vs */
+  private handleAiError(error: unknown, methodName: string): never {
+    const errorMessage = (error as Error).message || 'Bilinmeyen AI hatası';
+    this.logger.error(`Gemini ${methodName} error: ${errorMessage}`);
+
+    if (error instanceof HttpException) {
+      throw error;
     }
-    return ProductType.FOOD;
+
+    // 429 Rate Limit
+    if (
+      errorMessage.includes('429') ||
+      errorMessage.includes('RESOURCE_EXHAUSTED')
+    ) {
+      throw new HttpException(
+        'AI servisi şu an yoğun, lütfen biraz sonra tekrar deneyin',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    throw new HttpException(
+      'AI servisi şu an kullanılamıyor',
+      HttpStatus.SERVICE_UNAVAILABLE,
+    );
   }
 
-  // ==================== MOCK ====================
+  /** Barkoddan ürün tipi */
+  getProductType(isFood: boolean): ProductType {
+    return isFood ? ProductType.FOOD : ProductType.OTHER;
+  }
 
-  /**
-   * Mock: Ürün kimliği
-   */
+  // ========== Mock Data (API key yokken) ==========
+
   private mockIdentifyProduct(barcode: string): AIProductResult {
-    this.logger.debug(`[MOCK] Identifying product for barcode: ${barcode}`);
+    this.logger.debug(`[MOCK] identifyProduct: ${barcode}`);
 
-    // Test barkodları
     if (barcode.startsWith('869')) {
       return {
         isFood: true,
@@ -390,7 +329,6 @@ Yanıt formatı:
       };
     }
 
-    // Varsayılan mock
     return {
       isFood: true,
       product: {
@@ -401,14 +339,11 @@ Yanıt formatı:
     };
   }
 
-  /**
-   * Mock: İçerik bilgisi
-   */
   private mockGetProductContent(
     brand: string | null,
     name: string | null,
   ): AIContentResult {
-    this.logger.debug(`[MOCK] Getting content for: ${brand} - ${name}`);
+    this.logger.debug(`[MOCK] getProductContent: ${brand} - ${name}`);
 
     return {
       ingredients:
@@ -426,15 +361,12 @@ Yanıt formatı:
         sodium: 80,
         salt: 0.2,
       },
-      model: 'mock-gemini', // Mock model
+      model: 'mock-gemini',
     };
   }
 
-  /**
-   * Mock: Sağlık analizi
-   */
   private mockAnalyzeContent(name: string | null): AIAnalysisResult {
-    this.logger.debug(`[MOCK] Analyzing content for: ${name}`);
+    this.logger.debug(`[MOCK] analyzeContent: ${name}`);
 
     return {
       model: 'mock-gemini',

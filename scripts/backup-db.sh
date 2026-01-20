@@ -6,7 +6,7 @@
 #   ./backup-db.sh
 #
 # Cron örneği (her gün gece 3'te):
-#   0 3 * * * /opt/besin-denetle/apps/backend/src/scripts/backup-db.sh >> /var/log/db-backup.log 2>&1
+#   0 3 * * * /opt/besin-denetle/scripts/backup-db.sh >> /var/log/db-backup.log 2>&1
 
 set -e
 

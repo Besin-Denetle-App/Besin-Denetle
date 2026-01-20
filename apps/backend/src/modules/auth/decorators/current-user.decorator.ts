@@ -1,13 +1,6 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
-/**
- * CurrentUser Decorator
- * JWT'den kullanıcı bilgisini çıkarır
- *
- * Kullanım:
- * @CurrentUser() user: JwtUser
- * @CurrentUser('id') userId: string
- */
+/** JWT'den kullanıcı bilgisini çıkarır - @CurrentUser('id') şeklinde kullanılır */
 export const CurrentUser = createParamDecorator(
   (data: string | undefined, ctx: ExecutionContext) => {
     const request = ctx

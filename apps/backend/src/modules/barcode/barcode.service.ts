@@ -4,10 +4,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Barcode } from '../../entities';
 
-/**
- * Barkod servisi
- * Barkod CRUD işlemleri ve veritabanı sorguları
- */
 @Injectable()
 export class BarcodeService {
   constructor(
@@ -15,9 +11,7 @@ export class BarcodeService {
     private readonly barcodeRepository: Repository<Barcode>,
   ) {}
 
-  /**
-   * Barkod numarasına göre barkod kaydını bul
-   */
+  /** Barkod numarasıyla ara (products relation dahil) */
   async findByCode(code: string): Promise<Barcode | null> {
     return this.barcodeRepository.findOne({
       where: { code },
@@ -25,9 +19,6 @@ export class BarcodeService {
     });
   }
 
-  /**
-   * ID'ye göre barkod bul
-   */
   async findById(id: string): Promise<Barcode | null> {
     return this.barcodeRepository.findOne({
       where: { id },
@@ -35,9 +26,6 @@ export class BarcodeService {
     });
   }
 
-  /**
-   * Yeni barkod oluştur
-   */
   async create(
     code: string,
     type: ProductType = ProductType.UNKNOWN,
@@ -52,18 +40,20 @@ export class BarcodeService {
     return this.barcodeRepository.save(barcode);
   }
 
-  /**
-   * Barkod tipini güncelle
-   */
   async updateType(id: string, type: ProductType): Promise<void> {
     await this.barcodeRepository.update(id, { type });
   }
 
-  /**
-   * Barkodu raporla (flag işaretle ve sayacı artır)
-   */
+  /** Kullanıcı raporu - flag_count++ ve is_flagged=true */
   async flag(id: string): Promise<void> {
-    await this.barcodeRepository.increment({ id }, 'flag_count', 1);
-    await this.barcodeRepository.update(id, { is_flagged: true });
+    await this.barcodeRepository
+      .createQueryBuilder()
+      .update(Barcode)
+      .set({
+        flag_count: () => 'flag_count + 1',
+        is_flagged: true,
+      })
+      .where('id = :id', { id })
+      .execute();
   }
 }

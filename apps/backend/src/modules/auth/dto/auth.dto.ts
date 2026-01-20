@@ -16,9 +16,6 @@ import {
   MinLength,
 } from 'class-validator';
 
-/**
- * OAuth login isteği
- */
 export class OAuthRequestDto implements OAuthRequest {
   @ApiProperty({ description: 'OAuth sağlayıcı', enum: AuthProvider })
   @IsEnum(AuthProvider)
@@ -30,9 +27,6 @@ export class OAuthRequestDto implements OAuthRequest {
   token: string;
 }
 
-/**
- * Kayıt tamamlama isteği
- */
 export class RegisterRequestDto implements RegisterRequest {
   @ApiProperty({ description: 'Geçici kayıt token' })
   @IsString()
@@ -60,9 +54,6 @@ export class RegisterRequestDto implements RegisterRequest {
   termsAccepted: boolean;
 }
 
-/**
- * Token yenileme isteği
- */
 export class RefreshTokenRequestDto implements RefreshTokenRequest {
   @ApiProperty({ description: 'Refresh token' })
   @IsString()

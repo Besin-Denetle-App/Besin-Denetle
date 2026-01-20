@@ -10,17 +10,13 @@ interface JwtPayload {
   role: string;
 }
 
-/**
- * JWT Strategy
- * Passport JWT doğrulama stratejisi
- */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
   ) {
-    const jwtSecret = configService.get<string>('JWT_SECRET')!; // Zorunlu
+    const jwtSecret = configService.get<string>('JWT_SECRET')!;
 
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -29,10 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  /**
-   * JWT payload doğrulandıktan sonra çağrılır
-   * Kullanıcı bilgisini döndürür
-   */
+  /** JWT payload doğrulandıktan sonra user bilgisini döndürür */
   async validate(payload: JwtPayload) {
     const user = await this.authService.findById(payload.sub);
 

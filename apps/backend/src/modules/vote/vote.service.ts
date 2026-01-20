@@ -3,8 +3,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Vote } from '../../entities';
-import { AnalysisService } from '../product/analysis.service';
-import { ContentService } from '../product/content.service';
+import { AnalysisService } from '../analysis/analysis.service';
+import { ContentService } from '../content/content.service';
 import { ProductService } from '../product/product.service';
 
 /**
@@ -21,9 +21,7 @@ export class VoteService {
     private readonly analysisService: AnalysisService,
   ) {}
 
-  /**
-   * Oy ver veya mevcut oyu değiştir
-   */
+  // Oy ver veya mevcut oyu değiştir
   async vote(
     userId: string,
     target: VoteTarget,

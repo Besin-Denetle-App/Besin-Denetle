@@ -121,9 +121,10 @@ export class ProductService {
       .createQueryBuilder()
       .update(Product)
       .set({
-        score: () => `score + ${scoreDelta}`,
-        vote_count: () => `vote_count + ${voteCountDelta}`,
+        score: () => 'score + :scoreDelta',
+        vote_count: () => 'vote_count + :voteCountDelta',
       })
+      .setParameters({ scoreDelta, voteCountDelta })
       .where('id = :id', { id })
       .execute();
   }

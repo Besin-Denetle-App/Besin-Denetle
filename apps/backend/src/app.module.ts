@@ -8,6 +8,7 @@ import {
   HttpExceptionFilter,
   LastActiveInterceptor,
   LoggingInterceptor,
+  RateLimitModule,
 } from './common';
 
 import {
@@ -16,6 +17,7 @@ import {
   databaseConfig,
   jwtConfig,
   oauthConfig,
+  rateLimitConfig,
 } from './config';
 
 // Entity'ler
@@ -30,8 +32,12 @@ import {
 
 // Modüller
 import { AiModule } from './modules/ai';
+import { AnalysisModule } from './modules/analysis';
 import { AuthModule } from './modules/auth';
-import { HealthModule } from './modules/health';
+import { BarcodeModule } from './modules/barcode';
+import { ContentModule } from './modules/content';
+import { CronModule } from './modules/cron';
+import { HealthcheckModule } from './modules/healthcheck';
 import { ProductModule } from './modules/product';
 import { VoteModule } from './modules/vote';
 
@@ -41,7 +47,7 @@ import { VoteModule } from './modules/vote';
     WinstonModule.forRoot(createLoggerConfig()),
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [aiConfig, databaseConfig, jwtConfig, oauthConfig],
+      load: [aiConfig, databaseConfig, jwtConfig, oauthConfig, rateLimitConfig],
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
@@ -65,11 +71,16 @@ import { VoteModule } from './modules/vote';
       }),
     }),
     // Modüller
-    HealthModule,
+    HealthcheckModule,
     AuthModule,
+    BarcodeModule,
     ProductModule,
+    ContentModule,
+    AnalysisModule,
     VoteModule,
     AiModule,
+    CronModule,
+    RateLimitModule,
     // LastActiveInterceptor için User entity erişimi
     TypeOrmModule.forFeature([User]),
   ],
@@ -91,4 +102,4 @@ import { VoteModule } from './modules/vote';
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }

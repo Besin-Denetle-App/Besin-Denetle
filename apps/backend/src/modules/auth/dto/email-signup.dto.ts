@@ -2,10 +2,7 @@ import { EmailAuthRequest } from '@besin-denetle/shared';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, Matches } from 'class-validator';
 
-/**
- * E-posta ile kayıt isteği DTO
- * Beta test için kullanılır - Sadece Gmail kabul edilir
- */
+/** Beta test için - sadece Gmail kabul edilir */
 export class EmailSignupRequestDto implements EmailAuthRequest {
   @ApiProperty({
     description: 'E-posta adresi (sadece @gmail.com)',

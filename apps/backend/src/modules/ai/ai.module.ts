@@ -2,10 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AiService } from './ai.service';
 
-/**
- * AI modülü
- * Gemini API entegrasyonu (mock mod destekli)
- */
+// Gemini API entegrasyonu - GEMINI_API_KEY yoksa mock mode çalışır
 @Module({
   imports: [ConfigModule],
   providers: [AiService],

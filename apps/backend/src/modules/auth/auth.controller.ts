@@ -13,12 +13,19 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+
+import {
+  RateLimitAuthConfig,
+  RateLimitKeyPrefix,
+  RateLimitService,
+} from '../../common/rate-limit';
 
 import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -30,26 +37,38 @@ import {
 } from './dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
-/**
- * JWT ile doğrulanmış kullanıcı içeren request
- */
 interface AuthenticatedRequest {
   user?: { id: string };
+  headers: Record<string, string | string[] | undefined>;
+  ip?: string;
+  socket?: { remoteAddress?: string };
 }
 
-/**
- * Auth Controller
- * OAuth, register, refresh, logout endpoint'leri
- */
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly rateLimitService: RateLimitService,
+    private readonly configService: ConfigService,
+  ) {}
 
-  /**
-   * POST /api/auth/oauth
-   * OAuth token gönder, login veya tempToken al
-   */
+  /** Cloudflare uyumlu IP alma */
+  private getClientIp(req: AuthenticatedRequest): string {
+    const cfIp = req.headers['cf-connecting-ip'];
+    if (cfIp) {
+      return Array.isArray(cfIp) ? cfIp[0] : cfIp;
+    }
+
+    const forwardedFor = req.headers['x-forwarded-for'];
+    if (forwardedFor) {
+      const ip = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor;
+      return ip.split(',')[0].trim();
+    }
+
+    return req.ip || req.socket?.remoteAddress || 'unknown';
+  }
+
   @Post('oauth')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'OAuth ile giriş' })
@@ -57,7 +76,27 @@ export class AuthController {
     status: 200,
     description: 'Login başarılı veya tempToken döner',
   })
-  async oauth(@Body() dto: OAuthRequestDto): Promise<OAuthResponse> {
+  async oauth(
+    @Request() req: AuthenticatedRequest,
+    @Body() dto: OAuthRequestDto,
+  ): Promise<OAuthResponse> {
+    const authConfig =
+      this.configService.get<RateLimitAuthConfig>('rateLimit.auth')!;
+    const clientIp = this.getClientIp(req);
+
+    await this.rateLimitService.checkIpLimit(
+      RateLimitKeyPrefix.AUTH_OAUTH,
+      clientIp,
+      authConfig.oauth_ip,
+      'auth_oauth',
+    );
+
+    await this.rateLimitService.incrementIpLimit(
+      RateLimitKeyPrefix.AUTH_OAUTH,
+      clientIp,
+      authConfig.oauth_ip,
+    );
+
     const result = await this.authService.validateOAuth(
       dto.provider,
       dto.token,
@@ -84,11 +123,6 @@ export class AuthController {
     };
   }
 
-  /**
-   * POST /api/auth/email-signup
-   * E-posta ile kayıt/login (Beta test için)
-   * Kayıtlı kullanıcı varsa JWT döner, yoksa tempToken ile kayıt akışı başlatır
-   */
   @Post('email-signup')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'E-posta ile kayıt/login (Beta)' })
@@ -97,8 +131,26 @@ export class AuthController {
     description: 'Login başarılı veya tempToken döner',
   })
   async emailSignup(
+    @Request() req: AuthenticatedRequest,
     @Body() dto: EmailSignupRequestDto,
   ): Promise<OAuthResponse> {
+    const authConfig =
+      this.configService.get<RateLimitAuthConfig>('rateLimit.auth')!;
+    const clientIp = this.getClientIp(req);
+
+    await this.rateLimitService.checkIpLimit(
+      RateLimitKeyPrefix.AUTH_EMAIL_SIGNUP,
+      clientIp,
+      authConfig.email_signup_ip,
+      'auth_email_signup',
+    );
+
+    await this.rateLimitService.incrementIpLimit(
+      RateLimitKeyPrefix.AUTH_EMAIL_SIGNUP,
+      clientIp,
+      authConfig.email_signup_ip,
+    );
+
     const result = await this.authService.validateEmailSignup(dto.email);
 
     if (result.isNewUser) {
@@ -122,15 +174,31 @@ export class AuthController {
     };
   }
 
-  /**
-   * POST /api/auth/register
-   * Kayıt tamamla, JWT al
-   */
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Kayıt tamamla' })
   @ApiResponse({ status: 201, description: 'Kayıt başarılı' })
-  async register(@Body() dto: RegisterRequestDto): Promise<RegisterResponse> {
+  async register(
+    @Request() req: AuthenticatedRequest,
+    @Body() dto: RegisterRequestDto,
+  ): Promise<RegisterResponse> {
+    const authConfig =
+      this.configService.get<RateLimitAuthConfig>('rateLimit.auth')!;
+    const clientIp = this.getClientIp(req);
+
+    await this.rateLimitService.checkIpLimit(
+      RateLimitKeyPrefix.AUTH_REGISTER,
+      clientIp,
+      authConfig.register_ip,
+      'auth_register',
+    );
+
+    await this.rateLimitService.incrementIpLimit(
+      RateLimitKeyPrefix.AUTH_REGISTER,
+      clientIp,
+      authConfig.register_ip,
+    );
+
     const result = await this.authService.completeRegistration(
       dto.tempToken,
       dto.username,
@@ -149,17 +217,31 @@ export class AuthController {
     };
   }
 
-  /**
-   * POST /api/auth/refresh
-   * JWT yenile
-   */
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Token yenile' })
   @ApiResponse({ status: 200, description: 'Yeni token döner' })
   async refresh(
+    @Request() req: AuthenticatedRequest,
     @Body() dto: RefreshTokenRequestDto,
   ): Promise<RefreshTokenResponse> {
+    const authConfig =
+      this.configService.get<RateLimitAuthConfig>('rateLimit.auth')!;
+    const clientIp = this.getClientIp(req);
+
+    await this.rateLimitService.checkIpLimit(
+      RateLimitKeyPrefix.AUTH_REFRESH,
+      clientIp,
+      authConfig.refresh_ip,
+      'auth_refresh',
+    );
+
+    await this.rateLimitService.incrementIpLimit(
+      RateLimitKeyPrefix.AUTH_REFRESH,
+      clientIp,
+      authConfig.refresh_ip,
+    );
+
     const tokens = await this.authService.refreshTokens(dto.refreshToken);
 
     return {
@@ -168,31 +250,38 @@ export class AuthController {
     };
   }
 
-  /**
-   * POST /api/auth/logout
-   * Çıkış (client-side token silme)
-   */
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Çıkış yap' })
   @ApiResponse({ status: 200, description: 'Çıkış başarılı' })
-  logout(@Request() req: AuthenticatedRequest): {
+  async logout(@CurrentUser('id') userId: string): Promise<{
     message: string;
     userId: string;
-  } {
-    // Token blacklist uygulanabilir (opsiyonel)
+  }> {
+    const authConfig =
+      this.configService.get<RateLimitAuthConfig>('rateLimit.auth')!;
+
+    await this.rateLimitService.checkUserLimit(
+      RateLimitKeyPrefix.AUTH_LOGOUT,
+      userId,
+      authConfig.logout_user,
+      'auth_logout',
+    );
+
+    await this.rateLimitService.incrementUserLimit(
+      RateLimitKeyPrefix.AUTH_LOGOUT,
+      userId,
+      authConfig.logout_user,
+    );
+
     return {
       message: 'Çıkış başarılı',
-      userId: req.user?.id ?? '',
+      userId: userId,
     };
   }
 
-  /**
-   * DELETE /api/auth/delete-account
-   * Hesabı kalıcı olarak sil
-   */
   @Delete('delete-account')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
@@ -202,6 +291,22 @@ export class AuthController {
   async deleteAccount(
     @CurrentUser('id') userId: string,
   ): Promise<{ success: boolean; message: string }> {
+    const authConfig =
+      this.configService.get<RateLimitAuthConfig>('rateLimit.auth')!;
+
+    await this.rateLimitService.checkUserLimit(
+      RateLimitKeyPrefix.AUTH_DELETE,
+      userId,
+      authConfig.delete_user,
+      'auth_delete',
+    );
+
+    await this.rateLimitService.incrementUserLimit(
+      RateLimitKeyPrefix.AUTH_DELETE,
+      userId,
+      authConfig.delete_user,
+    );
+
     await this.authService.deleteAccount(userId);
     return {
       success: true,

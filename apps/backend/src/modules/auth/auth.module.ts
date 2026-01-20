@@ -8,10 +8,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
-/**
- * Auth modülü
- * OAuth, JWT, tempToken yönetimi
- */
+// OAuth, JWT, tempToken yönetimi
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
@@ -19,9 +16,9 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET')!, // Zorunlu
+        secret: configService.get<string>('JWT_SECRET')!,
         signOptions: {
-          expiresIn: 60 * 60 * 24 * 7, // 7 gün (saniye)
+          expiresIn: 60 * 60 * 24 * 7, // 7 gün
         },
       }),
       inject: [ConfigService],

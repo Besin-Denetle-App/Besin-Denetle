@@ -188,6 +188,33 @@ Uygulama çalıştığında Swagger dokümantasyonuna erişebilirsiniz:
 
 ---
 
+## 🚦 Rate Limiting
+
+API, Redis tabanlı rate limiting ile korunmaktadır. PM2 çoklu instance desteği için merkezi sayaç yönetimi kullanılır.
+
+### Gereksinimler
+
+```env
+# .env dosyasına ekleyin
+REDIS_HOST=localhost
+REDIS_PORT=50102
+```
+
+### Hata Yanıtı
+
+Limit aşıldığında `429 Too Many Requests` döner:
+
+```json
+{
+  "statusCode": 429,
+  "error": "Too Many Requests",
+  "message": "Rate limit exceeded for scan_ai. Try again in 45 seconds.",
+  "retryAfter": 45
+}
+```
+
+> **Detaylı bilgi:** [Rate Limiting Rehberi](../../docs/rate-limiting.md)
+
 ## 🛠️ Yardımcı Scriptler
 
 Backend, veritabanı yönetimi için çeşitli CLI scriptleri içerir:

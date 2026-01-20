@@ -1,6 +1,6 @@
 {
   "name": "@besin-denetle/backend",
-  "version": "0.11.0",
+  "version": "0.13.0",
   "description": "RESTful API built with NestJS for Besin Denetle food analysis platform",
   "author": "Furkan Çelik <iletisim.furkancelik@gmail.com> (https://furkanpasa.com)",
   "license": "GPL-3.0",
@@ -29,7 +29,6 @@
     "recalculate": "npx ts-node --transpile-only src/scripts/recalculate-scores.ts"
   },
   "dependencies": {
-    "@arendajaelu/nestjs-passport-apple": "^2.0.0",
     "@besin-denetle/shared": "workspace:*",
     "@google/genai": "^1.35.0",
     "@nestjs/common": "^11.1.0",
@@ -40,14 +39,13 @@
     "@nestjs/platform-express": "^11.1.0",
     "@nestjs/schedule": "^6.1.0",
     "@nestjs/swagger": "^11.2.3",
-    "@nestjs/throttler": "^6.3.0",
     "@nestjs/typeorm": "^11.0.0",
-    "apple-signin-auth": "^2.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
     "csv-parser": "^3.2.0",
     "dotenv": "^16.5.0",
     "google-auth-library": "^10.5.0",
+    "ioredis": "^5.9.2",
     "nest-winston": "^1.10.2",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
