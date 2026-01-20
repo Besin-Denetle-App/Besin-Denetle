@@ -19,7 +19,8 @@ export interface ScanRequest {
  * Barkod tarama yanıtı
  */
 export interface ScanResponse {
-  product: IProduct;
+  product: IProduct | null; // Non-food durumda null olabilir
+  barcodeId: string; // Flag işlemi için barkod ID'si
   isNew: boolean; // AI tarafından yeni mi oluşturuldu
   barcodeType: number; // Ürün tipi (1=yiyecek, 2=içecek, 9=diğer)
 }
@@ -117,9 +118,10 @@ export interface GenerateAnalysisResponse {
 
 /**
  * AI Prompt 1 yanıtı - Ürün kimliği
+ * productType: 0=kararsız, 1=yiyecek, 2=içecek, 3=evcil hayvan, 9=diğer
  */
 export interface AIProductResult {
-  isFood: boolean;
+  productType: number;
   product: {
     brand: string | null;
     name: string | null;
@@ -140,7 +142,7 @@ export interface AIContentResult {
 /**
  * AI Prompt 3 yanıtı - Sağlık analizi
  */
-export interface AIAnalysisResult extends IAnalysisResult {}
+export interface AIAnalysisResult extends IAnalysisResult { }
 
 // ==================== FLAG ====================
 

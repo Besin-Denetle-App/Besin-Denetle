@@ -10,7 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { AiConfig } from '../../config';
 
 /**
- * Gemini API wrapper - 3 farklı prompt için:
+ * Gemini API - 3 farklı prompt için:
  * 1. identifyProduct - barkoddan ürün bilgisi (grounding açık)
  * 2. getProductContent - içindekiler + besin değerleri (grounding açık)
  * 3. analyzeContent - sağlık analizi (grounding kapalı, pro model)
@@ -56,24 +56,33 @@ export class AiService {
     }
 
     try {
-      const prompt = `Sen bir gıda uzmanısın. Aşağıdaki barkod numarasına sahip ürünü web'de ara.
+      const prompt = `Sen bir ürün veri analiz uzmanısın. Türkiye'deki market ve mağaza ürünlerini çok iyi biliyorsun.
+Aşağıdaki barkod numarasına sahip ürünü web'de ara.
 
 Barkod: ${barcode}
 
+ÜRÜN TİPİ BELİRLEME KURALLARI:
+0 = Kararsız (belirsiz ürün, emin değilsin)
+1 = İnsan yiyeceği (gıda, yemek, bisküvi, çikolata, süt ürünleri, meyve, sebze vb.)
+2 = İnsan içeceği (su, meyve suyu, çay, kahve, enerji içeceği vb.)
+3 = Evcil hayvan yiyeceği/içeceği (kedi maması, köpek maması, kuş yemi vb.)
+9 = Diğer (gıda değil - elektronik, giyim, kozmetik, oyuncak vb.)
+
 ÖNEMLİ KURALLAR:
-1. Eğer bu bir GIDA veya İÇECEK ürünü DEĞİLSE: {"isFood": false}
+1. Ürün tipini yukarıdaki kurallara göre belirle.
 2. Bulamadığın alanları null bırak, tahmin etme.
-3. Sadece JSON döndür, başka açıklama ekleme.
 
 Yanıt formatı:
 {
-  "isFood": true,
+  "productType": 1,
   "product": {
     "brand": "Marka adı",
     "name": "Ürünün adı",
     "quantity": "Gramaj (örn: 500g, 1L)"
   }
-}`;
+}
+
+SADECE JSON döndür. Açıklama, markdown veya başka bir şey yazma.`;
 
       const response = await this.genai.models.generateContent({
         model: this.modelFast,
@@ -128,7 +137,6 @@ Yanıt formatı:
 ÖNEMLİ KURALLAR:
 1. Bulamadığın alanları null bırak, tahmin etme.
 2. Besin değerleri 100g başına olmalı.
-3. Sadece JSON döndür, başka açıklama ekleme.
 
 Yanıt formatı:
 {
@@ -146,7 +154,9 @@ Yanıt formatı:
     "sodium": 0,
     "salt": 0
   }
-}`;
+}
+
+SADECE JSON döndür. Açıklama, markdown veya başka bir şey yazma.`;
 
       const response = await this.genai.models.generateContent({
         model: this.modelFast,
@@ -180,11 +190,9 @@ Yanıt formatı:
   }
 
   // ========== PROMPT 3: Sağlık Analizi ==========
-
   /**
    * İçerik bilgisine göre sağlık değerlendirmesi
-   * Grounding yok - sadece model kendi bilgisiyle yanıt veriyor
-   * Pro model kullanıyor (daha akıllı)
+   * Google Search yok - model kendi bilgisiyle yanıt veriyor
    */
   async analyzeContent(
     brand: string | null,
@@ -221,7 +229,6 @@ ${nutritionStr}
 ÖNEMLİ KURALLAR:
 1. Sağlık puanı 1-10 arası olmalı (1=çok kötü, 10=mükemmel).
 2. Özet 3-5 cümle olmalı.
-3. Sadece JSON döndür, başka açıklama ekleme.
 
 Yanıt formatı:
 {
@@ -230,7 +237,9 @@ Yanıt formatı:
   "warnings": ["Dikkat edilmesi gereken noktalar"],
   "positives": ["Olumlu yönler"],
   "recommendation": "Tüketim önerisi"
-}`;
+}
+
+SADECE JSON döndür. Açıklama, markdown veya başka bir şey yazma.`;
 
       const response = await this.genai.models.generateContent({
         model: this.modelSmart,
@@ -308,11 +317,6 @@ Yanıt formatı:
     );
   }
 
-  /** Barkoddan ürün tipi */
-  getProductType(isFood: boolean): ProductType {
-    return isFood ? ProductType.FOOD : ProductType.OTHER;
-  }
-
   // ========== Mock Data (API key yokken) ==========
 
   private mockIdentifyProduct(barcode: string): AIProductResult {
@@ -320,7 +324,7 @@ Yanıt formatı:
 
     if (barcode.startsWith('869')) {
       return {
-        isFood: true,
+        productType: ProductType.FOOD,
         product: {
           brand: 'Mock Marka',
           name: `Test Ürün ${barcode.slice(-4)}`,
@@ -330,7 +334,7 @@ Yanıt formatı:
     }
 
     return {
-      isFood: true,
+      productType: ProductType.FOOD,
       product: {
         brand: 'Örnek Marka',
         name: 'Örnek Ürün',

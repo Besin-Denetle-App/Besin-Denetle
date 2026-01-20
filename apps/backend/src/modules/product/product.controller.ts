@@ -1,4 +1,5 @@
 import {
+  ProductType,
   RejectProductResponse,
   ScanResponse,
   VoteTarget,
@@ -47,7 +48,7 @@ export class ProductController {
     private readonly voteService: VoteService,
     private readonly aiService: AiService,
     private readonly rateLimitHelper: RateLimitHelper,
-  ) {}
+  ) { }
 
   /**
    * Barkod tara - DB'de yoksa AI'dan al
@@ -75,7 +76,26 @@ export class ProductController {
     let barcodeEntity = await this.barcodeService.findByCode(barcode);
 
     if (barcodeEntity) {
-      // Barkod mevcut, en iyi varyantı getir
+      // Barkod mevcut - tipine göre işlem yap
+      const isHumanFood =
+        barcodeEntity.type === Number(ProductType.FOOD) ||
+        barcodeEntity.type === Number(ProductType.BEVERAGE);
+
+      if (!isHumanFood) {
+        // Non-food barkod - varsa product bilgisini de getir
+        await this.rateLimitHelper.incrementScanDb(userId);
+        const existingProduct = await this.productService.findBestByBarcodeId(
+          barcodeEntity.id,
+        );
+        return {
+          product: existingProduct,
+          barcodeId: barcodeEntity.id,
+          isNew: false,
+          barcodeType: barcodeEntity.type,
+        };
+      }
+
+      // Food/Beverage - en iyi varyantı getir
       const bestProduct = await this.productService.findBestByBarcodeId(
         barcodeEntity.id,
       );
@@ -86,6 +106,7 @@ export class ProductController {
 
         return {
           product: bestProduct,
+          barcodeId: barcodeEntity.id,
           isNew: false,
           barcodeType: barcodeEntity.type,
         };
@@ -97,18 +118,38 @@ export class ProductController {
 
     const aiResult = await this.aiService.identifyProduct(barcode);
 
-    if (!aiResult.isFood || !aiResult.product) {
-      throw new NotFoundException(
-        'Bu barkodlu ürün bulunamadı veya gıda ürünü değil',
-      );
+    // İnsan yiyeceği veya içeceği değilse (0=kararsız, 3=evcil hayvan, 9=diğer)
+    const isHumanFood =
+      aiResult.productType === Number(ProductType.FOOD) ||
+      aiResult.productType === Number(ProductType.BEVERAGE);
+
+    if (!isHumanFood) {
+      // Non-food ürün - barkodu DB'ye kaydet ve uygun response dön
+      if (!barcodeEntity) {
+        barcodeEntity = await this.barcodeService.create(
+          barcode,
+          aiResult.productType,
+          false,
+        );
+      }
+      return {
+        product: null,
+        barcodeId: barcodeEntity.id,
+        isNew: true,
+        barcodeType: aiResult.productType,
+      };
     }
 
-    // Barkod yoksa oluştur
+    // AI ürün bilgisi bulamadı
+    if (!aiResult.product) {
+      throw new NotFoundException('Bu barkodlu ürün bilgisi bulunamadı');
+    }
+
+    // Barkod yoksa oluştur (productType AI'dan geliyor)
     if (!barcodeEntity) {
-      const productType = this.aiService.getProductType(aiResult.isFood);
       barcodeEntity = await this.barcodeService.create(
         barcode,
-        productType,
+        aiResult.productType,
         false,
       );
     }
@@ -124,6 +165,7 @@ export class ProductController {
 
     return {
       product: newProduct,
+      barcodeId: barcodeEntity.id,
       isNew: true,
       barcodeType: barcodeEntity.type,
     };
@@ -198,7 +240,12 @@ export class ProductController {
 
     const aiResult = await this.aiService.identifyProduct(barcode.code);
 
-    if (!aiResult.isFood || !aiResult.product) {
+    // İnsan yiyeceği/içeceği değilse veya ürün bilgisi yoksa
+    const isHumanFood =
+      aiResult.productType === Number(ProductType.FOOD) ||
+      aiResult.productType === Number(ProductType.BEVERAGE);
+
+    if (!isHumanFood || !aiResult.product) {
       return {
         nextProduct: null,
         isNew: false,
