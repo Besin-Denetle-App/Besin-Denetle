@@ -344,7 +344,7 @@ crontab -e
 Ekle (her gün gece 3'te):
 
 ```
-0 3 * * * /opt/besin-denetle/scripts/backup-db.sh >> /var/log/db-backup.log 2>&1
+0 3 * * * /opt/besin-denetle/scripts/backup-db.sh >> /var/log/besin-denetle/db-backup.log 2>&1
 ```
 
 > **Not:** Script `.env` dosyasından `DB_USER` ve `DB_NAME` değerlerini otomatik okur.
