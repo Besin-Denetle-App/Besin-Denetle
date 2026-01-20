@@ -5,7 +5,6 @@ import * as Google from "expo-auth-session/providers/google";
 import Constants from "expo-constants";
 import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import { useColorScheme } from "nativewind";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -23,7 +22,6 @@ import { useAuthStore } from "../../stores/auth.store";
 WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
-  const { colorScheme } = useColorScheme();
   const { loginWithGoogle, isLoading } = useAuthStore();
   const { navigate } = useDebouncedNavigation();
   const [error, setError] = useState<string | null>(null);
@@ -122,7 +120,7 @@ export default function LoginScreen() {
         console.error("Google auth error:", result.error);
         setError(
           "Google girişi sırasında bir hata oluştu: " +
-            (result.error?.message || "Bilinmeyen hata"),
+          (result.error?.message || "Bilinmeyen hata"),
         );
       } else if (result?.type === "dismiss" || result?.type === "cancel") {
         console.log("Google auth dismissed/cancelled by user");
