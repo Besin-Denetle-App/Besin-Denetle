@@ -109,11 +109,11 @@ nano apps/backend/.env
 > - `DB_PASSWORD`: Güçlü veritabanı şifresi
 > - `DB_HOST`: `localhost` olarak bırakın (PostgreSQL aynı makinede)
 
-### 6. PostgreSQL Container'ını Başlat
+### 6. PostgreSQL ve Redis Container'larını Başlat
 
 ```bash
 export $(grep -v '^#' apps/backend/.env | xargs)
-docker compose up -d db
+docker compose up -d
 docker compose ps
 ```
 
