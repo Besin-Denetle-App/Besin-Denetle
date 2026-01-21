@@ -3,7 +3,7 @@ import {
   RejectAnalysisRequest,
 } from '@besin-denetle/shared';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsOptional, IsUUID } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsOptional, IsUUID } from 'class-validator';
 
 export class GenerateAnalysisRequestDto implements GenerateAnalysisRequest {
   @ApiProperty({ description: 'İçerik ID', example: 'uuid' })
@@ -23,5 +23,6 @@ export class RejectAnalysisRequestDto implements RejectAnalysisRequest {
   @IsOptional()
   @IsArray()
   @IsUUID('4', { each: true })
+  @ArrayMaxSize(10)
   excludeIds?: string[];
 }

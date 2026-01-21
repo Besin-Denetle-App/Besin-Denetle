@@ -13,6 +13,7 @@ import { Product } from './product.entity';
  * Benzersiz barkodların ana kaydı.
  */
 @Entity('barcode')
+@Index('idx_barcode_type_flagged', ['type', 'is_flagged'])
 export class Barcode {
   @PrimaryGeneratedColumn('uuid')
   id: string;

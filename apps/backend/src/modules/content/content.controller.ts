@@ -21,6 +21,7 @@ import {
 } from '@nestjs/swagger';
 
 import { RateLimitHelper } from '../../common/rate-limit';
+import { assertHumanFood } from '../../common/utils/food-check.util';
 
 import { AiService } from '../ai/ai.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -39,7 +40,7 @@ export class ContentController {
     private readonly voteService: VoteService,
     private readonly aiService: AiService,
     private readonly rateLimitHelper: RateLimitHelper,
-  ) {}
+  ) { }
 
   /**
    * POST /api/products/confirm
@@ -51,6 +52,17 @@ export class ContentController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Ürün onayla, içerik getir' })
   @ApiResponse({ status: 200, description: 'İçerik döner' })
+  @ApiResponse({
+    status: 400,
+    description: 'Non-food ürün confirm edilemez',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Bu ürün yiyecek/içecek kategorisinde değil',
+        error: 'Bad Request'
+      }
+    }
+  })
   async confirm(
     @CurrentUser('id') userId: string,
     @Body() dto: ConfirmRequestDto,
@@ -61,6 +73,13 @@ export class ContentController {
     if (!product) {
       throw new NotFoundException('Ürün bulunamadı');
     }
+
+    // Non-food koruma: Sadece yiyecek/içecek ürünler confirm edilebilir
+    assertHumanFood(product.barcode?.type, {
+      userId,
+      action: 'CONFIRM_PRODUCT',
+      resourceId: productId,
+    });
 
     await this.rateLimitHelper.checkContent(userId);
 
@@ -121,6 +140,17 @@ export class ContentController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'İçerik reddet, sonraki içerik getir' })
   @ApiResponse({ status: 200, description: 'Yeni içerik' })
+  @ApiResponse({
+    status: 400,
+    description: 'Non-food ürünün içeriği reject edilemez',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Bu ürün yiyecek/içecek kategorisinde değil',
+        error: 'Bad Request'
+      }
+    }
+  })
   async rejectContent(
     @CurrentUser('id') userId: string,
     @Body() dto: RejectContentRequestDto,
@@ -131,6 +161,13 @@ export class ContentController {
     if (!content) {
       throw new NotFoundException('İçerik bulunamadı');
     }
+
+    // Non-food koruma: İçeriğin bağlı olduğu ürünün barkod tipini kontrol et
+    assertHumanFood(content.product?.barcode?.type, {
+      userId,
+      action: 'REJECT_CONTENT',
+      resourceId: contentId,
+    });
 
     await this.rateLimitHelper.checkContentReject(userId);
     await this.rateLimitHelper.incrementContentRejectEndpoint(userId);

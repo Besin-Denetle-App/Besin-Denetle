@@ -9,7 +9,7 @@ export class ContentService {
   constructor(
     @InjectRepository(ProductContent)
     private readonly contentRepository: Repository<ProductContent>,
-  ) {}
+  ) { }
 
   /** Product'a ait en yüksek skorlu içeriği getir */
   async findBestByProductId(productId: string): Promise<ProductContent | null> {
@@ -40,7 +40,7 @@ export class ContentService {
   async findById(id: string): Promise<ProductContent | null> {
     return this.contentRepository.findOne({
       where: { id },
-      relations: ['product', 'analyses'],
+      relations: ['product', 'product.barcode', 'analyses'],
     });
   }
 

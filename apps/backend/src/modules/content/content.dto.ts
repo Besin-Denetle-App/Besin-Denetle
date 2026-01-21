@@ -1,6 +1,6 @@
 import { ConfirmRequest, RejectContentRequest } from '@besin-denetle/shared';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsOptional, IsUUID } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsOptional, IsUUID } from 'class-validator';
 
 export class ConfirmRequestDto implements ConfirmRequest {
   @ApiProperty({ description: 'Ürün ID', example: 'uuid' })
@@ -20,5 +20,6 @@ export class RejectContentRequestDto implements RejectContentRequest {
   @IsOptional()
   @IsArray()
   @IsUUID('4', { each: true })
+  @ArrayMaxSize(10)
   excludeIds?: string[];
 }

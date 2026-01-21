@@ -5,3 +5,5 @@ export * from './filters/http-exception.filter';
 export * from './interceptors/last-active.interceptor';
 export * from './interceptors/logging.interceptor';
 export * from './rate-limit';
+export * from './utils/food-check.util';
+
