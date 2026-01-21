@@ -21,10 +21,11 @@ export default function RegisterScreen() {
   const { completeRegistration, isLoading, tempToken } = useAuthStore();
   const [username, setUsername] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [kvkkAccepted, setKvkkAccepted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
 
-  // tempToken yoksa login'e yonlendir (race condition onleme)
+  // tempToken yoksa login'e yönlendir (race condition önleme)
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!tempToken) {
@@ -39,7 +40,7 @@ export default function RegisterScreen() {
     return () => clearTimeout(timer);
   }, [tempToken]);
 
-  // Henuz hazir degilse loading goster
+  // Henüz hazır değilse loading göster
   if (!isReady) {
     return (
       <SafeAreaView className="flex-1 bg-background items-center justify-center">
@@ -48,7 +49,7 @@ export default function RegisterScreen() {
     );
   }
 
-  const isValid = username.trim().length >= 3 && termsAccepted;
+  const isValid = username.trim().length >= 3 && termsAccepted && kvkkAccepted;
 
   const handleRegister = async () => {
     if (!isValid || isLoading) return;
@@ -117,30 +118,27 @@ export default function RegisterScreen() {
               autoCapitalize="none"
               autoCorrect={false}
               maxLength={20}
-              className={`bg-secondary/50 border-2 rounded-2xl px-4 py-4 text-foreground text-base ${
-                username.length > 0 && username.length < 3
-                  ? "border-destructive"
-                  : "border-primary"
-              }`}
+              className={`bg-secondary/50 border-2 rounded-2xl px-4 py-4 text-foreground text-base ${username.length > 0 && username.length < 3
+                ? "border-destructive"
+                : "border-primary"
+                }`}
             />
             <View className="flex-row justify-between mt-2">
               <Text
-                className={`text-sm ${
-                  username.length > 0 && username.length < 3
-                    ? "text-destructive"
-                    : "text-muted-foreground"
-                }`}
+                className={`text-sm ${username.length > 0 && username.length < 3
+                  ? "text-destructive"
+                  : "text-muted-foreground"
+                  }`}
               >
                 {username.length > 0 && username.length < 3
                   ? "En az 3 karakter gerekli"
                   : "Harf, rakam ve alt çizgi kullanabilirsin"}
               </Text>
               <Text
-                className={`text-sm ${
-                  username.length >= 18
-                    ? "text-amber-500"
-                    : "text-muted-foreground"
-                }`}
+                className={`text-sm ${username.length >= 18
+                  ? "text-amber-500"
+                  : "text-muted-foreground"
+                  }`}
               >
                 {username.length}/20
               </Text>
@@ -148,16 +146,15 @@ export default function RegisterScreen() {
           </View>
 
           {/* Terms Checkbox */}
-          <View className="flex-row items-start mb-8">
+          <View className="flex-row items-start mb-4">
             <TouchableOpacity
               onPress={() => setTermsAccepted(!termsAccepted)}
               className="flex-row items-start"
               activeOpacity={0.7}
             >
               <View
-                className={`w-6 h-6 rounded-md border-2 items-center justify-center mr-3 mt-0.5 ${
-                  termsAccepted ? "bg-primary border-primary" : "border-border"
-                }`}
+                className={`w-6 h-6 rounded-md border-2 items-center justify-center mr-3 mt-0.5 ${termsAccepted ? "bg-primary border-primary" : "border-border"
+                  }`}
               >
                 {termsAccepted && (
                   <Ionicons name="checkmark" size={16} color="#FFFFFF" />
@@ -178,7 +175,34 @@ export default function RegisterScreen() {
               >
                 Gizlilik Politikası
               </Text>
-              {`'nı okudum ve kabul ediyorum.`}
+              {"'nı kabul ediyorum."}
+            </Text>
+          </View>
+
+          {/* KVKK Checkbox */}
+          <View className="flex-row items-start mb-8">
+            <TouchableOpacity
+              onPress={() => setKvkkAccepted(!kvkkAccepted)}
+              className="flex-row items-start"
+              activeOpacity={0.7}
+            >
+              <View
+                className={`w-6 h-6 rounded-md border-2 items-center justify-center mr-3 mt-0.5 ${kvkkAccepted ? "bg-primary border-primary" : "border-border"
+                  }`}
+              >
+                {kvkkAccepted && (
+                  <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                )}
+              </View>
+            </TouchableOpacity>
+            <Text className="text-foreground flex-1 text-sm leading-5">
+              <Text
+                className="text-primary underline"
+                onPress={() => router.push("/(auth)/kvkk" as any)}
+              >
+                KVKK Aydınlatma Metni
+              </Text>
+              {"'ni okudum ve onaylıyorum."}
             </Text>
           </View>
 
@@ -186,18 +210,16 @@ export default function RegisterScreen() {
           <TouchableOpacity
             onPress={handleRegister}
             disabled={!isValid || isLoading}
-            className={`rounded-2xl py-4 items-center ${
-              isValid ? "bg-primary" : "bg-muted"
-            }`}
+            className={`rounded-2xl py-4 items-center ${isValid ? "bg-primary" : "bg-muted"
+              }`}
             activeOpacity={0.7}
           >
             {isLoading ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
               <Text
-                className={`font-bold text-base ${
-                  isValid ? "text-primary-foreground" : "text-muted-foreground"
-                }`}
+                className={`font-bold text-base ${isValid ? "text-primary-foreground" : "text-muted-foreground"
+                  }`}
               >
                 Hesabı Oluştur
               </Text>

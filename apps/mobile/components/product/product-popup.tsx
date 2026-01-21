@@ -21,11 +21,34 @@ interface ProductPopupProps {
   isLoading: boolean;
   isFromAI?: boolean; // AI tarafından mı bulundu
   mode?: "confirm" | "non-food";
+  barcodeType?: number; // 0=kararsız, 1=yiyecek, 2=içecek, 3=evcil hayvan, 9=diğer
   onConfirm: () => void;
   onReject: () => void;
   onClose: () => void;
   onFlag?: () => void;
 }
+
+/** Barkod tipine göre non-food mesajları */
+const getNonFoodMessage = (type: number | undefined) => {
+  switch (type) {
+    case 0:
+      return {
+        title: "Kategori Belirlenemedi",
+        description: "Bu ürünün kategorisi belirlenemedi. Eğer bu bir gıda ürünüyse bildirebilirsiniz.",
+      };
+    case 3:
+      return {
+        title: "Evcil Hayvan Ürünü",
+        description: "Bu barkod evcil hayvan yiyeceği/içeceği kategorisinde. Eğer bu bir insan gıdası ise bildirebilirsiniz.",
+      };
+    case 9:
+    default:
+      return {
+        title: "Gıda Ürünü Değil",
+        description: "Bu barkod yiyecek veya içecek kategorisinde değil. Eğer bu bir gıda ürünüyse bildirebilirsiniz.",
+      };
+  }
+};
 
 /**
  * Ürün onay popup'ı
@@ -37,6 +60,7 @@ export function ProductPopup({
   isLoading,
   isFromAI = false,
   mode = "confirm",
+  barcodeType,
   onConfirm,
   onReject,
   onClose,
@@ -120,22 +144,41 @@ export function ProductPopup({
           {/* Non-Food Uyarısı */}
           {!isLoading && isNonFood && (
             <>
-              <View className="items-center mb-6">
-                <View className="w-20 h-20 bg-amber-500/20 rounded-full items-center justify-center mb-4">
+              <View className="items-center mb-4">
+                <View className="w-16 h-16 bg-amber-500/20 rounded-full items-center justify-center mb-3">
                   <Ionicons
                     name="warning"
-                    size={40}
+                    size={32}
                     color={COLORS.semantic.warning}
                   />
                 </View>
                 <Text className="text-foreground text-xl font-bold text-center">
-                  Gıda Ürünü Değil
-                </Text>
-                <Text className="text-muted-foreground text-center mt-2 px-4">
-                  Bu barkod yiyecek veya içecek kategorisinde değil. Eğer bu bir
-                  gıda ürünüyse bildirebilirsiniz.
+                  {getNonFoodMessage(barcodeType).title}
                 </Text>
               </View>
+
+              {/* Ürün Bilgisi (varsa) */}
+              {product && (
+                <View className="bg-secondary/30 rounded-2xl px-4 py-3 mb-4 w-full">
+                  {product.brand && (
+                    <Text className="text-muted-foreground text-xs uppercase tracking-wider">
+                      {product.brand}
+                    </Text>
+                  )}
+                  <Text className="text-foreground font-semibold">
+                    {product.name || "İsimsiz Ürün"}
+                  </Text>
+                  {product.quantity && (
+                    <Text className="text-muted-foreground text-sm">
+                      {product.quantity}
+                    </Text>
+                  )}
+                </View>
+              )}
+
+              <Text className="text-muted-foreground text-center text-sm mb-6 px-4">
+                {getNonFoodMessage(barcodeType).description}
+              </Text>
 
               {/* Butonlar */}
               <View className="gap-3">

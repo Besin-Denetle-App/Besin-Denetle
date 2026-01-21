@@ -34,18 +34,19 @@ export default function ScanScreen() {
   const [showPopup, setShowPopup] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<IProduct | null>(null);
   const [currentBarcodeId, setCurrentBarcodeId] = useState<string | null>(null);
+  const [currentBarcodeType, setCurrentBarcodeType] = useState<number>(0);
   const [popupMode, setPopupMode] = useState<"confirm" | "non-food">("confirm");
   const [error, setError] = useState<string | null>(null);
   const [rejectedProductIds, setRejectedProductIds] = useState<string[]>([]);
   const [isFromAI, setIsFromAI] = useState(false);
 
-  // Kameradan barkod tarandiginda
+  // Kameradan barkod tarandığında
   const handleBarcodeScanned = (barcode: string) => {
     setBarcodeInput(barcode);
     setShowScanner(false);
   };
 
-  // Sorgula butonuna basildiginda
+  // Sorgula butonuna basıldığında
   const handleSearch = async () => {
     if (!barcodeInput.trim()) return;
 
@@ -58,14 +59,15 @@ export default function ScanScreen() {
       const response = await productService.scanBarcode(barcodeInput.trim());
 
       // Barkod tipi: 1=yiyecek, 2=icecek, digerleri=non-food
+      setCurrentBarcodeType(response.barcodeType);
       if (response.barcodeType !== 1 && response.barcodeType !== 2) {
         setPopupMode("non-food");
-        setCurrentBarcodeId(response.product.barcode_id);
+        setCurrentBarcodeId(response.barcodeId);
         setCurrentProduct(null);
       } else {
         setPopupMode("confirm");
         setCurrentProduct(response.product);
-        setCurrentBarcodeId(response.product.barcode_id);
+        setCurrentBarcodeId(response.barcodeId);
         setIsFromAI(response.isNew);
       }
     } catch (err) {
@@ -82,11 +84,11 @@ export default function ScanScreen() {
     }
   };
 
-  // Urun onaylandiginda detay sayfasina yonlendir
+  // Ürün onaylandığında detay sayfasına yönlendir
   const handleConfirm = async () => {
     if (!currentProduct) return;
 
-    // Store'a urun verilerini yukle
+    // Store'a ürün verilerini yükle
     setProduct(currentProduct);
     setBarcode(barcodeInput.trim());
 
@@ -94,7 +96,7 @@ export default function ScanScreen() {
     navigate(`/product/${currentProduct.id}`);
   };
 
-  // Urun reddedildiginde sonraki varyanti getir
+  // Ürün reddedildiğinde sonraki varyantı getir
   const handleReject = async () => {
     if (!currentProduct || isLoading) return;
 
@@ -145,7 +147,7 @@ export default function ScanScreen() {
     }
   };
 
-  // Popup kapatildiginda state'leri sifirla
+  // Popup kapatıldığında state'leri sıfırla
   const handleClosePopup = () => {
     setShowPopup(false);
     setCurrentProduct(null);
@@ -207,9 +209,8 @@ export default function ScanScreen() {
 
         {/* Sorgula Butonu */}
         <TouchableOpacity
-          className={`w-full py-4 rounded-2xl items-center flex-row justify-center ${
-            barcodeInput && !isLoading ? "bg-accent" : "bg-muted"
-          }`}
+          className={`w-full py-4 rounded-2xl items-center flex-row justify-center ${barcodeInput && !isLoading ? "bg-accent" : "bg-muted"
+            }`}
           activeOpacity={0.7}
           disabled={!barcodeInput || isLoading}
           onPress={handleSearch}
@@ -230,11 +231,10 @@ export default function ScanScreen() {
                 }
               />
               <Text
-                className={`font-bold text-base ml-2 ${
-                  barcodeInput
-                    ? "text-accent-foreground"
-                    : "text-muted-foreground"
-                }`}
+                className={`font-bold text-base ml-2 ${barcodeInput
+                  ? "text-accent-foreground"
+                  : "text-muted-foreground"
+                  }`}
               >
                 Sorgula
               </Text>
@@ -257,6 +257,7 @@ export default function ScanScreen() {
         isLoading={isLoading}
         isFromAI={isFromAI}
         mode={popupMode}
+        barcodeType={currentBarcodeType}
         onConfirm={handleConfirm}
         onReject={handleReject}
         onClose={handleClosePopup}
