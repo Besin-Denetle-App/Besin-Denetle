@@ -40,6 +40,11 @@ yarn-error.*
 *.log
 pnpm-debug.log*
 
+# Logs (Winston)
+logs/
+*.log
+*.log.gz
+
 # macOS
 .DS_Store
 *.pem
