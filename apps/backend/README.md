@@ -1,6 +1,6 @@
 # Besin Denetle - Backend API
 
-![Version](https://img.shields.io/badge/version-0.16.3-blue.svg)
+![Version](https://img.shields.io/badge/version-0.16.4-blue.svg)
 ![NestJS](https://img.shields.io/badge/NestJS-v11-e0234e.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178c6.svg)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-336791.svg)

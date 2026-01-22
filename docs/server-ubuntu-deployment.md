@@ -128,7 +128,48 @@ pnpm install
 pnpm build:all
 ```
 
-### 8. Backend'i PM2 ile Başlat
+### 8. Database Migration'larını Çalıştır
+
+> [!IMPORTANT]
+> İlk kurulumda veya database güncellemeleri için migration'ları çalıştırmalısınız.
+
+```bash
+cd /opt/besin-denetle
+
+# Migration durumunu kontrol et
+pnpm --filter @besin-denetle/backend migration:show
+
+# Migration'ları çalıştır (tabloları oluşturur)
+pnpm --filter @besin-denetle/backend migration:run
+```
+
+**Beklenen Çıktı:**
+```
+query: SELECT * FROM "migrations" "migrations"
+query: CREATE TABLE "user" ...
+query: CREATE TABLE "product" ...
+Migration InitialSchema1737509400000 has been executed successfully.
+```
+
+> [!NOTE]
+> Migration'lar sadece bir kez çalışır. Eğer zaten çalıştırılmışlarsa, tekrar çalıştırılmazlar.
+
+**Migration Komutları:**
+```bash
+# Yeni migration oluştur (entity değişikliklerinden)
+pnpm --filter @besin-denetle/backend migration:generate src/migrations/MigrationName
+
+# Migration'ları çalıştır
+pnpm --filter @besin-denetle/backend migration:run
+
+# Son migration'ı geri al
+pnpm --filter @besin-denetle/backend migration:revert
+
+# Migration durumunu göster
+pnpm --filter @besin-denetle/backend migration:show
+```
+
+### 9. Backend'i PM2 ile Başlat
 
 ```bash
 cd /opt/besin-denetle
@@ -138,7 +179,7 @@ cd /opt/besin-denetle
 pnpm start:prod
 ```
 
-### 9. PM2 Otomatik Başlatma
+### 10. PM2 Otomatik Başlatma
 
 ```bash
 # Startup script oluştur
@@ -148,7 +189,7 @@ sudo pm2 startup
 pm2 save
 ```
 
-### 10. PM2 Komutları
+### 11. PM2 Komutları
 
 ```bash
 # Durumu kontrol et
@@ -365,9 +406,15 @@ pnpm install
 # Projeyi yeniden build et
 pnpm build:all
 
+# Migration'ları çalıştır (varsa yeni migration'lar için)
+pnpm --filter @besin-denetle/backend migration:run
+
 # PM2'yi yeniden başlat
 pnpm restart:prod
 ```
+
+> [!TIP]
+> `migration:run` komutu sadece yeni migration'ları çalıştırır. Zaten çalıştırılmış olanları tekrar çalıştırmaz.
 
 ---
 

@@ -1,6 +1,6 @@
 {
   "name": "@besin-denetle/backend",
-  "version": "0.16.3",
+  "version": "0.16.4",
   "description": "RESTful API built with NestJS for Besin Denetle food analysis platform",
   "author": "Furkan Çelik <iletisim.furkancelik@gmail.com> (https://furkanpasa.com)",
   "license": "GPL-3.0",
@@ -18,15 +18,19 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "format": "prettier --write \"src/**/*.ts\"",
+    "migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/data-source.ts",
+    "migration:run": "typeorm-ts-node-commonjs migration:run -d src/data-source.ts",
+    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/data-source.ts",
+    "migration:show": "typeorm-ts-node-commonjs migration:show -d src/data-source.ts",
+    "analyze": "npx ts-node --transpile-only src/scripts/analyze-csv.ts",
+    "importcsv": "npx ts-node --transpile-only src/scripts/import-csv.ts",
+    "recalculate": "npx ts-node --transpile-only src/scripts/recalculate-scores.ts",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "typeorm": "typeorm-ts-node-commonjs",
-    "analyze": "npx ts-node --transpile-only src/scripts/analyze-csv.ts",
-    "importcsv": "npx ts-node --transpile-only src/scripts/import-csv.ts",
-    "recalculate": "npx ts-node --transpile-only src/scripts/recalculate-scores.ts"
+    "typeorm": "typeorm-ts-node-commonjs"
   },
   "dependencies": {
     "@besin-denetle/shared": "workspace:*",
