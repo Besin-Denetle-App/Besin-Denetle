@@ -111,4 +111,4 @@ import { VoteModule } from './modules/vote';
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}
