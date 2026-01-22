@@ -1,5 +1,10 @@
+// .env dosyasını sadece EAS build harici yükle
+// EAS build sırasında APP_ENV zaten eas.json'dan gelir
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-require("dotenv").config();
+if (!process.env.APP_ENV || process.env.APP_ENV === "development") {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require("dotenv").config();
+}
 
 //  Environment Config
 //
@@ -26,7 +31,6 @@ const APP_ENV = process.env.APP_ENV || "development";
 const getApiConfig = () => {
   switch (APP_ENV) {
     case "production":
-      // Production
       return {
         apiUrl: process.env.API_URL || null,
         apiHost: null,
@@ -34,7 +38,6 @@ const getApiConfig = () => {
       };
 
     case "preview":
-      // Preview
       return {
         apiUrl: process.env.API_URL || null,
         apiHost: null,
@@ -43,7 +46,6 @@ const getApiConfig = () => {
 
     case "development":
     default:
-      // Development (local)
       return {
         apiUrl: null,
         apiHost: process.env.DEV_API_HOST || null,
@@ -61,13 +63,22 @@ const getGoogleConfig = () => ({
   iosClientId: process.env.GOOGLE_IOS_CLIENT_ID || null,
 });
 
-// Debug
+// Debug log - app.config.js ilk yüklendiğinde gösterilir
 if (!global.__BUILD_CONFIG_LOGGED__) {
   global.__BUILD_CONFIG_LOGGED__ = true;
-  console.log("=== BUILD CONFIG ===");
+  console.log("=== BUILD CONFIG (Initial Load) ===");
   console.log("APP_ENV:", APP_ENV);
   console.log("API Config:", getApiConfig());
-  console.log("====================");
+
+  // EAS build sırasında bu değerler local validation içindir
+  // Asıl build, builderEnvironment'tan gelen değerlerle yapılır
+  if (APP_ENV === "development" && process.env.EAS_BUILD === "true") {
+    console.log("");
+    console.log("   EAS Build Detected:");
+    console.log("   Yukarıdaki değerler local validation içindir.");
+    console.log("   Asıl build, eas.json'daki env değerleriyle yapılacak.");
+  }
+  console.log("====================================");
 }
 
 // Expo Config
@@ -78,7 +89,7 @@ module.exports = {
     name: "Besin Denetle",
     slug: "Besin-Denetle",
     scheme: "besindenetle",
-    version: "0.13.0",
+    version: "0.16.0",
     orientation: "portrait",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,

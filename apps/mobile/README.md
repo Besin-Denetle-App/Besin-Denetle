@@ -1,6 +1,6 @@
 # Besin Denetle - Mobil Uygulama
 
-![Version](https://img.shields.io/badge/version-0.7.0-blue.svg)
+![Version](https://img.shields.io/badge/version-0.16.0-blue.svg)
 ![Expo](https://img.shields.io/badge/Expo-SDK_54-000020.svg)
 ![React Native](https://img.shields.io/badge/React_Native-0.81-61dafb.svg)
 ![Platform](https://img.shields.io/badge/Platform-Android-6f42c1.svg)

@@ -9,4 +9,4 @@ import { LogContextService } from './log-context.service';
   providers: [AppLogger, LogContextService, FoodCheckService],
   exports: [AppLogger, LogContextService, FoodCheckService],
 })
-export class CoreServicesModule { }
+export class CoreServicesModule {}

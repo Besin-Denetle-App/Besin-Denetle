@@ -22,7 +22,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
 
     // HTTP status ve mesajı belirle
-    let status = HttpStatus.INTERNAL_SERVER_ERROR;
+    let status: number = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Beklenmeyen bir hata oluştu';
     let errorCode: string | number = 'INTERNAL_ERROR';
 
@@ -70,7 +70,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     // Log stratejisi
 
-    if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
+    if (status >= 500) {
       // 5xx: Sunucu hataları - ERROR log
       this.appLogger.error(
         `[${status}] ${message}`,
@@ -81,10 +81,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
           statusCode: status,
         },
       );
-    } else if (
-      status === HttpStatus.UNAUTHORIZED ||
-      status === HttpStatus.FORBIDDEN
-    ) {
+    } else if (status === 401 || status === 403) {
       // 401/403: Güvenlik - Security log
       this.appLogger.security('Authentication/Authorization failure', {
         path: request.url,
@@ -92,7 +89,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         statusCode: status,
         message,
       });
-    } else if (status === HttpStatus.TOO_MANY_REQUESTS) {
+    } else if (status === 429) {
       // 429: Rate limit - Security log
       this.appLogger.security('Rate limit triggered', {
         path: request.url,

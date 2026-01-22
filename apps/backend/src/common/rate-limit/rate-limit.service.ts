@@ -76,7 +76,9 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 
     try {
       await this.redis.connect();
-    } catch (error) {}
+    } catch {
+      // Redis bağlantı hatası error event handler'da loglandı
+    }
   }
 
   async onModuleDestroy(): Promise<void> {

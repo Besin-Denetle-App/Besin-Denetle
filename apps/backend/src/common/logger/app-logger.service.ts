@@ -14,7 +14,7 @@ export class AppLogger {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER) private readonly winston: Logger,
     private readonly contextService: LogContextService,
-  ) { }
+  ) {}
 
   // asıl log'u oluşturan fonksiyon
   private log(
@@ -29,12 +29,12 @@ export class AppLogger {
       category,
       context: context
         ? {
-          requestId: context.requestId,
-          userId: context.userId,
-          ipAddress: context.ipAddress,
-          endpoint: context.endpoint,
-          method: context.method,
-        }
+            requestId: context.requestId,
+            userId: context.userId,
+            ipAddress: context.ipAddress,
+            endpoint: context.endpoint,
+            method: context.method,
+          }
         : undefined,
       metadata,
     });
@@ -71,14 +71,14 @@ export class AppLogger {
       ...metadata,
       error: error
         ? {
-          name: error.name,
-          message: error.message,
-          // production'da 10 satır, development'ta full stack göster
-          stack:
-            process.env.NODE_ENV === 'production'
-              ? error.stack?.split('\\n').slice(0, 10).join('\\n')
-              : error.stack,
-        }
+            name: error.name,
+            message: error.message,
+            // production'da 10 satır, development'ta full stack göster
+            stack:
+              process.env.NODE_ENV === 'production'
+                ? error.stack?.split('\\n').slice(0, 10).join('\\n')
+                : error.stack,
+          }
         : undefined,
     });
   }

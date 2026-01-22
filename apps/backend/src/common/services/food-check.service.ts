@@ -13,7 +13,7 @@ export interface SecurityContext {
 // Barkod tipinin insan gıdası olup olmadığını kontrol eden servis
 @Injectable()
 export class FoodCheckService {
-  constructor(private readonly appLogger: AppLogger) { }
+  constructor(private readonly appLogger: AppLogger) {}
 
   // İnsan gıdası kontrolü yapar
   // Gıda değilse BadRequestException fırlatır ve güvenlik logu yazar

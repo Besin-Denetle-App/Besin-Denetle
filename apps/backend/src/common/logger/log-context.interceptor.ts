@@ -14,7 +14,7 @@ import { LogContextService } from './log-context.service';
 // AsyncLocalStorage ile context'i saklıyoruz
 @Injectable()
 export class LogContextInterceptor implements NestInterceptor {
-  constructor(private readonly contextService: LogContextService) { }
+  constructor(private readonly contextService: LogContextService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context
