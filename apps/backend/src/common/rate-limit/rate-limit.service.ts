@@ -2,12 +2,12 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  Logger,
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
+import { AppLogger } from '../../common';
 import {
   RateLimitKeyPrefix,
   RateLimitResult,
@@ -22,11 +22,18 @@ import {
  */
 @Injectable()
 export class RateLimitService implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(RateLimitService.name);
   private redis: Redis;
   private isConnected = false;
 
-  constructor(private readonly configService: ConfigService) {}
+  // Log throttling - aynı hatayı tekrar tekrar loglamamak için
+  private lastCheckErrorLog = 0;
+  private lastIncrementInfoLog = 0;
+  private readonly ERROR_LOG_THROTTLE_MS = 60000; // 1 dakika
+
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly appLogger: AppLogger,
+  ) {}
 
   async onModuleInit(): Promise<void> {
     const host = this.configService.get<string>(
@@ -40,7 +47,10 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
       port,
       retryStrategy: (times) => {
         if (times > 3) {
-          this.logger.error('Redis connection failed after 3 retries');
+          this.appLogger.error(
+            'Redis connection failed',
+            new Error('Max retries exceeded after 3 attempts'),
+          );
           return null; // Stop retrying
         }
         return Math.min(times * 100, 3000);
@@ -52,32 +62,29 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 
     this.redis.on('connect', () => {
       this.isConnected = true;
-      this.logger.log(`Connected to Redis at ${host}:${port}`);
+      this.appLogger.infrastructure('Redis connected', { host, port });
     });
 
     this.redis.on('error', (err) => {
       this.isConnected = false;
-      this.logger.error(`Redis error: ${err.message}`);
+      this.appLogger.error('Redis error', err);
     });
 
     this.redis.on('close', () => {
       this.isConnected = false;
-      this.logger.warn('Redis connection closed');
     });
 
     try {
       await this.redis.connect();
-    } catch (error) {
-      this.logger.error(
-        `Failed to connect to Redis: ${(error as Error).message}`,
-      );
-    }
+    } catch (error) {}
   }
 
   async onModuleDestroy(): Promise<void> {
     if (this.redis) {
       await this.redis.quit();
-      this.logger.log('Redis connection closed');
+      this.appLogger.infrastructure('Redis connection closed', {
+        graceful: true,
+      });
     }
   }
 
@@ -105,8 +112,15 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
     rule: RateLimitRule,
   ): Promise<RateLimitResult> {
     if (!this.isConnected) {
-      // Redis bağlı değilse reddet (fail-closed)
-      this.logger.error('Redis not connected, rejecting request (fail-closed)');
+      // Throttled log - sadece 1 dk'da bir
+      const now = Date.now();
+      if (now - this.lastCheckErrorLog > this.ERROR_LOG_THROTTLE_MS) {
+        this.appLogger.error(
+          'Redis not connected, rejecting requests (fail-closed)',
+          new Error('Redis unavailable'),
+        );
+        this.lastCheckErrorLog = now;
+      }
       throw new HttpException(
         {
           statusCode: HttpStatus.SERVICE_UNAVAILABLE,
@@ -135,7 +149,10 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
         resetInSeconds,
       };
     } catch (error) {
-      this.logger.error(`Rate limit check failed: ${(error as Error).message}`);
+      this.appLogger.error(
+        'Rate limit check failed',
+        error instanceof Error ? error : new Error(String(error)),
+      );
       // Hata durumunda reddet (fail-closed)
       throw new HttpException(
         {
@@ -158,7 +175,14 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
     rule: RateLimitRule,
   ): Promise<number> {
     if (!this.isConnected) {
-      this.logger.warn('Redis not connected, skipping increment');
+      // Throttled log - sadece 1 dk'da bir
+      const now = Date.now();
+      if (now - this.lastIncrementInfoLog > this.ERROR_LOG_THROTTLE_MS) {
+        this.appLogger.infrastructure(
+          'Redis not connected, skipping increments',
+        );
+        this.lastIncrementInfoLog = now;
+      }
       return 0;
     }
 
@@ -184,8 +208,9 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
 
       return newCount;
     } catch (error) {
-      this.logger.error(
-        `Rate limit increment failed: ${(error as Error).message}`,
+      this.appLogger.error(
+        'Rate limit increment failed',
+        error instanceof Error ? error : new Error(String(error)),
       );
       return 0;
     }
@@ -211,9 +236,13 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
       );
 
       if (!result.allowed) {
-        this.logger.warn(
-          `Rate limit exceeded: ${check.name} for ${check.identifier} (${result.current}/${result.limit})`,
-        );
+        this.appLogger.security('Rate limit exceeded', {
+          limitName: check.name,
+          identifier: check.identifier,
+          current: result.current,
+          limit: result.limit,
+          resetIn: result.resetInSeconds,
+        });
 
         throw new HttpException(
           {
@@ -277,8 +306,9 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
         await expirePipeline.exec();
       }
     } catch (error) {
-      this.logger.error(
-        `Rate limit incrementMultiple failed: ${(error as Error).message}`,
+      this.appLogger.error(
+        'Rate limit incrementMultiple failed',
+        error instanceof Error ? error : new Error(String(error)),
       );
     }
   }

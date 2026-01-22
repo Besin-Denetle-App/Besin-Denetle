@@ -9,7 +9,7 @@ export class AnalysisService {
   constructor(
     @InjectRepository(ContentAnalysis)
     private readonly analysisRepository: Repository<ContentAnalysis>,
-  ) { }
+  ) {}
 
   /** Content'e ait en yüksek skorlu analizi getir */
   async findBestByContentId(

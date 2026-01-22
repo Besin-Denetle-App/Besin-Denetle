@@ -3,13 +3,14 @@ import {
   TEMP_TOKEN_EXPIRY_MS,
   UserRole,
 } from '@besin-denetle/shared';
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
+import { AppLogger } from '../../common';
 import { User } from '../../entities';
 
 // Kayıt süreci için geçici token verisi (RAM'de)
@@ -24,7 +25,6 @@ const tempTokenStore = new Map<string, TempTokenData>();
 
 @Injectable()
 export class AuthService {
-  private readonly logger = new Logger(AuthService.name);
   private readonly jwtSecret: string;
   private readonly jwtExpiresIn: number;
   private readonly googleClientId: string;
@@ -35,6 +35,7 @@ export class AuthService {
     private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly appLogger: AppLogger,
   ) {
     this.jwtSecret = this.configService.get<string>('JWT_SECRET')!;
     this.jwtExpiresIn = 60 * 60 * 24 * 7; // 7 gün
@@ -44,14 +45,14 @@ export class AuthService {
     this.googleClient = new OAuth2Client(this.googleClientId);
 
     if (!this.configService.get<string>('JWT_SECRET')) {
-      this.logger.warn(
-        '⚠️ JWT_SECRET not set, using dev fallback. DO NOT use in production!',
+      this.appLogger.security(
+        'JWT_SECRET not set, using dev fallback. DO NOT use in production!',
       );
     }
 
     if (!this.googleClientId) {
-      this.logger.warn(
-        '⚠️ OAuth client IDs not configured. Real OAuth will fail!',
+      this.appLogger.infrastructure(
+        'OAuth client IDs not configured. Real OAuth will fail!',
       );
     }
   }
@@ -118,7 +119,10 @@ export class AuthService {
 
     if (existingUser) {
       const tokens = this.generateTokens(existingUser);
-      this.logger.debug(`E-posta ile login başarılı: ${email}`);
+      this.appLogger.business('User login successful', {
+        provider: 'email',
+        emailDomain: email.split('@')[1],
+      });
       return {
         isNewUser: false,
         accessToken: tokens.accessToken,
@@ -137,7 +141,10 @@ export class AuthService {
       expiresAt: Date.now() + TEMP_TOKEN_EXPIRY_MS,
     });
 
-    this.logger.debug(`E-posta ile yeni kayıt başlatıldı: ${email}`);
+    this.appLogger.business('User registration started', {
+      provider: 'email',
+      emailDomain: email.split('@')[1],
+    });
 
     return {
       isNewUser: true,
@@ -221,7 +228,11 @@ export class AuthService {
           throw new UnauthorizedException('Bu hesap zaten kayıtlı');
         }
       }
-      this.logger.error('Kayıt sırasında beklenmeyen hata:', error);
+      this.appLogger.error(
+        'Registration failed',
+        error instanceof Error ? error : new Error(String(error)),
+        { provider: tokenData.provider },
+      );
       throw error;
     }
   }
@@ -261,9 +272,12 @@ export class AuthService {
       throw new UnauthorizedException('Kullanıcı bulunamadı');
     }
 
-    this.logger.log(`Hesap siliniyor: ${user.username} (${user.email})`);
+    this.appLogger.business('Account deletion started', {
+      userId: user.id,
+      username: user.username,
+    });
     await this.userRepository.remove(user);
-    this.logger.log(`Hesap silindi: ${user.username}`);
+    this.appLogger.business('Account deleted', { userId: user.id });
   }
 
   private generateTokens(user: User): {
@@ -320,15 +334,19 @@ export class AuthService {
         );
       }
 
-      this.logger.debug(`Google OAuth doğrulama başarılı: ${payload.email}`);
+      this.appLogger.business('OAuth verification successful', {
+        provider: 'google',
+        emailDomain: payload.email.split('@')[1],
+      });
 
       return {
         providerId: payload.sub,
         email: payload.email,
       };
     } catch (error) {
-      this.logger.error(
-        `Google OAuth doğrulama hatası: ${(error as Error).message}`,
+      this.appLogger.error(
+        'Google OAuth verification failed',
+        error instanceof Error ? error : new Error(String(error)),
       );
       throw new UnauthorizedException('Google token doğrulanamadı');
     }

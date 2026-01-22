@@ -38,6 +38,19 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
+  // Graceful shutdown - NestJS handles cleanup automatically
+  app.enableShutdownHooks();
+
+  // SIGTERM/SIGINT handler - Graceful app shutdown
+  process.on('SIGTERM', () => {
+    void (async () => {
+      logger.log('SIGTERM received, shutting down gracefully...');
+      await app.close();
+      logger.log('Application closed successfully');
+      process.exit(0);
+    })();
+  });
+
   // Port seçimi
   const port = process.env.PORT;
   if (!port) {

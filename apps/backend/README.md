@@ -221,13 +221,13 @@ Backend, veritabanı yönetimi için çeşitli CLI scriptleri içerir:
 
 ```bash
 # Skorları yeniden hesapla (User silinince oluşan tutarsızlıkları düzeltir)
-pnpm recalculate-scores
+pnpm recalculate
 
 # CSV dosyasını analiz et (import öncesi kontrol)
-pnpm analyze-csv
+pnpm analyze
 
 # CSV'den veritabanına toplu veri yükle
-pnpm import-csv
+pnpm importcsv
 ```
 
 ### ⏰ Otomatik Skor Hesaplama

@@ -5,8 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { WinstonModule } from 'nest-winston';
 
 import {
+  CoreServicesModule,
   HttpExceptionFilter,
   LastActiveInterceptor,
+  LogContextInterceptor,
   LoggingInterceptor,
   RateLimitModule,
 } from './common';
@@ -82,10 +84,16 @@ import { VoteModule } from './modules/vote';
     AiModule,
     CronModule,
     RateLimitModule,
+    CoreServicesModule,
     // LastActiveInterceptor için User entity erişimi
     TypeOrmModule.forFeature([User]),
   ],
   providers: [
+    // Global log context interceptor - request-scoped context
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LogContextInterceptor,
+    },
     // Global logging interceptor - tüm HTTP isteklerini loglar
     {
       provide: APP_INTERCEPTOR,

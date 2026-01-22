@@ -1,58 +1,42 @@
 import {
   CallHandler,
   ExecutionContext,
-  Inject,
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { Logger } from 'winston';
+import { AppLogger } from '../logger';
 
 /**
  * HTTP request logger interceptor
+ * AppLogger kullanarak request/response loglar
+ * Context (requestId, userId) otomatik eklenir
  */
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-  constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-  ) {}
+  constructor(private readonly appLogger: AppLogger) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context
       .switchToHttp()
-      .getRequest<{ method: string; url: string; user?: { id?: string } }>();
+      .getRequest<{ method: string; url: string }>();
     const { method, url } = request;
-    const userId = request.user?.id || 'anonymous';
     const start = Date.now();
 
     return next.handle().pipe(
       tap({
         next: () => {
           const duration = Date.now() - start;
-          this.logger.info(`${method} ${url} - ${duration}ms`, {
+          // Context otomatik (requestId, userId)
+          this.appLogger.http('Request completed', {
             method,
             url,
-            userId,
             duration,
             status: 'success',
           });
         },
-        error: (error: Error) => {
-          const duration = Date.now() - start;
-          this.logger.error(
-            `${method} ${url} - ${duration}ms - ${error.message}`,
-            {
-              method,
-              url,
-              userId,
-              duration,
-              status: 'error',
-              error: error.message,
-            },
-          );
-        },
+        // Error logging removed - HttpExceptionFilter handles all errors
       }),
     );
   }

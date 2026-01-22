@@ -5,8 +5,9 @@ import {
   ProductType,
 } from '@besin-denetle/shared';
 import { GoogleGenAI } from '@google/genai';
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { AppLogger } from '../../common';
 import { AiConfig } from '../../config';
 
 /**
@@ -17,7 +18,6 @@ import { AiConfig } from '../../config';
  */
 @Injectable()
 export class AiService {
-  private readonly logger = new Logger(AiService.name);
   private readonly apiKey: string | undefined;
   private readonly isMockMode: boolean;
   private readonly genai: GoogleGenAI | null;
@@ -25,7 +25,10 @@ export class AiService {
   private readonly modelFast: string;
   private readonly modelSmart: string;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly appLogger: AppLogger,
+  ) {
     this.apiKey = this.configService.get<string>('GEMINI_API_KEY');
     this.isMockMode = !this.apiKey || this.apiKey.trim() === '';
 
@@ -35,12 +38,15 @@ export class AiService {
 
     if (!this.isMockMode && this.apiKey) {
       this.genai = new GoogleGenAI({ apiKey: this.apiKey });
-      this.logger.log(
-        `AI Service initialized with models: ${this.modelFast} (fast), ${this.modelSmart} (smart)`,
-      );
+      this.appLogger.business('AI Service initialized', {
+        modelFast: this.modelFast,
+        modelSmart: this.modelSmart,
+      });
     } else {
       this.genai = null;
-      this.logger.warn('AI Service running in MOCK MODE - no API key provided');
+      this.appLogger.infrastructure(
+        'AI Service running in MOCK MODE - no API key provided',
+      );
     }
   }
 
@@ -94,12 +100,16 @@ SADECE JSON döndür. Açıklama, markdown veya başka bir şey yazma.`;
 
       const text = response.text || '';
       if (!text.trim()) {
-        this.logger.warn('Gemini identifyProduct: Boş yanıt');
+        this.appLogger.infrastructure('Gemini API returned empty response', {
+          method: 'identifyProduct',
+          barcode,
+        });
         throw new HttpException('AI yanıtı boş döndü', HttpStatus.BAD_GATEWAY);
       }
-      this.logger.debug(
-        `Gemini identifyProduct response: ${text.substring(0, 200)}...`,
-      );
+      this.appLogger.infrastructure('Gemini API response received', {
+        method: 'identifyProduct',
+        responseLength: text.length,
+      });
 
       const result = this.parseJsonResponse<AIProductResult>(text);
       if (!result) {
@@ -107,7 +117,7 @@ SADECE JSON döndür. Açıklama, markdown veya başka bir şey yazma.`;
       }
       return result;
     } catch (error) {
-      return this.handleAiError(error, 'identifyProduct');
+      return this.handleAiError(error, 'identifyProduct', { barcode });
     }
   }
 
@@ -168,12 +178,17 @@ SADECE JSON döndür. Açıklama, markdown veya başka bir şey yazma.`;
 
       const text = response.text || '';
       if (!text.trim()) {
-        this.logger.warn('Gemini getProductContent: Boş yanıt');
+        this.appLogger.infrastructure('Gemini API returned empty response', {
+          method: 'getProductContent',
+          brand,
+          name,
+        });
         throw new HttpException('AI yanıtı boş döndü', HttpStatus.BAD_GATEWAY);
       }
-      this.logger.debug(
-        `Gemini getProductContent response: ${text.substring(0, 200)}...`,
-      );
+      this.appLogger.infrastructure('Gemini API response received', {
+        method: 'getProductContent',
+        responseLength: text.length,
+      });
 
       const parsed =
         this.parseJsonResponse<Omit<AIContentResult, 'model'>>(text);
@@ -185,7 +200,7 @@ SADECE JSON döndür. Açıklama, markdown veya başka bir şey yazma.`;
         model: this.modelFast,
       };
     } catch (error) {
-      return this.handleAiError(error, 'getProductContent');
+      return this.handleAiError(error, 'getProductContent', { brand, name });
     }
   }
 
@@ -248,12 +263,16 @@ SADECE JSON döndür. Açıklama, markdown veya başka bir şey yazma.`;
 
       const text = response.text || '';
       if (!text.trim()) {
-        this.logger.warn('Gemini analyzeContent: Boş yanıt');
+        this.appLogger.infrastructure('Gemini API returned empty response', {
+          method: 'analyzeContent',
+          name,
+        });
         throw new HttpException('AI yanıtı boş döndü', HttpStatus.BAD_GATEWAY);
       }
-      this.logger.debug(
-        `Gemini analyzeContent response: ${text.substring(0, 200)}...`,
-      );
+      this.appLogger.infrastructure('Gemini API response received', {
+        method: 'analyzeContent',
+        responseLength: text.length,
+      });
 
       const parsed =
         this.parseJsonResponse<Omit<AIAnalysisResult, 'model'>>(text);
@@ -265,7 +284,7 @@ SADECE JSON döndür. Açıklama, markdown veya başka bir şey yazma.`;
         model: this.modelSmart,
       };
     } catch (error) {
-      return this.handleAiError(error, 'analyzeContent');
+      return this.handleAiError(error, 'analyzeContent', { name });
     }
   }
 
@@ -285,16 +304,31 @@ SADECE JSON döndür. Açıklama, markdown veya başka bir şey yazma.`;
 
       return JSON.parse(cleaned) as T;
     } catch (error) {
-      this.logger.warn(`JSON parse error: ${(error as Error).message}`);
-      this.logger.debug(`Raw text: ${text}`);
+      this.appLogger.infrastructure('JSON parse error', {
+        error: (error as Error).message,
+        rawTextLength: text.length,
+      });
       return null;
     }
   }
 
   /** Hata handling - 429, genel hatalar vs */
-  private handleAiError(error: unknown, methodName: string): never {
+  private handleAiError(
+    error: unknown,
+    methodName: string,
+    context?: { barcode?: string; brand?: string | null; name?: string | null },
+  ): never {
     const errorMessage = (error as Error).message || 'Bilinmeyen AI hatası';
-    this.logger.error(`Gemini ${methodName} error: ${errorMessage}`);
+    this.appLogger.error(
+      `Gemini API failed: ${methodName}`,
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        method: methodName,
+        model:
+          methodName === 'analyzeContent' ? this.modelSmart : this.modelFast,
+        ...context,
+      },
+    );
 
     if (error instanceof HttpException) {
       throw error;
@@ -320,7 +354,7 @@ SADECE JSON döndür. Açıklama, markdown veya başka bir şey yazma.`;
   // ========== Mock Data (API key yokken) ==========
 
   private mockIdentifyProduct(barcode: string): AIProductResult {
-    this.logger.debug(`[MOCK] identifyProduct: ${barcode}`);
+    this.appLogger.infrastructure('MOCK: identifyProduct', { barcode });
 
     if (barcode.startsWith('869')) {
       return {
@@ -347,7 +381,7 @@ SADECE JSON döndür. Açıklama, markdown veya başka bir şey yazma.`;
     brand: string | null,
     name: string | null,
   ): AIContentResult {
-    this.logger.debug(`[MOCK] getProductContent: ${brand} - ${name}`);
+    this.appLogger.infrastructure('MOCK: getProductContent', { brand, name });
 
     return {
       ingredients:
@@ -370,7 +404,7 @@ SADECE JSON döndür. Açıklama, markdown veya başka bir şey yazma.`;
   }
 
   private mockAnalyzeContent(name: string | null): AIAnalysisResult {
-    this.logger.debug(`[MOCK] analyzeContent: ${name}`);
+    this.appLogger.infrastructure('MOCK: analyzeContent', { name });
 
     return {
       model: 'mock-gemini',

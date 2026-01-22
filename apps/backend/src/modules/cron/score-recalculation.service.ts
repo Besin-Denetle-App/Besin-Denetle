@@ -1,7 +1,8 @@
 import { VoteType } from '@besin-denetle/shared';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { DataSource, EntityManager } from 'typeorm';
+import { AppLogger } from '../../common';
 
 /**
  * Raw query sonuçundan etkilenen satır sayısı
@@ -24,9 +25,10 @@ interface RecalculationResult {
 /** Her gece 02:00'de tüm skorları yeniden hesaplar */
 @Injectable()
 export class ScoreRecalculationService {
-  private readonly logger = new Logger(ScoreRecalculationService.name);
-
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly appLogger: AppLogger,
+  ) {}
 
   @Cron('0 2 * * *', {
     // Her gece 02:00 (TR)
@@ -34,18 +36,26 @@ export class ScoreRecalculationService {
     timeZone: 'Europe/Istanbul',
   })
   async handleScoreRecalculation(): Promise<void> {
-    this.logger.log('🔄 Skor yeniden hesaplama başlatıldı...');
+    this.appLogger.business('Score recalculation cron started', {
+      job: 'score-recalculation',
+    });
 
     try {
       const result = await this.recalculateAllScores();
-      this.logger.log(
-        `✅ Skor yeniden hesaplama tamamlandı! ` +
-          `Product: ${result.products}, Content: ${result.contents}, Analysis: ${result.analyses} ` +
-          `(${result.duration}ms)`,
-      );
+      this.appLogger.business('Score recalculation completed', {
+        job: 'score-recalculation',
+        products: result.products,
+        contents: result.contents,
+        analyses: result.analyses,
+        duration: result.duration,
+      });
     } catch (error) {
-      this.logger.error('❌ Skor yeniden hesaplama hatası:', error);
-      throw error;
+      this.appLogger.error(
+        'Score recalculation failed',
+        error instanceof Error ? error : new Error(String(error)),
+        { job: 'score-recalculation' },
+      );
+      // Don't throw - cron should continue on next schedule
     }
   }
 
@@ -53,10 +63,15 @@ export class ScoreRecalculationService {
    * Manuel hesaplama triggeri
    */
   async triggerManualRecalculation(): Promise<RecalculationResult> {
-    this.logger.log('🔧 Manuel skor yeniden hesaplama başlatıldı...');
+    this.appLogger.business('Manual score recalculation triggered', {
+      job: 'manual-recalculation',
+    });
 
     const result = await this.recalculateAllScores();
-    this.logger.log(`✅ Manuel hesaplama tamamlandı (${result.duration}ms)`);
+    this.appLogger.business('Manual recalculation completed', {
+      job: 'manual-recalculation',
+      duration: result.duration,
+    });
 
     return result;
   }

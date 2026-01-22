@@ -4,9 +4,9 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
-  Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { AppLogger } from '../logger';
 
 /**
  * Global exception filter
@@ -14,7 +14,7 @@ import { Request, Response } from 'express';
  */
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
-  private readonly logger = new Logger(HttpExceptionFilter.name);
+  constructor(private readonly appLogger: AppLogger) {}
 
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
@@ -69,19 +69,45 @@ export class HttpExceptionFilter implements ExceptionFilter {
     };
 
     // Log stratejisi
-    const logContext = `${request.method} ${request.url}`;
 
     if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
-      // 5xx: Sunucu hataları - ERROR + stack
-      this.logger.error(
-        `[${status}] ${message} - ${logContext}`,
-        exception instanceof Error ? exception.stack : undefined,
+      // 5xx: Sunucu hataları - ERROR log
+      this.appLogger.error(
+        `[${status}] ${message}`,
+        exception instanceof Error ? exception : new Error(String(exception)),
+        {
+          path: request.url,
+          method: request.method,
+          statusCode: status,
+        },
       );
+    } else if (
+      status === HttpStatus.UNAUTHORIZED ||
+      status === HttpStatus.FORBIDDEN
+    ) {
+      // 401/403: Güvenlik - Security log
+      this.appLogger.security('Authentication/Authorization failure', {
+        path: request.url,
+        method: request.method,
+        statusCode: status,
+        message,
+      });
     } else if (status === HttpStatus.TOO_MANY_REQUESTS) {
-      // 429: Rate limit - WARN
-      this.logger.warn(`[${status}] ${message} - ${logContext}`);
+      // 429: Rate limit - Security log
+      this.appLogger.security('Rate limit triggered', {
+        path: request.url,
+        method: request.method,
+        statusCode: status,
+      });
+    } else if (status >= 400 && status < 500) {
+      // 4xx: Client hataları - analytics için minimal loglama
+      this.appLogger.http('Client error', {
+        path: request.url,
+        method: request.method,
+        statusCode: status,
+      });
     }
-    // 4xx: Normal akış, log yok
+    // Diğer 4xx: Normal akış
 
     response.status(status).json(errorResponse);
   }

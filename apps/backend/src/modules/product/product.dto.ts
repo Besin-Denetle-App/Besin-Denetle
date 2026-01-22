@@ -23,15 +23,15 @@ export class ScanRequestDto implements ScanRequest {
     description: 'Barkod numarası (EAN-8, EAN-13, UPC-A)',
     example: '8690000123456',
     minLength: 8,
-    maxLength: 13
+    maxLength: 13,
   })
   @IsString()
   @IsNotEmpty()
   @Length(8, 13, {
-    message: 'Barkod 8-13 karakter arasında olmalıdır'
+    message: 'Barkod 8-13 karakter arasında olmalıdır',
   })
   @Matches(/^[0-9]+$/, {
-    message: 'Barkod sadece rakamlardan oluşmalıdır'
+    message: 'Barkod sadece rakamlardan oluşmalıdır',
   })
   barcode: string;
 }

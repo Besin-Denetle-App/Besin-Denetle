@@ -20,8 +20,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { RateLimitHelper } from '../../common/rate-limit';
-import { assertHumanFood } from '../../common/utils/food-check.util';
+import { FoodCheckService, RateLimitHelper } from '../../common';
 
 import { AiService } from '../ai/ai.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -45,7 +44,8 @@ export class AnalysisController {
     private readonly voteService: VoteService,
     private readonly aiService: AiService,
     private readonly rateLimitHelper: RateLimitHelper,
-  ) { }
+    private readonly foodCheckService: FoodCheckService,
+  ) {}
 
   /**
    * POST /api/analysis/generate
@@ -64,9 +64,9 @@ export class AnalysisController {
       example: {
         statusCode: 400,
         message: 'Bu ürün yiyecek/içecek kategorisinde değil',
-        error: 'Bad Request'
-      }
-    }
+        error: 'Bad Request',
+      },
+    },
   })
   async generateAnalysis(
     @CurrentUser('id') userId: string,
@@ -80,7 +80,7 @@ export class AnalysisController {
     }
 
     // Non-food koruma: İçeriğin bağlı olduğu ürünün barkod tipini kontrol et
-    assertHumanFood(content.product?.barcode?.type, {
+    this.foodCheckService.assertHumanFood(content.product?.barcode?.type, {
       userId,
       action: 'GENERATE_ANALYSIS',
       resourceId: contentId,
@@ -145,9 +145,9 @@ export class AnalysisController {
       example: {
         statusCode: 400,
         message: 'Bu ürün yiyecek/içecek kategorisinde değil',
-        error: 'Bad Request'
-      }
-    }
+        error: 'Bad Request',
+      },
+    },
   })
   async rejectAnalysis(
     @CurrentUser('id') userId: string,
@@ -161,11 +161,14 @@ export class AnalysisController {
     }
 
     // Non-food koruma: Analizin bağlı olduğu içeriğin ürününün barkod tipini kontrol et
-    assertHumanFood(analysis.productContent?.product?.barcode?.type, {
-      userId,
-      action: 'REJECT_ANALYSIS',
-      resourceId: analysisId,
-    });
+    this.foodCheckService.assertHumanFood(
+      analysis.productContent?.product?.barcode?.type,
+      {
+        userId,
+        action: 'REJECT_ANALYSIS',
+        resourceId: analysisId,
+      },
+    );
 
     await this.rateLimitHelper.checkAnalysisReject(userId);
     await this.rateLimitHelper.incrementAnalysisRejectEndpoint(userId);

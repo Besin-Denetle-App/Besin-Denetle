@@ -20,8 +20,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { RateLimitHelper } from '../../common/rate-limit';
-import { assertHumanFood } from '../../common/utils/food-check.util';
+import { FoodCheckService, RateLimitHelper } from '../../common';
 
 import { AiService } from '../ai/ai.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -40,7 +39,8 @@ export class ContentController {
     private readonly voteService: VoteService,
     private readonly aiService: AiService,
     private readonly rateLimitHelper: RateLimitHelper,
-  ) { }
+    private readonly foodCheckService: FoodCheckService,
+  ) {}
 
   /**
    * POST /api/products/confirm
@@ -59,9 +59,9 @@ export class ContentController {
       example: {
         statusCode: 400,
         message: 'Bu ürün yiyecek/içecek kategorisinde değil',
-        error: 'Bad Request'
-      }
-    }
+        error: 'Bad Request',
+      },
+    },
   })
   async confirm(
     @CurrentUser('id') userId: string,
@@ -75,7 +75,7 @@ export class ContentController {
     }
 
     // Non-food koruma: Sadece yiyecek/içecek ürünler confirm edilebilir
-    assertHumanFood(product.barcode?.type, {
+    this.foodCheckService.assertHumanFood(product.barcode?.type, {
       userId,
       action: 'CONFIRM_PRODUCT',
       resourceId: productId,
@@ -147,9 +147,9 @@ export class ContentController {
       example: {
         statusCode: 400,
         message: 'Bu ürün yiyecek/içecek kategorisinde değil',
-        error: 'Bad Request'
-      }
-    }
+        error: 'Bad Request',
+      },
+    },
   })
   async rejectContent(
     @CurrentUser('id') userId: string,
@@ -163,7 +163,7 @@ export class ContentController {
     }
 
     // Non-food koruma: İçeriğin bağlı olduğu ürünün barkod tipini kontrol et
-    assertHumanFood(content.product?.barcode?.type, {
+    this.foodCheckService.assertHumanFood(content.product?.barcode?.type, {
       userId,
       action: 'REJECT_CONTENT',
       resourceId: contentId,
