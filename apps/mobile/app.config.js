@@ -7,9 +7,9 @@ require("dotenv").config();
 // │ Senaryo         │ Env Kaynağı     │ API Değişkenleri           │
 // ├─────────────────┼─────────────────┼────────────────────────────┤
 // │ expo start      │ .env dosyası    │ DEV_API_HOST:DEV_API_PORT  │
-// │ local preview   │ eas.json        │ API_HOST:API_PORT          │
+// │ local preview   │ eas.json        │ API_URL                    │
 // │ local prod      │ eas.json        │ API_URL                    │
-// │ cloud preview   │ eas.json        │ API_HOST:API_PORT          │
+// │ cloud preview   │ eas.json        │ API_URL                    │
 // │ cloud prod      │ EAS Secrets     │ API_URL                    │
 // └─────────────────┴─────────────────┴────────────────────────────┘
 //
@@ -36,9 +36,9 @@ const getApiConfig = () => {
     case "preview":
       // Preview
       return {
-        apiUrl: null,
-        apiHost: process.env.API_HOST || null,
-        apiPort: process.env.API_PORT || "50101",
+        apiUrl: process.env.API_URL || null,
+        apiHost: null,
+        apiPort: null,
       };
 
     case "development":
