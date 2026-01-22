@@ -5,11 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { WinstonModule } from 'nest-winston';
 
 import {
-  CoreServicesModule,
   HttpExceptionFilter,
   LastActiveInterceptor,
   LogContextInterceptor,
   LoggingInterceptor,
+  LoggingModule,
   RateLimitModule,
 } from './common';
 
@@ -84,7 +84,7 @@ import { VoteModule } from './modules/vote';
     AiModule,
     CronModule,
     RateLimitModule,
-    CoreServicesModule,
+    LoggingModule,
     // LastActiveInterceptor için User entity erişimi
     TypeOrmModule.forFeature([User]),
   ],
@@ -111,4 +111,4 @@ import { VoteModule } from './modules/vote';
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }
