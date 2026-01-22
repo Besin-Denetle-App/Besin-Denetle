@@ -221,4 +221,4 @@ docker compose exec redis redis-cli KEYS "rl:*" | xargs docker compose exec redi
 
 - [Backend README](../apps/backend/README.md) - API endpoint'leri ve kurulum
 - [Docker Development Rehberi](./docker-development.md) - Local development
-- [Server Ubuntu Deployment](./server-ubuntu-deployment.md) - Production deployment
+- [Server Deployment](./server-deployment.md) - Production deployment

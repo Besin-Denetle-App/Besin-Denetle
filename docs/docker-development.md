@@ -8,7 +8,7 @@ Bu rehber, Besin-Denetle projesini **local development** ortamında Docker ile n
 
 **Mimari:** Sadece PostgreSQL Docker container'da çalışır. Backend ise doğrudan `pnpm start` ile çalıştırılır.
 
-> **Production deployment için:** [Server Ubuntu Deployment Rehberi](./server-ubuntu-deployment.md)
+> **Production deployment için:** [Server Deployment Rehberi](./server-deployment.md)
 
 ---
 
@@ -133,6 +133,7 @@ pnpm build:shared
 
 ## 🔗 İlgili Dökümanlar
 
-- [Server Ubuntu Deployment Rehberi](./server-ubuntu-deployment.md) - Production: PM2, SSL, yedekleme
-- [Local Build - EAS (Linux/WSL2)](./local-build-linux-eas.md)
+- [Server Deployment Rehberi](./server-deployment.md) - Production Setup
+- [Operasyon Rehberi](./server-operations-guide.md) - Bakım ve Güncelleme
+- [Local Build - EAS (Linux/WSL2)](./mobile-local-build-linux-eas.md)
 - [Backend README](../apps/backend/README.md)

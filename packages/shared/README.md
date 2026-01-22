@@ -1,8 +1,9 @@
 # @besin-denetle/shared
 
-![Version](https://img.shields.io/badge/version-0.7.0-blue.svg)
+![Node](https://img.shields.io/badge/Node-v20+-brightgreen.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178c6.svg)
 ![Type](https://img.shields.io/badge/Type-Library-blueviolet.svg)
+![Validation](https://img.shields.io/badge/Validation-DTOs-brightgreen)
 
 **Besin Denetle Shared Paketi**, Backend ve Mobil uygulama arasında ortak kullanılan kodları barındıran kritik bir modüldür. "Tek Kaynak, Çok Kullanım" (Single Source of Truth) prensibine dayanır.
 

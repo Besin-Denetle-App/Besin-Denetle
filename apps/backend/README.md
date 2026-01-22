@@ -1,9 +1,38 @@
 # Besin Denetle - Backend API
 
-![Version](https://img.shields.io/badge/version-0.16.4-blue.svg)
-![NestJS](https://img.shields.io/badge/NestJS-v11-e0234e.svg)
+![Node](https://img.shields.io/badge/Node-v20+-brightgreen.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178c6.svg)
+![NestJS](https://img.shields.io/badge/NestJS-v11-e0234e.svg)
+![ORM](https://img.shields.io/badge/ORM-TypeORM-orange)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-336791.svg)
+![Redis](https://img.shields.io/badge/Redis-Rate_Limiting-dc382d)
+![Docker](https://img.shields.io/badge/Docker-Enabled-2496ed)
+![AI](https://img.shields.io/badge/AI-Google_Gemini-8E75B2)
+
+## 🗄️ Veritabanı Yönetimi (Migrations)
+
+Bu proje TypeORM migration sistemini kullanır.
+
+- **Development:** Kod değişiklikleri otomatik yansır (`synchronize: true`).
+- **Production:** Değişiklikler migration dosyalarıyla uygulanır.
+
+### Migration Komutları
+
+```bash
+# Yeni migration oluştur (Sadece Development)
+pnpm db:generate
+
+# Veritabanına uygula (Tabloları oluşturur/günceller)
+pnpm db:migrate
+
+# Son işlemi geri al (Undo)
+pnpm db:revert
+
+# Durum kontrolü
+pnpm db:show
+```
+
+Detaylı bilgi için: [TypeORM Migration Rehberi](../../docs/typeorm-migration-guide.md)
 
 **Besin Denetle Backend**, projenin beynidir. Ürün verilerini yönetir, veritabanı işlemlerini gerçekleştirir ve Google Gemini AI servisi ile iletişim kurarak olmayan ürünleri analiz eder.
 
@@ -72,84 +101,17 @@ Google Gemini API (Search Grounding özellikli) kullanılarak 3 aşamalı bir an
 
 ## ⚙️ Kurulum ve Yapılandırma
 
-Backend'i çalıştırmak için root dizinde `.env` dosyası oluşturmanız **zorunludur**.
+Bu proje bir Monorepo'nun parçasıdır. Kurulum ve geliştirme ortamını hazırlamak için lütfen ana dokümantasyonu takip edin:
 
-### 1. Ortam Değişkenleri (.env)
-
-Proje root dizininde `.env` dosyasını oluşturun:
-
-```env
-# --- SUNUCU AYARLARI ---
-PORT=50101
-NODE_ENV=development
-
-# --- VERİTABANI ---
-# Docker Compose varsayılan ayarlarıdır
-DB_HOST=localhost
-DB_PORT=50103
-DB_USER=myuser
-DB_PASSWORD=mypassword
-DB_NAME=besindenetle
-
-# --- GÜVENLİK ---
-# JWT token üretimi için güçlü bir şifre belirleyin
-JWT_SECRET=super-gizli-anahtar-buraya
-
-# --- GOOGLE OAUTH ---
-# Google Cloud Console'dan alınır
-GOOGLE_WEB_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-
-# --- GOOGLE AI ---
-# Boş bırakılırsa Mock Servis çalışır
-GEMINI_API_KEY=google-ai-studio-key-buraya
-
-# --- TEST MODU ---
-# true yapılırsa OAuth doğrulaması atlanır (sadece geliştirme için)
-MOCK_AUTH=false
-```
-
-### 2. Veritabanını Başlatma
-
-Ana dizindeki Docker Compose dosyasını kullanın:
-
-```bash
-docker compose up -d
-```
-
-### 3. Uygulamayı Başlatma
-
-```bash
-# Geliştirme modu (Hot reload aktif)
-pnpm start:dev
-```
+👉 **[Ana Dokümantasyon (Hızlı Başlangıç)](../../README.md#hızlı-başlangıç)**
 
 ---
 
 ## 🚀 Canlı Ortam (Production) Deployment
 
-Production deployment için PM2 kullanılması önerilir.
+Production ortamında kurulum, güncelleme ve bakım için detaylı rehberimizi inceleyin:
 
-👉 **[Server Ubuntu Deployment Rehberi](../../docs/server-ubuntu-deployment.md)**
-
-### Alternatif: PM2 ile Çalıştırma
-
-Docker kullanmadan doğrudan çalıştırmak için:
-
-```bash
-# Root dizinde:
-cd /opt/besin-denetle
-
-# 1. Bağımlılıkları yükleyin
-pnpm install
-
-# 2. Shared + Backend'i derleyin
-# (pnpm build:shared && pnpm build:backend)
-pnpm build:all
-
-# 3. PM2 ile servisi başlatın
-# (pm2 start apps/backend/dist/main.js --name besin-backend)
-pnpm start:prod
-```
+👉 **[Server Deployment Rehberi](../../docs/server-deployment.md)**
 
 ---
 
@@ -259,5 +221,5 @@ pnpm test:cov
 ## 🔗 İlgili Dökümanlar
 
 - 🐳 [Docker Development Rehberi](../../docs/docker-development.md)
-- 🖥️ [Server Deployment Rehberi](../../docs/server-ubuntu-deployment.md)
+- 🖥️ [Server Deployment Rehberi](../../docs/server-deployment.md)
 - 📦 [Shared Paket](../../packages/shared/README.md)

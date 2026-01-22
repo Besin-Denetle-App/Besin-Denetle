@@ -130,6 +130,7 @@ module.exports = {
     // Plugins
     plugins: [
       "expo-router",
+      "expo-font",
       [
         "expo-splash-screen",
         {

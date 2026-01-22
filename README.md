@@ -1,12 +1,14 @@
-# Besin Denetle Mobil App
+# Besin Denetle | Mobil App
 
-![Version](https://img.shields.io/badge/version-0.16.0-blue.svg)
-![Node](https://img.shields.io/badge/Node-v20+-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-GPL--3.0-green.svg)
+![Version](https://img.shields.io/badge/version-0.17.0-blue.svg)
 ![Status](https://img.shields.io/badge/status-Active_Development-orange.svg)
+![Monorepo](https://img.shields.io/badge/Monorepo-PNPM-orange)
+![Node](https://img.shields.io/badge/Node-v20+-brightgreen.svg)
 ![Tech](https://img.shields.io/badge/React_Native-Expo_54-blueviolet.svg)
 ![Tech](https://img.shields.io/badge/NestJS-v11-e0234e.svg)
-![Tech](https://img.shields.io/badge/PostgreSQL-18-336791.svg)
+![Docker](https://img.shields.io/badge/Docker-Enabled-2496ed)
+
 
 **Besin Denetle**, tüketicilerin market alışverişlerinde ürünlerin içeriklerini, besin değerlerini ve sağlık üzerindeki etkilerini şeffaf bir şekilde görmelerini sağlayan, Yapay Zeka (AI) destekli modern bir mobil platformdur.
 
@@ -69,7 +71,7 @@ Projeyi yerel ortamınızda (Localhost) çalıştırmak için aşağıdaki adım
 
 1.  **Projeyi Klonlayın:**
     ```bash
-    git clone https://github.com/Furkan-Pasa/Besin-Denetle.git
+    git clone https://github.com/Besin-Denetle-App/Besin-Denetle.git
     cd Besin-Denetle
     ```
 
@@ -110,7 +112,7 @@ Projeyi yerel ortamınızda (Localhost) çalıştırmak için aşağıdaki adım
 
 Bu projeyi Ubuntu sunucuda yayına almak için hazır bir rehber bulunmaktadır:
 
-👉 **[Server Ubuntu Deployment Rehberi](./docs/server-ubuntu-deployment.md)**
+👉 **[Server Deployment Rehberi](./docs/server-deployment.md)**
 
 İçerik:
 *   PostgreSQL Docker container'da çalışır
@@ -119,19 +121,31 @@ Bu projeyi Ubuntu sunucuda yayına almak için hazır bir rehber bulunmaktadır:
 *   Güvenlik ayarları (Firewall, SSL)
 *   Yedekleme stratejileri
 
+## 🗄️ Veritabanı İşlemleri (Root Kısayollar)
+
+Projeyi geliştirirken veya sunucuda yönetirken aşağıdaki kısayolları kullanabilirsiniz:
+
+| Komut | Açıklama |
+|-------|----------|
+| `pnpm db:migrate` | **Uygula:** Migrationları veritabanına işler (Tablo oluşturur/günceller). |
+| `pnpm db:revert` | **Geri Al:** Son işlemi geri alır (Undo). |
+| `pnpm db:show` | **Durum:** Hangi migrationların çalıştığını gösterir. |
+
+---
+
 ## 📚 Dokümantasyon
 
 ### Geliştirme Rehberleri
-*   📱 **Mobil Uygulama:** Ekranlar, Navigasyon ve Build işlemleri → [Mobile README](./apps/mobile/README.md)
 *   ⚙️ **Backend API:** Veritabanı Şeması, AI ve API Endpoint'leri → [Backend README](./apps/backend/README.md)
+*   📱 **Mobil Uygulama:** Ekranlar, Navigasyon ve Build işlemleri → [Mobile README](./apps/mobile/README.md)
 *   📦 **Shared Kütüphane:** Ortak veri tipleri ve kullanım rehberi → [Shared README](./packages/shared/README.md)
 
 ### Deployment Rehberleri
 *   🐳 **Docker Development:** Komutlar ve troubleshooting → [Docker Development Rehberi](./docs/docker-development.md)
-*   🖥️ **Server Deployment:** Ubuntu'da production kurulumu → [Server Deployment](./docs/server-ubuntu-deployment.md)
-*   📱 **WSL2 Mobile Build:** EAS Local Build (Linux) → [Local Build - EAS (Linux/WSL2)](./docs/local-build-linux-eas.md)
-*   🪟 **Windows Native Build:** Expo Prebuild (Windows) → [Local Build - Expo Prebuild (Windows)](./docs/local-build-windows-native.md)
+*   🖥️ **Server Deployment:** Ubuntu'da sıfırdan kurulum → [Server Deployment Rehberi](./docs/server-deployment.md)
+*   🔧 **Operasyon & Bakım:** Güncelleme, yedekleme ve bakım → [Operasyon Rehberi](./docs/server-operations-guide.md)
+*   📱 **WSL2 Mobile Build:** EAS Local Build (Linux) → [Local Build - EAS (Linux/WSL2)](./docs/mobile-local-build-linux-eas.md)
+*   🪟 **Windows Native Build:** Expo Prebuild (Windows) → [Local Build - Expo Prebuild (Windows)](./docs/mobile-local-build-windows-native.md)
 
 ## 📄 Lisans
-
-GPL-3.0
+![License](https://img.shields.io/badge/license-GPL--3.0-green.svg)

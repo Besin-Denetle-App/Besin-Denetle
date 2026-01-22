@@ -21,8 +21,8 @@ Bu rehber, **Windows** üzerinde **doğrudan native Android build** almak için 
 | **Credentials Kontrolü** | ☁️ Cloud         | 🔑 Lokal        | 🔑 Lokal            |
 
 **Alternatif Rehberler:**
-- 📦 [EAS Cloud Build](../apps/mobile/README.md) - En kolay yöntem
-- 🐧 [WSL2 ile EAS Local Build](./wsl2-mobile-build-guide.md) - Linux environment
+- 📦 [Mobile Ana Dokümantasyon / Cloud Build](../apps/mobile/README.md) - En kolay yöntem
+- 🐧 [WSL2 ile EAS Local Build](./mobile-local-build-linux-eas.md) - Linux environment
 
 ---
 
@@ -365,7 +365,7 @@ npx expo run:android --variant debug --no-install
 > **Cihaz Bağlamadan APK Almak İstiyorsanız:**
 > 
 > `eas build --local` komutu **Windows'ta desteklenmez** (macOS/Linux gerektirir).
-> Linux/WSL ortamında EAS Local Build kullanmak için: [WSL2 ile EAS Local Build](./local-build-linux-eas.md) 
+> Linux/WSL ortamında EAS Local Build kullanmak için: [WSL2 ile EAS Local Build](./mobile-local-build-linux-eas.md) 
 > Windows'ta cihaz bağlamadan APK almak için **Gradle** kullanın:
 
 #### Yöntem 2: Gradle (Direkt)
@@ -1125,9 +1125,9 @@ rm -r $env:USERPROFILE\.gradle\caches
 
 ### Proje Dökümanları
 - 📦 [EAS Cloud Build Rehberi](../apps/mobile/README.md)
-- 🐧 [WSL2 Mobile Build Rehberi](./wsl2-mobile-build-guide.md)
+- 🐧 [WSL2 Mobile Build Rehberi](./mobile-local-build-linux-eas.md)
 - 🐳 [Docker Development Rehberi](./docker-development.md)
-- 🚀 [Server Ubuntu Deployment](./server-ubuntu-deployment.md)
+- 🚀 [Server Ubuntu Deployment](./server-deployment.md)
 
 ### Package Bilgileri
 - **Expo SDK:** 54.0.x

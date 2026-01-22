@@ -1,8 +1,9 @@
 # Besin Denetle - Mobil Uygulama
 
-![Version](https://img.shields.io/badge/version-0.16.0-blue.svg)
 ![Expo](https://img.shields.io/badge/Expo-SDK_54-000020.svg)
+![Router](https://img.shields.io/badge/Router-Expo_Router-black)
 ![React Native](https://img.shields.io/badge/React_Native-0.81-61dafb.svg)
+![Style](https://img.shields.io/badge/Style-NativeWind-38bdf8)
 ![Platform](https://img.shields.io/badge/Platform-Android-6f42c1.svg)
 ![Platform](https://img.shields.io/badge/Platform-iOS-202020.svg)
 
@@ -16,8 +17,11 @@
   - [📑 İçindekiler](#-i̇çindekiler)
   - [📸 Ekran Görüntüleri](#-ekran-görüntüleri)
   - [📱 Uygulama Akışı (Kullanıcı Deneyimi)](#-uygulama-akışı-kullanıcı-deneyimi)
-  - [🛠️ Kurulum ve Geliştirme](#️-kurulum-ve-geliştirme)
-  - [📦 Build ve Yayınlama (EAS Build)](#-build-ve-yayınlama-eas-build)
+  - [🛠️ Hızlı Başlangıç (Geliştirme)](#️-hızlı-başlangıç-geliştirme)
+  - [📦 Build Seçenekleri](#-build-seçenekleri)
+    - [1. EAS Cloud Build (Önerilen)](#1-eas-cloud-build-önerilen)
+    - [2. Local Build](#2-local-build)
+  - [🔑 İmzalama ve Credentials](#-i̇mzalama-ve-credentials)
   - [🏗️ Proje Yapısı](#️-proje-yapısı)
   - [⚠️ Karşılaşılabilecek Sorunlar](#️-karşılaşılabilecek-sorunlar)
   - [🔗 İlgili Dökümanlar](#-i̇lgili-dökümanlar)
@@ -56,35 +60,14 @@ Kullanıcı ürünü doğruladığında ("Evet, bu ürün" dediğinde) detay say
 
 ---
 
-## 🛠️ Kurulum ve Geliştirme
+## 🛠️ Hızlı Başlangıç (Geliştirme)
+
+Projeyi yerel ortamınızda geliştirme modunda çalıştırmak için:
 
 ### Gereksinimler
 
 - Telefonunuzda **Expo Go** uygulaması (App Store / Play Store'dan indirin).
 - Bilgisayarınızda Node.js ve PNPM kurulu olmalı.
-
-## 🔑 Local Build Credentials (Android)
-
-Local build (Android) alırken Google Login gibi özelliklerin çalışması için **Production Keystore**'u kullanmanız gerekir.
-
-1.  Expo'dan keystore'u indirin: `eas credentials`
-2.  `.jks` dosyasını `apps/mobile/.credentials/` klasörüne taşıyın.
-3.  `apps/mobile/credentials.json` dosyasını oluşturun/düzenleyin:
-
-```json
-{
-  "android": {
-    "keystore": {
-      "keystorePath": "./.credentials/YOUR_FILENAME.jks",
-      "keystorePassword": "...",
-      "keyAlias": "...",
-      "keyPassword": "..."
-    }
-  }
-}
-```
-
-> **Not:** `.credentials` klasörü ve `credentials.json` git'e yüklemediğinizden emin olun.
 
 ### 1. Bağımlılıkları Yükleyin
 
@@ -109,59 +92,76 @@ Terminalde çıkan **QR Kodunu** Expo Go uygulaması ile taratın.
 
 ---
 
-## 📦 Build ve Yayınlama (EAS Build)
+## 📦 Build Seçenekleri
 
-Expo Application Services (EAS) kullanarak bulutta build alınır.
+Uygulamayı mağazalara göndermek veya APK/AAB dosyası oluşturmak için iki ana yöntem vardır:
 
-### 1. Kurulum
+### 1. EAS Cloud Build (Önerilen)
 
+Expo sunucularını kullanarak bulutta build alır. Bilgisayarınızın gücünden bağımsızdır ve en kolay yöntemdir.
+
+**Kurulum:**
 ```bash
 npm install -g eas-cli
 eas login
 ```
 
-### 2. EAS Secrets Ayarlama
-
-Build sırasında kullanılacak environment değişkenleri EAS Secrets'ta tutulur.
-
-> **Not:** Local build için preview değişkenleri `eas.json` dosyasında tanımlı. Aşağıdaki komutlar cloud build için geçerlidir.
-
-**Production Build için:**
-
+**Environment Variables (EAS Secrets):**
 ```bash
+# Production için
 eas env:create --name API_URL --value "https://besindenetle.furkanpasa.com/api" --type string --visibility secret --environment production
-eas env:create --name GOOGLE_WEB_CLIENT_ID --value "XXX" --type string --visibility secret --environment production
-eas env:create --name GOOGLE_ANDROID_CLIENT_ID --value "XXX" --type string --visibility secret --environment production
-eas env:create --name GOOGLE_IOS_CLIENT_ID --value "XXX" --type string --visibility secret --environment production
 ```
 
-**Secrets'ları listele:**
-
+**Build Alma:**
 ```bash
-eas env:list
-```
-
-### 3. Build Alma
-
-```bash
-# Preview APK (test için)
+# Preview APK (Test)
 eas build -p android --profile preview
 
-# Production AAB (Play Store için)
+# Production AAB (Play Store)
 eas build -p android --profile production
 ```
 
-### 4. Local Build (WSL2)
+### 2. Local Build
 
-Bulut yerine kendi bilgisayarınızda build almak için:
+Kendi bilgisayarınızda build almak için işletim sisteminize uygun rehberi takip edin:
 
-👉 **[WSL2 Mobile Build Rehberi](../../docs/local-build-linux-eas.md)**
+*   🐧 **Linux / WSL2 (EAS Local):**
+    👉 **[WSL2 Mobile Build Rehberi](../../docs/mobile-local-build-linux-eas.md)**
+    *(Önerilen Local Yöntem)*
 
-```bash
-# WSL2 Ubuntu'da
-pnpm build:android-local
-# (eas build --local --platform android)
+*   🪟 **Windows Native (Gradle):**
+    👉 **[Windows Native Build Rehberi](../../docs/mobile-local-build-windows-native.md)**
+    *(Expo Prebuild ve Gradle kullanarak)*
+
+---
+
+## 🔑 İmzalama ve Credentials
+
+Production build alırken Google Login gibi servislerin çalışması için uygulamanın doğru keystore ile imzalanması gerekir.
+
+### Credentials.json Nedir?
+Local build (özellikle Linux/WSL) alırken EAS CLI'nin keystore'a erişmesi için gereken dosyadır.
+
+**Nasıl Ayarlanır (Sadece Local Build İçin):**
+
+1.  Expo'dan keystore'u indirin: `eas credentials`
+2.  `.jks` dosyasını `apps/mobile/.credentials/` klasörüne taşıyın.
+3.  `apps/mobile/credentials.json` dosyasını oluşturun:
+
+```json
+{
+  "android": {
+    "keystore": {
+      "keystorePath": "./.credentials/YOUR_FILENAME.jks",
+      "keystorePassword": "...",
+      "keyAlias": "...",
+      "keyPassword": "..."
+    }
+  }
+}
 ```
+
+> ⚠️ **Güvenlik Uyarısı:** `.credentials` klasörü ve `credentials.json` dosyası `.gitignore` ile gizlenmiştir. **Asla repoya yüklemeyin!**
 
 ---
 
@@ -185,18 +185,16 @@ apps/mobile/
 ## ⚠️ Karşılaşılabilecek Sorunlar
 
 **Soru: Kamera açılmıyor.**
-
 - Cevap: Telefon ayarlarından Expo Go'ya kamera izni verin.
 
 **Soru: "Network Request Failed" hatası.**
-
 - Cevap: Telefon ve bilgisayarın aynı Wi-Fi'da olduğundan emin olun. `.env`'de doğru IP adresini yazdığınızı kontrol edin.
 
 ---
 
 ## 🔗 İlgili Dökümanlar
 
-- 📱 [Local Build - EAS (Linux/WSL2)](../../docs/local-build-linux-eas.md) - EAS Local Build
-- 🪟 [Local Build - Expo Prebuild (Windows)](../../docs/local-build-windows-native.md) - Expo Prebuild
+- 📱 [EAS Local Build (Linux/WSL2)](../../docs/mobile-local-build-linux-eas.md)
+- 🪟 [Windows Native Build](../../docs/mobile-local-build-windows-native.md)
 - 🐳 [Docker Development Rehberi](../../docs/docker-development.md)
 - 📦 [Shared Paket](../../packages/shared/README.md)

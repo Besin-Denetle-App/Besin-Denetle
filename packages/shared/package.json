@@ -1,6 +1,6 @@
 {
   "name": "@besin-denetle/shared",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "description": "Shared types, DTOs and utilities for Besin Denetle",
   "author": "Furkan Çelik <iletisim.furkancelik@gmail.com> (https://furkanpasa.com)",
   "license": "GPL-3.0",
