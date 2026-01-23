@@ -2,7 +2,7 @@ import { ICreateProduct, MAX_VARIANTS } from '@besin-denetle/shared';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
-import { Product } from '../../entities';
+import { Product } from '../../../entities';
 
 /**
  * Ürün varyant servisi

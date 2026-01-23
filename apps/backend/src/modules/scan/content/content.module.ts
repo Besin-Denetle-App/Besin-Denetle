@@ -1,9 +1,9 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ProductContent } from '../../entities';
-import { AiModule } from '../ai/ai.module';
+import { ProductContent } from '../../../entities';
+import { AiModule } from '../../ai/ai.module';
+import { VoteModule } from '../../vote/vote.module';
 import { ProductModule } from '../product/product.module';
-import { VoteModule } from '../vote/vote.module';
 import { ContentController } from './content.controller';
 import { ContentService } from './content.service';
 

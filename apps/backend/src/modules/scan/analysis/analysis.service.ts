@@ -2,7 +2,7 @@ import { ICreateContentAnalysis, MAX_VARIANTS } from '@besin-denetle/shared';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
-import { ContentAnalysis } from '../../entities';
+import { ContentAnalysis } from '../../../entities';
 
 @Injectable()
 export class AnalysisService {

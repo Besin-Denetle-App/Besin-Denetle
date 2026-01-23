@@ -34,13 +34,10 @@ import {
 
 // Modüller
 import { AiModule } from './modules/ai';
-import { AnalysisModule } from './modules/analysis';
 import { AuthModule } from './modules/auth';
-import { BarcodeModule } from './modules/barcode';
-import { ContentModule } from './modules/content';
 import { CronModule } from './modules/cron';
 import { HealthcheckModule } from './modules/healthcheck';
-import { ProductModule } from './modules/product';
+import { CatalogModule } from './modules/scan';
 import { VoteModule } from './modules/vote';
 
 @Module({
@@ -76,10 +73,7 @@ import { VoteModule } from './modules/vote';
     // Modüller
     HealthcheckModule,
     AuthModule,
-    BarcodeModule,
-    ProductModule,
-    ContentModule,
-    AnalysisModule,
+    CatalogModule,
     VoteModule,
     AiModule,
     CronModule,

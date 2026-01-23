@@ -21,13 +21,13 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { FoodCheckService, RateLimitHelper } from '../../common';
+import { FoodCheckService, RateLimitHelper } from '../../../common';
 
-import { AiService } from '../ai/ai.service';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { JwtAuthGuard } from '../auth/tokens/jwt-auth.guard';
+import { AiService } from '../../ai/ai.service';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../../auth/tokens/jwt-auth.guard';
+import { VoteService } from '../../vote/vote.service';
 import { BarcodeService } from '../barcode/barcode.service';
-import { VoteService } from '../vote/vote.service';
 import {
   FlagBarcodeRequestDto,
   RejectProductRequestDto,

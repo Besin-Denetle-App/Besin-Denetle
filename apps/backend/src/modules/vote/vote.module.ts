@@ -1,9 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Vote } from '../../entities';
-import { AnalysisModule } from '../analysis/analysis.module';
-import { ContentModule } from '../content/content.module';
-import { ProductModule } from '../product/product.module';
+import { AnalysisModule, ContentModule, ProductModule } from '../scan';
 import { VoteService } from './vote.service';
 
 /**

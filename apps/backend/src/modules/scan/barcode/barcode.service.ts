@@ -2,7 +2,7 @@ import { ProductType } from '@besin-denetle/shared';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Barcode } from '../../entities';
+import { Barcode } from '../../../entities';
 
 @Injectable()
 export class BarcodeService {

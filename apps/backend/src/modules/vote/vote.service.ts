@@ -3,9 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Vote } from '../../entities';
-import { AnalysisService } from '../analysis/analysis.service';
-import { ContentService } from '../content/content.service';
-import { ProductService } from '../product/product.service';
+import { AnalysisService, ContentService, ProductService } from '../scan';
 
 /**
  * Vote servisi

@@ -2,7 +2,7 @@ import { ICreateProductContent, MAX_VARIANTS } from '@besin-denetle/shared';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
-import { ProductContent } from '../../entities';
+import { ProductContent } from '../../../entities';
 
 @Injectable()
 export class ContentService {
