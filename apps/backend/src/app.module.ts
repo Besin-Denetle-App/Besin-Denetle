@@ -37,7 +37,7 @@ import { AiModule } from './modules/ai';
 import { AuthModule } from './modules/auth';
 import { CronModule } from './modules/cron';
 import { HealthcheckModule } from './modules/healthcheck';
-import { CatalogModule } from './modules/scan';
+import { ScanModule } from './modules/scan';
 import { VoteModule } from './modules/vote';
 
 @Module({
@@ -73,7 +73,7 @@ import { VoteModule } from './modules/vote';
     // Modüller
     HealthcheckModule,
     AuthModule,
-    CatalogModule,
+    ScanModule,
     VoteModule,
     AiModule,
     CronModule,

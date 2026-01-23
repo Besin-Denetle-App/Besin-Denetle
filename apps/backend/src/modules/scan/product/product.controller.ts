@@ -1,24 +1,24 @@
 import {
-  RejectProductResponse,
-  ScanResponse,
-  VoteTarget,
-  VoteType,
+    RejectProductResponse,
+    ScanResponse,
+    VoteTarget,
+    VoteType,
 } from '@besin-denetle/shared';
 import {
-  BadRequestException,
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  NotFoundException,
-  Post,
-  UseGuards,
+    BadRequestException,
+    Body,
+    Controller,
+    HttpCode,
+    HttpStatus,
+    NotFoundException,
+    Post,
+    UseGuards,
 } from '@nestjs/common';
 import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
+    ApiBearerAuth,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
 } from '@nestjs/swagger';
 
 import { FoodCheckService, RateLimitHelper } from '../../../common';
@@ -29,9 +29,9 @@ import { JwtAuthGuard } from '../../auth/tokens/jwt-auth.guard';
 import { VoteService } from '../../vote/vote.service';
 import { BarcodeService } from '../barcode/barcode.service';
 import {
-  FlagBarcodeRequestDto,
-  RejectProductRequestDto,
-  ScanRequestDto,
+    FlagBarcodeRequestDto,
+    RejectProductRequestDto,
+    ScanRequestDto,
 } from './product.dto';
 import { ProductService } from './product.service';
 

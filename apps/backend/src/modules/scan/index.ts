@@ -1,14 +1,14 @@
 /**
- * Catalog Domain - Ürün katalog modülleri
+ * Scan Domain - Tarama akışı modülleri
  *
  * Matruşka yapısı: Barcode → Product → Content → Analysis
  *
  * Dışarıdan tek import noktası:
- * import { CatalogModule, BarcodeService, ProductService, ... } from './modules/catalog';
+ * import { ScanModule, BarcodeService, ProductService, ... } from './modules/scan';
  */
 
 // Ana modül
-export { CatalogModule } from './catalog.module';
+export { ScanModule } from './scan.module';
 
 // Alt modüller
 export { AnalysisModule } from './analysis/analysis.module';
@@ -21,3 +21,4 @@ export { AnalysisService } from './analysis/analysis.service';
 export { BarcodeService } from './barcode/barcode.service';
 export { ContentService } from './content/content.service';
 export { ProductService } from './product/product.service';
+

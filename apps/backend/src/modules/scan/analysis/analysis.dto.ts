@@ -1,6 +1,6 @@
 import {
-  GenerateAnalysisRequest,
-  RejectAnalysisRequest,
+    GenerateAnalysisRequest,
+    RejectAnalysisRequest,
 } from '@besin-denetle/shared';
 import { ApiProperty } from '@nestjs/swagger';
 import { ArrayMaxSize, IsArray, IsOptional, IsUUID } from 'class-validator';
