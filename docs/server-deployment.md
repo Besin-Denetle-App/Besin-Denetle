@@ -117,7 +117,33 @@ docker compose up -d
 docker compose ps
 ```
 
-### 7. Bağımlılıkları Yükle ve Build Et
+### 7. Redis İçin Sistem Ayarları
+
+> [!IMPORTANT]
+> Redis'in production'da stabil çalışması için Linux kernel ayarı gereklidir.
+> Bu ayar yapılmazsa Redis uyarı verir ve veri kaybı riski oluşabilir.
+
+```bash
+# Memory overcommit'i aktifleştir (kalıcı)
+echo "vm.overcommit_memory = 1" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+```
+
+**Ne yapar?**
+
+- Redis'in arka planda veri kaydetme (AOF/RDB) işlemlerinde bellek yetersizliği sorununu önler
+- Milyonlarca production sunucuda standart ayardır
+- Redis dokümantasyonu tarafından **zorunlu** kabul edilir
+
+**Doğrulama:**
+
+```bash
+# Ayarın aktif olduğunu kontrol et
+sysctl vm.overcommit_memory
+# Çıktı: vm.overcommit_memory = 1 olmalı
+```
+
+### 9. Bağımlılıkları Yükle ve Build Et
 
 ```bash
 # Tüm bağımlılıkları yükle
@@ -128,7 +154,7 @@ pnpm install
 pnpm build:all
 ```
 
-### 8. Database Migration'larını Çalıştır
+### 10. Database Migration'larını Çalıştır
 
 > [!IMPORTANT]
 > İlk kurulumda veya database güncellemeleri için migration'ları çalıştırmalısınız.
@@ -145,6 +171,7 @@ pnpm db:migrate
 ```
 
 **Beklenen Çıktı:**
+
 ```
 query: SELECT * FROM "migrations" "migrations"
 query: CREATE TABLE "user" ...
@@ -155,26 +182,17 @@ Migration InitialSchema1737509400000 has been executed successfully.
 > [!NOTE]
 > Migration'lar sadece bir kez çalışır. Eğer zaten çalıştırılmışlarsa, tekrar çalıştırılmazlar.
 
-
-### 9. Backend'i PM2 ile Başlat
+### 11. Backend'i PM2 ile Başlat
 
 ```bash
 cd /opt/besin-denetle
 
 # PM2 ile başlat
-# (pm2 start apps/backend/dist/main.js --name besin-backend)
 pnpm start:prod
 ```
 
-### 10. PM2 Otomatik Başlatma
-
-```bash
-# Startup script oluştur
-sudo pm2 startup
-
-# Mevcut process listesini kaydet
-pm2 save
-```
+> [!TIP]
+> Logları izlemek, yeniden başlatmak veya sunucu başlangıcında otomatik çalışmasını sağlamak için detaylı komutları **[Operasyon Rehberi - PM2 Referansı](./server-operations-guide.md#pm2-komut-referansı-pm2-command-reference)** bölümünde bulabilirsiniz.
 
 ---
 
@@ -191,7 +209,7 @@ pm2 save
 - [ ] **Firewall:** Sadece 80/443 portları açık, 50103 kapalı (Opsiyonel)
 - [ ] **SSL:** Caddy veya Nginx ile HTTPS aktif
 
-*(Firewall ve Caddy kurulum detayları için [Operasyon Rehberi](./server-operations-guide.md)'ne bakınız.)*
+_(Firewall ve Caddy kurulum detayları için Operasyon ve Bakım Rehberi'ne bakınız.)_
 
 ---
 
@@ -207,6 +225,5 @@ Güncelleme, yedekleme, migration ve monitoring işlemleri için lütfen **Opera
 
 ## 🔗 İlgili Dökümanlar
 
-- [Operasyon ve Bakım Rehberi](./server-operations-guide.md) - Güncelleme, Yedekleme, Monitoring
 - [Docker Development Rehberi](./docker-development.md)
 - [Backend README](../apps/backend/README.md)

@@ -1,17 +1,6 @@
 /**
  * PM2 Ecosystem Configuration
  * Production ortamında backend'i başlatmak için kullanılır.
- *
- * Kullanım:
- *   pnpm start:prod           - PM2 ile başlat
- *   pm2 startup               - Startup script oluştur
- *   pm2 save                  - Mevcut process listesini kaydet
- *   pm2 status                - Durumu kontrol et
- *   pm2 logs besin-backend    - Logları izle
- *   pm2 reload besin-backend  - Sırayla yeniden başlat (kesintisiz)
- *   pm2 restart besin-backend - Tamamen yeniden başlat
- *
- * Not: .env dosyası root dizininde olmalı
  */
 const path = require("path");
 const fs = require("fs");
@@ -42,10 +31,10 @@ const envVars = loadEnvFile(envPath);
 module.exports = {
   apps: [
     {
-      name: "besin-backend",
+      name: "besin-denetle-backend",
       script: "apps/backend/dist/main.js",
       cwd: __dirname,
-      instances: 2,
+      instances: 1,
       autorestart: true,
       watch: false,
       max_memory_restart: "1024M",
