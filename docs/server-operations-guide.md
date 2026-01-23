@@ -76,22 +76,22 @@ Backend uygulaması **PM2 Process Manager** ile yönetilir. İşte en sık kulla
 
 #### 📊 Durum ve İzleme
 
-| Komut                    | Açıklama                                                                         |
-| ------------------------ | -------------------------------------------------------------------------------- |
-| `pm2 status`             | Tüm servislerin durumunu (online/error), işlemci ve bellek kullanımını listeler. |
-| `pm2 logs`               | Tüm servislerin loglarını canlı izler.                                           |
-| `pm2 logs besin-backend` | Sadece backend servisinin loglarını izler.                                       |
-| `pm2 monit`              | Terminal arayüzü ile CPU/RAM kullanımını ve logları anlık gösterir.              |
+| Komut                            | Açıklama                                                                         |
+| -------------------------------- | -------------------------------------------------------------------------------- |
+| `pm2 status`                     | Tüm servislerin durumunu (online/error), işlemci ve bellek kullanımını listeler. |
+| `pm2 logs`                       | Tüm servislerin loglarını canlı izler.                                           |
+| `pm2 logs besin-denetle-backend` | Sadece backend servisinin loglarını izler.                                       |
+| `pm2 monit`                      | Terminal arayüzü ile CPU/RAM kullanımını ve logları anlık gösterir.              |
 
 #### 🔄 Başlatma ve Yeniden Başlatma
 
-| Komut                       | Açıklama                                                                                                         |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `pnpm start:prod`           | Uygulamayı PM2 ile başlatır (veya zaten çalışıyorsa yeniden başlatır).                                           |
-| `pm2 reload besin-backend`  | **(Önerilen)** Servisi _kesintisiz_ (zero-downtime) yeniden başlatır. Cluster modunda işlemleri sırayla yeniler. |
-| `pm2 restart besin-backend` | Servisi tamamen durdurup yeniden başlatır. Kısa süreli kesinti olabilir.                                         |
-| `pm2 stop besin-backend`    | Servisi durdurur.                                                                                                |
-| `pm2 delete besin-backend`  | Servisi PM2 listesinden tamamen siler.                                                                           |
+| Komut                               | Açıklama                                                                                                         |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `pnpm start:prod`                   | Uygulamayı PM2 ile başlatır (veya zaten çalışıyorsa yeniden başlatır).                                           |
+| `pm2 reload besin-denetle-backend`  | **(Önerilen)** Servisi _kesintisiz_ (zero-downtime) yeniden başlatır. Cluster modunda işlemleri sırayla yeniler. |
+| `pm2 restart besin-denetle-backend` | Servisi tamamen durdurup yeniden başlatır. Kısa süreli kesinti olabilir.                                         |
+| `pm2 stop besin-denetle-backend`    | Servisi durdurur.                                                                                                |
+| `pm2 delete besin-denetle-backend`  | Servisi PM2 listesinden tamamen siler.                                                                           |
 
 #### ⚙️ Yapılandırma ve Kayıt
 
