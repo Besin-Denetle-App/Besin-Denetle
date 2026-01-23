@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RateLimitService } from './rate-limit.service';
 import {
-    RateLimitEndpointConfig,
-    RateLimitGlobalConfig,
-    RateLimitKeyPrefix,
-    RateLimitPoolConfig,
+  RateLimitEndpointConfig,
+  RateLimitGlobalConfig,
+  RateLimitKeyPrefix,
+  RateLimitPoolConfig,
 } from './rate-limit.types';
 
 /**

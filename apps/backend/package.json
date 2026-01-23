@@ -1,6 +1,6 @@
 {
   "name": "@besin-denetle/backend",
-  "version": "0.19.1",
+  "version": "0.20.0",
   "description": "RESTful API built with NestJS for Besin Denetle food analysis platform",
   "author": "Furkan Çelik <iletisim.furkancelik@gmail.com> (https://furkanpasa.com)",
   "license": "GPL-3.0",
@@ -44,6 +44,7 @@
     "@nestjs/schedule": "^6.1.0",
     "@nestjs/swagger": "^11.2.3",
     "@nestjs/typeorm": "^11.0.0",
+    "apple-signin-auth": "^2.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
     "csv-parser": "^3.2.0",

@@ -13,5 +13,5 @@ export type {
   RateLimitHealthConfig,
   RateLimitPoolConfig,
   RateLimitResult,
-  RateLimitRule
+  RateLimitRule,
 } from './rate-limit.types';

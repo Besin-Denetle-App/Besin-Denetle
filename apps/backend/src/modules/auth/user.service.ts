@@ -29,8 +29,9 @@ export class UserService {
     }
 
     if (existingEmail) {
+      const providerName = existingEmail.auth_provider.toUpperCase();
       throw new UnauthorizedException(
-        'Bu e-posta adresi başka bir hesapla ilişkili. Lütfen o hesapla giriş yapın.',
+        `Bu e-posta adresi ${providerName} hesabı ile kayıtlı. Lütfen ${providerName} ile giriş yapın.`,
       );
     }
   }
@@ -97,6 +98,11 @@ export class UserService {
         provider_id: providerId,
       },
     });
+  }
+
+  /** Email ile kullanıcı bul */
+  async findByEmail(email: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { email } });
   }
 
   /** Hesabı sil */

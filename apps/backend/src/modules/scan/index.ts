@@ -21,4 +21,3 @@ export { AnalysisService } from './analysis/analysis.service';
 export { BarcodeService } from './barcode/barcode.service';
 export { ContentService } from './content/content.service';
 export { ProductService } from './product/product.service';
-

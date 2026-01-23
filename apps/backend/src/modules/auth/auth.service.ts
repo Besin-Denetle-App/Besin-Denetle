@@ -64,6 +64,19 @@ export class AuthService {
       };
     }
 
+    // Provider ile bulunamadı - aynı email ile başka hesap var mı kontrol et
+    const existingByEmail = await this.userService.findByEmail(
+      providerData.email,
+    );
+
+    if (existingByEmail) {
+      // Aynı email farklı provider ile kayıtlı
+      const providerName = existingByEmail.auth_provider.toUpperCase();
+      throw new UnauthorizedException(
+        `Bu e-posta adresi ${providerName} hesabı ile kayıtlı. Lütfen ${providerName} ile giriş yapın.`,
+      );
+    }
+
     // Yeni kullanıcı - tempToken oluştur
     const tempToken = this.tokenService.createTempToken(
       provider,
