@@ -1,22 +1,15 @@
-import { Controller, Get, Request } from '@nestjs/common';
+import { Controller, Get, Req } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import type { Request } from 'express';
 import { DataSource } from 'typeorm';
 
 import {
-  RateLimitHealthConfig,
-  RateLimitKeyPrefix,
-  RateLimitService,
-} from '../../common/rate-limit';
-
-/**
- * Request interface
- */
-interface HealthRequest {
-  headers: Record<string, string | string[] | undefined>;
-  ip?: string;
-  socket?: { remoteAddress?: string };
-}
+    getClientIp,
+    RateLimitHealthConfig,
+    RateLimitKeyPrefix,
+    RateLimitService,
+} from '../../common';
 
 /**
  * Health check endpoint
@@ -32,35 +25,14 @@ export class HealthcheckController {
     private readonly configService: ConfigService,
   ) {}
 
-  /**
-   * Client IP adresini al (Cloudflare uyumlu)
-   */
-  private getClientIp(req: HealthRequest): string {
-    // Cloudflare öncelik
-    const cfIp = req.headers['cf-connecting-ip'];
-    if (cfIp) {
-      return Array.isArray(cfIp) ? cfIp[0] : cfIp;
-    }
-
-    // X-Forwarded-For fallback
-    const forwardedFor = req.headers['x-forwarded-for'];
-    if (forwardedFor) {
-      const ip = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor;
-      return ip.split(',')[0].trim();
-    }
-
-    // Son çare: socket IP
-    return req.ip || req.socket?.remoteAddress || 'unknown';
-  }
-
   @Get()
   @ApiOperation({ summary: 'Sunucu sağlık kontrolü' })
   @ApiResponse({ status: 200, description: 'Sunucu sağlıklı' })
-  async check(@Request() req: HealthRequest) {
+  async check(@Req() req: Request) {
     // IP bazlı rate limit kontrolü
     const healthConfig =
       this.configService.get<RateLimitHealthConfig>('rateLimit.health')!;
-    const clientIp = this.getClientIp(req);
+    const clientIp = getClientIp(req);
 
     await this.rateLimitService.checkIpLimit(
       RateLimitKeyPrefix.HEALTH,
