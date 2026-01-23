@@ -1,7 +1,11 @@
-export { AuthController } from './auth.controller';
 export { AuthModule } from './auth.module';
 export { AuthService } from './auth.service';
+export { AuthAccountController } from './controllers/auth-account.controller';
+export { AuthLoginController } from './controllers/auth-login.controller';
+export { AuthRegisterController } from './controllers/auth-register.controller';
 export { CurrentUser } from './decorators/current-user.decorator';
 export * from './dto';
-export { JwtAuthGuard } from './guards/jwt-auth.guard';
-export { JwtStrategy } from './strategies/jwt.strategy';
+export { OAuthService } from './oauth.service';
+export { JwtAuthGuard } from './tokens/jwt-auth.guard';
+export { JwtStrategy } from './tokens/jwt.strategy';
+export { TokenService } from './tokens/token.service';

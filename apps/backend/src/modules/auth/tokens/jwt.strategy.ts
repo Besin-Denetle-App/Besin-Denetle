@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from '../auth.service';
+import { UserService } from '../user.service';
 
 interface JwtPayload {
   sub: string;
@@ -15,6 +16,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
+    private readonly userService: UserService,
   ) {
     const jwtSecret = configService.get<string>('JWT_SECRET')!;
 
@@ -27,7 +29,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   /** JWT payload doğrulandıktan sonra user bilgisini döndürür */
   async validate(payload: JwtPayload) {
-    const user = await this.authService.findById(payload.sub);
+    const user = await this.userService.findById(payload.sub);
 
     if (!user || !user.is_active) {
       throw new UnauthorizedException('Kullanıcı bulunamadı veya aktif değil');

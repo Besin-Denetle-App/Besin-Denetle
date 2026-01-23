@@ -24,7 +24,7 @@ import { FoodCheckService, RateLimitHelper } from '../../common';
 
 import { AiService } from '../ai/ai.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/tokens/jwt-auth.guard';
 import { ProductService } from '../product/product.service';
 import { VoteService } from '../vote/vote.service';
 import { ConfirmRequestDto, RejectContentRequestDto } from './content.dto';

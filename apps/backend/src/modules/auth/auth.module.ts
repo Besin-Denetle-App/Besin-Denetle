@@ -4,9 +4,14 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../../entities';
-import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { JwtStrategy } from './strategies/jwt.strategy';
+import { AuthAccountController } from './controllers/auth-account.controller';
+import { AuthLoginController } from './controllers/auth-login.controller';
+import { AuthRegisterController } from './controllers/auth-register.controller';
+import { OAuthService } from './oauth.service';
+import { JwtStrategy } from './tokens/jwt.strategy';
+import { TokenService } from './tokens/token.service';
+import { UserService } from './user.service';
 
 // OAuth, JWT, tempToken yönetimi
 @Module({
@@ -18,14 +23,24 @@ import { JwtStrategy } from './strategies/jwt.strategy';
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET')!,
         signOptions: {
-          expiresIn: 60 * 60 * 24 * 7, // 7 gün
+          expiresIn: configService.get<number>('jwt.accessTokenExpiresIn'),
         },
       }),
       inject: [ConfigService],
     }),
   ],
-  controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  controllers: [
+    AuthLoginController,
+    AuthRegisterController,
+    AuthAccountController,
+  ],
+  providers: [
+    AuthService,
+    OAuthService,
+    TokenService,
+    JwtStrategy,
+    UserService,
+  ],
   exports: [AuthService, JwtStrategy, PassportModule],
 })
 export class AuthModule {}
