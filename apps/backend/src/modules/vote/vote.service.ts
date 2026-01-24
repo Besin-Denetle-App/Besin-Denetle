@@ -1,5 +1,5 @@
 import { SCORE_CHANGES, VoteTarget, VoteType } from '@besin-denetle/shared';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Vote } from '../../entities';
@@ -14,8 +14,11 @@ export class VoteService {
   constructor(
     @InjectRepository(Vote)
     private readonly voteRepository: Repository<Vote>,
+    @Inject(forwardRef(() => ProductService))
     private readonly productService: ProductService,
+    @Inject(forwardRef(() => ContentService))
     private readonly contentService: ContentService,
+    @Inject(forwardRef(() => AnalysisService))
     private readonly analysisService: AnalysisService,
   ) {}
 

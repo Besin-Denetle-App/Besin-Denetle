@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useEffect, useRef, useState } from "react";
 import { Dimensions, Modal, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { APP_CONFIG, COLORS, SHADOWS } from "../../constants";
 import { useHapticsStore } from "../../stores/haptics.store";
 
@@ -26,6 +27,10 @@ export function BarcodeScanner({
   const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const success = useHapticsStore((state) => state.success);
+  const insets = useSafeAreaInsets();
+
+  // Safe area için dinamik bottom padding
+  const bottomPadding = Math.max(insets.bottom, 16);
 
   // Çoklu okuma için state
   const scanCountRef = useRef<{ [key: string]: number }>({});
@@ -69,7 +74,11 @@ export function BarcodeScanner({
               İzin Ver
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={onClose} className="px-8 py-4">
+          <TouchableOpacity
+            onPress={onClose}
+            className="px-8 py-4"
+            style={{ paddingBottom: bottomPadding }}
+          >
             <Text className="text-muted-foreground font-medium">İptal</Text>
           </TouchableOpacity>
         </View>
@@ -159,7 +168,10 @@ export function BarcodeScanner({
           </Text>
 
           {/* Butonlar */}
-          <View className="w-full px-4 gap-3">
+          <View
+            className="w-full px-4 gap-3"
+            style={{ paddingBottom: bottomPadding }}
+          >
             {/* Onayla Butonu */}
             <TouchableOpacity
               onPress={handleConfirm}
@@ -231,7 +243,10 @@ export function BarcodeScanner({
           </View>
 
           {/* Talimat Metni */}
-          <View className="absolute bottom-32 left-0 right-0 items-center">
+          <View
+            className="absolute left-0 right-0 items-center"
+            style={{ bottom: Math.max(insets.bottom + 32, 128) }}
+          >
             <View className="bg-black/70 px-6 py-4 rounded-full">
               <Text className="text-white text-base font-medium text-center">
                 Barkodu çerçeve içinde tutun
