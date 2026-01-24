@@ -9,7 +9,7 @@ import { resolve } from 'path';
 import { DataSource } from 'typeorm';
 
 // .env dosyasını yükle (root dizinden)
-config({ path: resolve(__dirname, '../../../../.env') });
+config({ path: resolve(__dirname, '../../../../../.env') });
 
 // Veritabanı bağlantısı oluştur
 const dataSource = new DataSource({
