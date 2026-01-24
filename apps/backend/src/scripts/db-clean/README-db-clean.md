@@ -16,7 +16,15 @@ Bu klasördeki scriptler, veritabanındaki verileri kontrollü bir şekilde temi
 - **Etkisi:** Ürün içeriklerini (`product_content`), bunlara bağlı analizleri ve tüm ilgili oyları siler.
 - **Korunan:** Sadece temel ürün (`product`) ve barkod (`barcode`) kayıtları kalır.
 
-## 3. Kullanıcıları Sil (`clean-users.ts`)
+## 3. Ürün Varyantlarını Sil (`clean-products.ts`)
+
+**Komut:** `pnpm db:clean:products`
+
+- **Etkisi:** Tüm ürün varyantlarını (`product`), içeriklerini, analizlerini ve oylarını siler.
+- **Korunan:** Sadece barkod (`barcode`) kayıtları silinmez.
+- **Kullanım:** Barkodlar kalsın ama tüm varyantlar ve veriler temizlensin isteniyorsa.
+
+## 4. Kullanıcıları Sil (`clean-users.ts`)
 
 **Komut:** `pnpm db:clean:users`
 
