@@ -1,3 +1,9 @@
+/**
+ * @file product.dto.ts
+ * @description Ürün tarama, onaylama ve reddetme API istekleri/yanıtları
+ * @package @besin-denetle/shared
+ */
+
 import {
   IAnalysisResult,
   IContentAnalysis,
@@ -122,6 +128,7 @@ export interface GenerateAnalysisResponse {
  */
 export interface AIProductResult {
   productType: number;
+  confidence: number; // 0-100 arası güven skoru
   product: {
     brand: string | null;
     name: string | null;
@@ -134,7 +141,7 @@ export interface AIProductResult {
  */
 export interface AIContentResult {
   ingredients: string | null;
-  allergens: string | null;
+  allergens: string[] | null; // Array formatında alerjenler
   nutrition: INutritionTable | null;
   model: string;
 }

@@ -110,7 +110,7 @@ export class ContentController {
       content = await this.contentService.create({
         product_id: productId,
         ingredients: aiContent.ingredients,
-        allergens: aiContent.allergens,
+        allergens: aiContent.allergens?.join(', ') ?? null,
         nutrition_table: aiContent.nutrition
           ? { ...aiContent.nutrition, _source: aiContent.model }
           : null,
@@ -210,7 +210,7 @@ export class ContentController {
       nextContent = await this.contentService.create({
         product_id: content.product_id,
         ingredients: aiContent.ingredients,
-        allergens: aiContent.allergens,
+        allergens: aiContent.allergens?.join(', ') ?? null,
         nutrition_table: aiContent.nutrition
           ? { ...aiContent.nutrition, _source: aiContent.model }
           : null,

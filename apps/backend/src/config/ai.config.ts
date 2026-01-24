@@ -2,19 +2,19 @@ import { registerAs } from '@nestjs/config';
 
 /**
  * Gemini AI model konfigürasyonu.
- * Model isimlerini değiştirmek için bu dosyayı düzenleyin.
+ * Model isimlerini .env dosyasından ayarlayın.
  *
  * Mevcut modeller (Ocak 2026):
- * - gemini-2.5-flash / gemini-2.5-flash-lite (hızlı, ekonomik)
- * - gemini-2.5-pro (akıllı, detaylı analiz)
- * - gemini-3-flash-preview / gemini-3-pro-preview (en yeni sürümler)
+ * - Preview: gemini-3-flash-preview, gemini-3-pro-preview (şu an kullanılan)
+ * - Stable: gemini-3-flash, gemini-3-pro
+ * - Eski: gemini-2.5-flash, gemini-2.5-pro
  */
 export default registerAs('ai', () => ({
   // Prompt 1-2: Ürün tanımlama (hızlı model)
-  modelFast: process.env.GEMINI_MODEL_FAST || 'gemini-3-flash-preview',
+  modelFast: process.env.GEMINI_MODEL_FAST || '',
 
   // Prompt 3: Sağlık analizi (akıllı model)
-  modelSmart: process.env.GEMINI_MODEL_SMART || 'gemini-3-pro-preview',
+  modelSmart: process.env.GEMINI_MODEL_SMART || '',
 }));
 
 // Tip tanımı
@@ -22,3 +22,4 @@ export interface AiConfig {
   modelFast: string;
   modelSmart: string;
 }
+

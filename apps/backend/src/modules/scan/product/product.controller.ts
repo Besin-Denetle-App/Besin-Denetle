@@ -132,6 +132,11 @@ export class ProductController {
 
     const aiResult = await this.aiService.identifyProduct(barcode);
 
+    // AI ürün bulamadı (confidence < 50)
+    if (!aiResult) {
+      throw new NotFoundException('Bu barkodlu ürün bilgisi bulunamadı');
+    }
+
     const isHumanFood = this.foodCheckService.isHumanFoodType(
       aiResult.productType,
     );
@@ -270,6 +275,15 @@ export class ProductController {
     await this.rateLimitHelper.incrementScanRejectAi(userId);
 
     const aiResult = await this.aiService.identifyProduct(barcode.code);
+
+    // AI ürün bulamadı veya non-food
+    if (!aiResult) {
+      return {
+        nextProduct: null,
+        isNew: false,
+        noMoreVariants: true,
+      };
+    }
 
     const isHumanFood = this.foodCheckService.isHumanFoodType(
       aiResult.productType,
