@@ -1,3 +1,8 @@
+import {
+  API_ENDPOINTS,
+  ApiErrorResponse,
+  ERROR_CODES,
+} from "@besin-denetle/shared";
 import axios, {
   AxiosError,
   InternalAxiosRequestConfig,
@@ -32,7 +37,7 @@ const getBaseUrl = (): string => {
   const apiPort = (extra?.apiPort as string) || "50101";
 
   if (apiHost) {
-    const url = `http://${apiHost}:${apiPort}/api`;
+    const url = `http://${apiHost}:${apiPort}`;
     console.log("[API] Using custom host:", url);
     return url;
   }
@@ -50,13 +55,13 @@ const getBaseUrl = (): string => {
   const debuggerHost = hostUri?.split(":")[0];
 
   if (debuggerHost) {
-    const url = `http://${debuggerHost}:${apiPort}/api`;
+    const url = `http://${debuggerHost}:${apiPort}`;
     console.log("[API] Using debugger host:", url);
     return url;
   }
 
   // Fallback: Android emulator IP
-  const fallbackUrl = `http://10.0.2.2:${apiPort}/api`;
+  const fallbackUrl = `http://10.0.2.2:${apiPort}`;
   console.log("[API] Using emulator fallback:", fallbackUrl);
   return fallbackUrl;
 };
@@ -114,9 +119,10 @@ api.interceptors.response.use(
       try {
         const refreshToken = await getRefreshToken();
         if (refreshToken) {
-          const response = await axios.post(`${BASE_URL}/auth/refresh`, {
-            refreshToken,
-          });
+          const response = await axios.post(
+            `${BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`,
+            { refreshToken },
+          );
 
           const { accessToken, refreshToken: newRefreshToken } = response.data;
           await saveTokens(accessToken, newRefreshToken);
@@ -172,24 +178,7 @@ api.interceptors.response.use(
   },
 );
 
-// API hata response tipi
-export interface ApiError {
-  success: false;
-  error: {
-    code: string;
-    message: string;
-    timestamp: string;
-  };
-}
-
-// API başarılı response tipi
-export interface ApiSuccess<T> {
-  success: true;
-  data: T;
-}
-
-// Genel response union tipi
-export type ApiResponse<T> = ApiSuccess<T> | ApiError;
+// ApiErrorResponse: @besin-denetle/shared'dan import ediliyor
 
 // Rate limit hatası kontrolü
 export const isRateLimitError = (error: unknown): boolean => {
@@ -210,22 +199,22 @@ export const parseApiError = (error: unknown): string => {
     }
 
     // Backend hata response'u
-    const apiError = error.response?.data as ApiError | undefined;
+    const apiError = error.response?.data as ApiErrorResponse | undefined;
     const errorCode = apiError?.error?.code;
     const errorMessage = apiError?.error?.message;
 
     // Bilinen hata kodlarını çevir
     if (errorCode) {
       switch (errorCode) {
-        case "PRODUCT_NOT_FOUND":
+        case ERROR_CODES.PRODUCT_NOT_FOUND:
           return "Ürün bulunamadı ve AI hizmetine ulaşılamıyor. Lütfen daha sonra tekrar deneyin.";
-        case "AI_SERVICE_ERROR":
+        case ERROR_CODES.AI_SERVICE_ERROR:
           return "AI hizmeti şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.";
-        case "AI_PARSE_ERROR":
+        case ERROR_CODES.AI_PARSE_ERROR:
           return "AI yanıtı işlenemedi. Lütfen tekrar sorgulayın.";
-        case "INVALID_BARCODE":
+        case ERROR_CODES.INVALID_BARCODE:
           return "Geçersiz barkod formatı. Lütfen kontrol edip tekrar deneyin.";
-        case "UNAUTHORIZED":
+        case ERROR_CODES.UNAUTHORIZED:
           return "Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.";
         default:
           if (errorMessage) return errorMessage;

@@ -1,18 +1,19 @@
-import type {
-    ConfirmRequest,
-    ConfirmResponse,
-    FlagBarcodeRequest,
-    FlagBarcodeResponse,
-    GenerateAnalysisRequest,
-    GenerateAnalysisResponse,
-    RejectAnalysisRequest,
-    RejectAnalysisResponse,
-    RejectContentRequest,
-    RejectContentResponse,
-    RejectProductRequest,
-    RejectProductResponse,
-    ScanRequest,
-    ScanResponse,
+import {
+    API_ENDPOINTS,
+    type ConfirmRequest,
+    type ConfirmResponse,
+    type FlagBarcodeRequest,
+    type FlagBarcodeResponse,
+    type GenerateAnalysisRequest,
+    type GenerateAnalysisResponse,
+    type RejectAnalysisRequest,
+    type RejectAnalysisResponse,
+    type RejectContentRequest,
+    type RejectContentResponse,
+    type RejectProductRequest,
+    type RejectProductResponse,
+    type ScanRequest,
+    type ScanResponse,
 } from "@besin-denetle/shared";
 import { api } from "./api";
 
@@ -21,7 +22,10 @@ import { api } from "./api";
  */
 export const scanBarcode = async (barcode: string): Promise<ScanResponse> => {
   const request: ScanRequest = { barcode };
-  const response = await api.post<ScanResponse>("/products/scan", request);
+  const response = await api.post<ScanResponse>(
+    API_ENDPOINTS.PRODUCTS.SCAN,
+    request,
+  );
   return response.data;
 };
 
@@ -33,7 +37,7 @@ export const confirmProduct = async (
 ): Promise<ConfirmResponse> => {
   const request: ConfirmRequest = { productId };
   const response = await api.post<ConfirmResponse>(
-    "/products/confirm",
+    API_ENDPOINTS.PRODUCTS.CONFIRM,
     request,
   );
   return response.data;
@@ -47,7 +51,7 @@ export const generateAnalysis = async (
 ): Promise<GenerateAnalysisResponse> => {
   const request: GenerateAnalysisRequest = { contentId };
   const response = await api.post<GenerateAnalysisResponse>(
-    "/analysis/generate",
+    API_ENDPOINTS.ANALYSIS.GENERATE,
     request,
   );
   return response.data;
@@ -62,7 +66,7 @@ export const rejectProduct = async (
 ): Promise<RejectProductResponse> => {
   const request: RejectProductRequest = { productId, excludeIds };
   const response = await api.post<RejectProductResponse>(
-    "/products/reject",
+    API_ENDPOINTS.PRODUCTS.REJECT,
     request,
   );
   return response.data;
@@ -77,7 +81,7 @@ export const rejectContent = async (
 ): Promise<RejectContentResponse> => {
   const request: RejectContentRequest = { contentId, excludeIds };
   const response = await api.post<RejectContentResponse>(
-    "/content/reject",
+    API_ENDPOINTS.CONTENT.REJECT,
     request,
   );
   return response.data;
@@ -92,7 +96,7 @@ export const rejectAnalysis = async (
 ): Promise<RejectAnalysisResponse> => {
   const request: RejectAnalysisRequest = { analysisId, excludeIds };
   const response = await api.post<RejectAnalysisResponse>(
-    "/analysis/reject",
+    API_ENDPOINTS.ANALYSIS.REJECT,
     request,
   );
   return response.data;
@@ -106,7 +110,7 @@ export const flagBarcode = async (
 ): Promise<FlagBarcodeResponse> => {
   const request: FlagBarcodeRequest = { barcodeId };
   const response = await api.post<FlagBarcodeResponse>(
-    "/barcodes/flag",
+    API_ENDPOINTS.BARCODES.FLAG,
     request,
   );
   return response.data;

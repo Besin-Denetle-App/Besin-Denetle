@@ -368,4 +368,54 @@ export class RateLimitService implements OnModuleInit, OnModuleDestroy {
   ): Promise<void> {
     await this.increment(prefix, `ip:${ip}`, rule);
   }
+
+  // ============================================
+  // Genel Redis metodları (temp token vb. için)
+  // ============================================
+
+  /**
+   * Redis'ten değer oku
+   */
+  async get(key: string): Promise<string | null> {
+    if (!this.isConnected) return null;
+    try {
+      return await this.redis.get(key);
+    } catch (error) {
+      this.appLogger.error(
+        'Redis get failed',
+        error instanceof Error ? error : new Error(String(error)),
+      );
+      return null;
+    }
+  }
+
+  /**
+   * Redis'e TTL ile değer yaz
+   */
+  async setex(key: string, ttlSeconds: number, value: string): Promise<void> {
+    if (!this.isConnected) return;
+    try {
+      await this.redis.setex(key, ttlSeconds, value);
+    } catch (error) {
+      this.appLogger.error(
+        'Redis setex failed',
+        error instanceof Error ? error : new Error(String(error)),
+      );
+    }
+  }
+
+  /**
+   * Redis'ten key sil
+   */
+  async del(key: string): Promise<void> {
+    if (!this.isConnected) return;
+    try {
+      await this.redis.del(key);
+    } catch (error) {
+      this.appLogger.error(
+        'Redis del failed',
+        error instanceof Error ? error : new Error(String(error)),
+      );
+    }
+  }
 }

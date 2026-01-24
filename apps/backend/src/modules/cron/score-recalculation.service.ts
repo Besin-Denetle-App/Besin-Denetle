@@ -55,7 +55,6 @@ export class ScoreRecalculationService {
         error instanceof Error ? error : new Error(String(error)),
         { job: 'score-recalculation' },
       );
-      // Don't throw - cron should continue on next schedule
     }
   }
 

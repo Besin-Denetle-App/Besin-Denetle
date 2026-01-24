@@ -1,4 +1,9 @@
 /**
+ * Constants - barrel export
+ */
+export * from "./error-codes";
+
+/**
  * Max varyant (Product, Content, Analysis)
  */
 export const MAX_VARIANTS = 3;
@@ -7,11 +12,6 @@ export const MAX_VARIANTS = 3;
  * Geçici token (tempToken) geçerlilik süresi (milisaniye)
  */
 export const TEMP_TOKEN_EXPIRY_MS = 5 * 60 * 1000; // 5 Dakika
-
-/**
- * Varsayılan ürün görseli
- */
-export const DEFAULT_PRODUCT_IMAGE = "/images/placeholder-product.png";
 
 /**
  * Score değişimi
@@ -29,6 +29,7 @@ export const SCORE_CHANGES = {
 export const API_ENDPOINTS = {
   AUTH: {
     OAUTH: "/api/auth/oauth",
+    EMAIL_SIGNUP: "/api/auth/email-signup",
     REGISTER: "/api/auth/register",
     REFRESH: "/api/auth/refresh",
     LOGOUT: "/api/auth/logout",
@@ -38,10 +39,14 @@ export const API_ENDPOINTS = {
     CONFIRM: "/api/products/confirm",
     REJECT: "/api/products/reject",
   },
+  BARCODES: {
+    FLAG: "/api/barcodes/flag",
+  },
   CONTENT: {
     REJECT: "/api/content/reject",
   },
   ANALYSIS: {
+    GENERATE: "/api/analysis/generate",
     REJECT: "/api/analysis/reject",
   },
 } as const;

@@ -3,14 +3,14 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { v4 as uuidv4 } from 'uuid';
+import { RateLimitService } from '../../../common';
 import { User } from '../../../entities';
 
-/** Kayıt süreci için geçici token verisi (RAM'de) */
+/** Kayıt süreci için geçici token verisi */
 interface TempTokenData {
   provider: AuthProvider;
   providerId: string;
   email: string;
-  expiresAt: number;
 }
 
 /** JWT payload yapısı */
@@ -20,22 +20,22 @@ interface JwtPayload {
   role: string;
 }
 
-// Geçici token deposu - ileride Redis'e taşınabilir
-const tempTokenStore = new Map<string, TempTokenData>();
-
 /**
  * JWT ve geçici token yönetimi servisi.
  * Access/refresh token oluşturma ve temp token işlemleri.
+ * Temp token'lar Redis'te tutulur (PM2 cluster uyumlu).
  */
 @Injectable()
 export class TokenService {
   private readonly jwtSecret: string;
   private readonly accessTokenExpiresIn: number;
   private readonly refreshTokenExpiresIn: number;
+  private readonly TEMP_TOKEN_PREFIX = 'temp_token:';
 
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly rateLimitService: RateLimitService,
   ) {
     this.jwtSecret = this.configService.get<string>('JWT_SECRET')!;
     this.accessTokenExpiresIn = this.configService.get<number>(
@@ -81,44 +81,48 @@ export class TokenService {
     }
   }
 
-  // ===== Geçici Token İşlemleri =====
+  // ===== Geçici Token İşlemleri (Redis) =====
 
-  /** Kayıt için geçici token oluştur */
-  createTempToken(
+  /** Kayıt için geçici token oluştur (Redis'e kaydet) */
+  async createTempToken(
     provider: AuthProvider,
     providerId: string,
     email: string,
-  ): string {
+  ): Promise<string> {
     const tempToken = uuidv4();
-    tempTokenStore.set(tempToken, {
-      provider,
-      providerId,
-      email,
-      expiresAt: Date.now() + TEMP_TOKEN_EXPIRY_MS,
-    });
+    const key = `${this.TEMP_TOKEN_PREFIX}${tempToken}`;
+    const ttlSeconds = Math.floor(TEMP_TOKEN_EXPIRY_MS / 1000);
+
+    await this.rateLimitService.setex(
+      key,
+      ttlSeconds,
+      JSON.stringify({ provider, providerId, email }),
+    );
+
     return tempToken;
   }
 
-  /** Geçici token'ı doğrula ve verisini döndür */
-  validateTempToken(tempToken: string): TempTokenData {
-    const tokenData = tempTokenStore.get(tempToken);
+  /** Geçici token'ı doğrula ve verisini döndür (Redis'ten oku) */
+  async validateTempToken(tempToken: string): Promise<TempTokenData> {
+    const key = `${this.TEMP_TOKEN_PREFIX}${tempToken}`;
+    const data = await this.rateLimitService.get(key);
 
-    if (!tokenData) {
+    if (!data) {
       throw new UnauthorizedException(
         "Geçersiz veya süresi dolmuş kayıt token'ı",
       );
     }
 
-    if (Date.now() > tokenData.expiresAt) {
-      tempTokenStore.delete(tempToken);
-      throw new UnauthorizedException("Kayıt token'ının süresi dolmuş");
+    try {
+      return JSON.parse(data) as TempTokenData;
+    } catch {
+      throw new UnauthorizedException("Geçersiz kayıt token'ı");
     }
-
-    return tokenData;
   }
 
   /** Geçici token'ı sil (kayıt tamamlandığında) */
-  deleteTempToken(tempToken: string): void {
-    tempTokenStore.delete(tempToken);
+  async deleteTempToken(tempToken: string): Promise<void> {
+    const key = `${this.TEMP_TOKEN_PREFIX}${tempToken}`;
+    await this.rateLimitService.del(key);
   }
 }

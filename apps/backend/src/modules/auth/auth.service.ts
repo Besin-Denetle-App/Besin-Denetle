@@ -78,7 +78,7 @@ export class AuthService {
     }
 
     // Yeni kullanıcı - tempToken oluştur
-    const tempToken = this.tokenService.createTempToken(
+    const tempToken = await this.tokenService.createTempToken(
       provider,
       providerData.providerId,
       providerData.email,
@@ -109,7 +109,7 @@ export class AuthService {
     username: string,
     termsAccepted: boolean,
   ): Promise<{ accessToken: string; refreshToken: string; user: User }> {
-    const tokenData = this.tokenService.validateTempToken(tempToken);
+    const tokenData = await this.tokenService.validateTempToken(tempToken);
 
     if (!termsAccepted) {
       throw new UnauthorizedException('Kullanım şartlarını kabul etmelisiniz');
@@ -123,7 +123,7 @@ export class AuthService {
       tokenData.providerId,
     );
 
-    this.tokenService.deleteTempToken(tempToken);
+    await this.tokenService.deleteTempToken(tempToken);
     const tokens = this.tokenService.generateTokens(user);
 
     return {

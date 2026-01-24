@@ -1,16 +1,17 @@
 import {
-  type LogoutResponse,
-  type OAuthRequest,
-  type OAuthResponse,
-  type RefreshTokenResponse,
-  type RegisterRequest,
-  type RegisterResponse,
+    API_ENDPOINTS,
+    type LogoutResponse,
+    type OAuthRequest,
+    type OAuthResponse,
+    type RefreshTokenResponse,
+    type RegisterRequest,
+    type RegisterResponse,
 } from "@besin-denetle/shared";
 import {
-  clearAuthData,
-  getRefreshToken,
-  saveTokens,
-  saveUser,
+    clearAuthData,
+    getRefreshToken,
+    saveTokens,
+    saveUser,
 } from "../utils/storage";
 import { api } from "./api";
 
@@ -20,7 +21,10 @@ import { api } from "./api";
 export const emailSignup = async (request: {
   email: string;
 }): Promise<OAuthResponse> => {
-  const response = await api.post<OAuthResponse>("/auth/email-signup", request);
+  const response = await api.post<OAuthResponse>(
+    API_ENDPOINTS.AUTH.EMAIL_SIGNUP,
+    request,
+  );
   const data = response.data;
 
   // Mevcut kullanıcıysa token kaydet
@@ -36,7 +40,10 @@ export const emailSignup = async (request: {
  * OAuth ile giriş yap (Google/Apple)
  */
 export const oauth = async (request: OAuthRequest): Promise<OAuthResponse> => {
-  const response = await api.post<OAuthResponse>("/auth/oauth", request);
+  const response = await api.post<OAuthResponse>(
+    API_ENDPOINTS.AUTH.OAUTH,
+    request,
+  );
   const data = response.data;
 
   // Mevcut kullanıcıysa token kaydet
@@ -54,7 +61,10 @@ export const oauth = async (request: OAuthRequest): Promise<OAuthResponse> => {
 export const register = async (
   request: RegisterRequest,
 ): Promise<RegisterResponse> => {
-  const response = await api.post<RegisterResponse>("/auth/register", request);
+  const response = await api.post<RegisterResponse>(
+    API_ENDPOINTS.AUTH.REGISTER,
+    request,
+  );
   const data = response.data;
 
   // Token ve kullanıcı bilgisini kaydet
@@ -72,9 +82,10 @@ export const refresh = async (): Promise<RefreshTokenResponse | null> => {
     const refreshToken = await getRefreshToken();
     if (!refreshToken) return null;
 
-    const response = await api.post<RefreshTokenResponse>("/auth/refresh", {
-      refreshToken,
-    });
+    const response = await api.post<RefreshTokenResponse>(
+      API_ENDPOINTS.AUTH.REFRESH,
+      { refreshToken },
+    );
     const data = response.data;
 
     await saveTokens(data.accessToken, data.refreshToken);
@@ -89,7 +100,7 @@ export const refresh = async (): Promise<RefreshTokenResponse | null> => {
  */
 export const logout = async (): Promise<void> => {
   try {
-    await api.post<LogoutResponse>("/auth/logout");
+    await api.post<LogoutResponse>(API_ENDPOINTS.AUTH.LOGOUT);
   } catch {
     // Hata olsa bile yerel verileri temizle
   }
@@ -100,6 +111,6 @@ export const logout = async (): Promise<void> => {
  * Hesabı kalıcı olarak sil
  */
 export const deleteAccount = async (): Promise<void> => {
-  await api.delete("/auth/delete-account");
+  await api.delete("/api/auth/delete-account");
   await clearAuthData();
 };
