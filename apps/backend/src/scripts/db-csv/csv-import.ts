@@ -15,10 +15,10 @@ import {
   ProductContent,
   User,
   Vote,
-} from '../entities';
+} from '../../entities';
 
 // .env dosyasını yükle (root dizinden)
-config({ path: path.resolve(__dirname, '../../../../.env') });
+config({ path: path.resolve(__dirname, '../../../../../.env') });
 
 // CSV row tip tanımı
 interface CsvRow {
