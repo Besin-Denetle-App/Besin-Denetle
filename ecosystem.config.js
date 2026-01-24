@@ -42,6 +42,7 @@ module.exports = {
         ...envVars,
         NODE_ENV: "production", // PM2 her zaman production modunda
       },
+      time: true, // Loglara zaman damgası ekle
     },
   ],
 };
