@@ -1,4 +1,10 @@
 /**
+ * @file user.types.ts
+ * @description Kullanıcı ve kimlik doğrulama tanımları
+ * @package @besin-denetle/shared
+ */
+
+/**
  * Kimlik doğrulama sağlayıcısı
  */
 export enum AuthProvider {

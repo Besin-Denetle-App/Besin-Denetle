@@ -1,4 +1,10 @@
 /**
+ * @file vote.types.ts
+ * @description Oylama sistemi tanımları (UP/DOWN)
+ * @package @besin-denetle/shared
+ */
+
+/**
  * Oy tipi
  */
 export enum VoteType {

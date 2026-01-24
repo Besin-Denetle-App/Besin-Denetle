@@ -1,4 +1,10 @@
 /**
+ * @file barcode.types.ts
+ * @description Barkod ve ürün tipi tanımları
+ * @package @besin-denetle/shared
+ */
+
+/**
  * Ürün tipi;
  * 0: Kararsız (AI emin değil)
  * 1: İnsan yiyeceği

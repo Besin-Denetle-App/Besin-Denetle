@@ -1,3 +1,9 @@
+/**
+ * @file auth.dto.ts
+ * @description Kimlik doğrulama API istekleri ve yanıtları
+ * @package @besin-denetle/shared
+ */
+
 import { AuthProvider, IUser } from '../types';
 
 /**
