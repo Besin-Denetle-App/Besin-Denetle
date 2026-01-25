@@ -198,6 +198,27 @@ export const parseApiError = (error: unknown): string => {
       return "Çok fazla istek! Lütfen birkaç saniye bekleyin.";
     }
 
+    const message = (error.response?.data as { message?: string })?.message || '';
+    const status = error.response?.status;
+
+    // AI Hataları (502 Bad Gateway)
+    if (status === 502) {
+      if (message.includes('telif hakkı')) {
+        return 'Bu ürün için bilgi bulunamadı. Lütfen tekrar deneyin.';
+      }
+      if (message.includes('boş döndü')) {
+        return 'AI yanıt veremedi. Lütfen tekrar deneyin.';
+      }
+      if (message.includes('AI')) {
+        return 'AI servisi şu anda meşgul. Lütfen tekrar deneyin.';
+      }
+    }
+
+    // AI Güvenlik Hatası (400)
+    if (status === 400 && message.includes('güvenlik')) {
+      return 'Bu içerik AI tarafından desteklenmiyor.';
+    }
+
     // Backend hata response'u
     const apiError = error.response?.data as ApiErrorResponse | undefined;
     const errorCode = apiError?.error?.code;
@@ -228,7 +249,7 @@ export const parseApiError = (error: unknown): string => {
 
     // Network hatası
     if (error.message === "Network Error") {
-      return "Sunucuya bağlanılamadı. İnternet bağlantınızı ve backend'in çalıştığını kontrol edin.";
+      return "Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.";
     }
 
     // timeout

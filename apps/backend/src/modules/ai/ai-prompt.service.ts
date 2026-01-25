@@ -63,7 +63,23 @@ Bulduğun tüm verileri şemaya uygun doldur.`;
 4. Bulamadığın alanları null bırak, tahmin etme.
 5. Sadece resmi/güvenilir kaynaklardan veri al.
 
-Bulduğun tüm verileri şemaya uygun doldur.`;
+Yanıtını SADECE aşağıdaki JSON formatında ver:
+{
+  "ingredients": "içindekiler listesi string olarak",
+  "allergens": ["alerjen1", "alerjen2"],
+  "nutrition": {
+    "energy_kcal": 0,
+    "fat": 0,
+    "saturated_fat": 0,
+    "carbohydrates": 0,
+    "sugars": 0,
+    "protein": 0,
+    "salt": 0,
+    "fiber": 0,
+    "vitamins": {"vitamin_c": 0, "vitamin_d": 0},
+    "minerals": {"calcium": 0, "iron": 0}
+  }
+}`;
   }
 
   /**

@@ -1,4 +1,4 @@
-import { showInfoToast } from "@/components/feedback";
+import { showErrorToast, showInfoToast } from "@/components/feedback";
 import { ProductPopup } from "@/components/product";
 import { BarcodeScanner } from "@/components/scanner";
 import { COLORS } from "@/constants";
@@ -78,6 +78,7 @@ export default function ScanScreen() {
         setShowPopup(false);
       }
       setError(errorMessage);
+      showErrorToast(errorMessage);
       setCurrentProduct(null);
     } finally {
       setIsLoading(false);
@@ -121,11 +122,13 @@ export default function ScanScreen() {
       }
     } catch (err) {
       const errorMessage = parseApiError(err);
+      hapticError();
       if (isRateLimitError(err)) {
         setShowPopup(false);
         setCurrentProduct(null);
       }
       setError(errorMessage);
+      showErrorToast(errorMessage);
     } finally {
       setIsLoading(false);
     }

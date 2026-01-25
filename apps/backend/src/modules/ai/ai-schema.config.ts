@@ -71,6 +71,16 @@ export const GET_PRODUCT_CONTENT_SCHEMA = {
         fiber: { type: Type.NUMBER },
         sodium: { type: Type.NUMBER, nullable: true },
         salt: { type: Type.NUMBER, description: 'Tuz (g)' },
+        vitamins: {
+          type: Type.OBJECT,
+          nullable: true,
+          description: 'Vitaminler (örn: {"vitamin_c": 10, "vitamin_d": 5})',
+        },
+        minerals: {
+          type: Type.OBJECT,
+          nullable: true,
+          description: 'Mineraller (örn: {"calcium": 120, "iron": 2})',
+        },
       },
       required: [
         'servingSize',

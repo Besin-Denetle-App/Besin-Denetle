@@ -67,7 +67,7 @@ export function useProductDetails(
       } catch (err) {
         console.error("Analiz yüklenemedi:", err);
         setAnalysisError(true);
-        showErrorToast("Analiz yüklenemedi");
+        showErrorToast(parseApiError(err));
       } finally {
         setIsAnalysisLoading(false);
       }
@@ -188,7 +188,9 @@ export function useProductDetails(
       }
     } catch (err) {
       hapticError();
-      setError(parseApiError(err));
+      const errorMessage = parseApiError(err);
+      setError(errorMessage);
+      showErrorToast(errorMessage);
       setIsLoading(false);
     }
   }, [
@@ -233,7 +235,9 @@ export function useProductDetails(
       }
     } catch (err) {
       hapticError();
-      setError(parseApiError(err));
+      const errorMessage = parseApiError(err);
+      setError(errorMessage);
+      showErrorToast(errorMessage);
     } finally {
       setIsAnalysisLoading(false);
     }

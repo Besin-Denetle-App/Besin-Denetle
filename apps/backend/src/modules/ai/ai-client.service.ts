@@ -2,14 +2,16 @@ import { GoogleGenAI, Schema } from '@google/genai';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AppLogger } from '../../common';
-import { AiConfig } from '../../config';
+import { AiConfig, GroundingStrategy } from '../../config';
 
 /**
  * AI Client Service
  * Gemini API ile iletişimi yönetir.
  * Model konfigürasyonu, API çağrıları ve hata yönetimi.
  *
- * Gemini 3 ile Structured Output (responseSchema) desteği sunar.
+ * Grounding Stratejileri:
+ * - SCHEMA: Structured Output (responseSchema) - RECITATION riski var
+ * - PROMPT: Prompt-based JSON - RECITATION'a dayanıklı
  */
 @Injectable()
 export class AiClientService {
@@ -19,6 +21,7 @@ export class AiClientService {
 
   private readonly modelFast: string;
   private readonly modelSmart: string;
+  private readonly groundingStrategy: GroundingStrategy;
 
   constructor(
     private readonly configService: ConfigService,
@@ -35,6 +38,7 @@ export class AiClientService {
 
     this.modelFast = aiConfig.modelFast;
     this.modelSmart = aiConfig.modelSmart;
+    this.groundingStrategy = aiConfig.groundingStrategy;
 
     if (!this.isMockMode && this.apiKey) {
       // Model isimleri zorunlu (mock mode dışında)
@@ -49,6 +53,7 @@ export class AiClientService {
       this.appLogger.business('AI Client Service initialized', {
         modelFast: this.modelFast,
         modelSmart: this.modelSmart,
+        groundingStrategy: this.groundingStrategy,
       });
     } else {
       this.genai = null;
@@ -85,14 +90,32 @@ export class AiClientService {
    *
    * @param prompt - Gemini'ye gönderilecek prompt
    * @param methodName - Log için method adı
-   * @param responseSchema - Gemini Schema tanımı
+   * @param responseSchema - Gemini Schema tanımı (SCHEMA stratejisi için)
    * @returns Schema'ya uygun typed obje
    */
   async callWithGrounding<T>(
     prompt: string,
     methodName: string,
+    responseSchema?: Schema,
+  ): Promise<T> {
+    // Strateji seçimi
+    if (this.groundingStrategy === 'PROMPT') {
+      return this.callWithGroundingPrompt<T>(prompt, methodName);
+    }
+    return this.callWithGroundingSchema<T>(
+      prompt,
+      methodName,
+      responseSchema!,
+    );
+  }
+
+  /**
+   * SCHEMA stratejisi: Structured Output ile API çağrısı
+   */
+  private async callWithGroundingSchema<T>(
+    prompt: string,
+    methodName: string,
     responseSchema: Schema,
-    retryCount = 0,
   ): Promise<T> {
     if (!this.genai) {
       throw new HttpException(
@@ -107,7 +130,7 @@ export class AiClientService {
         contents: prompt,
         config: {
           tools: [{ googleSearch: {} }],
-          temperature: 0.1, // Uydurma önlemek için düşük temperature
+          temperature: 0.1,
           responseMimeType: 'application/json',
           responseSchema,
         },
@@ -117,35 +140,12 @@ export class AiClientService {
       const finishReason = response.candidates?.[0]?.finishReason;
 
       if (!text.trim()) {
-        // Detaylı debug için response object'i logla
         this.appLogger.infrastructure('Gemini API returned empty response', {
           method: methodName,
           model: this.modelFast,
-          hasText: !!response.text,
-          hasCandidates: !!response.candidates,
-          candidatesLength: response.candidates?.length,
-          firstCandidate: response.candidates?.[0]
-            ? {
-              finishReason: response.candidates[0].finishReason,
-              hasContent: !!response.candidates[0].content,
-              partsLength: response.candidates[0].content?.parts?.length,
-            }
-            : null,
-          retryCount,
+          strategy: 'SCHEMA',
+          finishReason,
         });
-
-        // RECITATION: Telif hakkı korumalı içerik tespit edildi
-        if (finishReason === 'RECITATION' && retryCount === 0) {
-          this.appLogger.infrastructure('RECITATION detected, retrying...', {
-            method: methodName,
-          });
-          return this.callWithGrounding<T>(
-            prompt,
-            methodName,
-            responseSchema,
-            1,
-          );
-        }
 
         if (finishReason === 'RECITATION') {
           throw new HttpException(
@@ -154,36 +154,10 @@ export class AiClientService {
           );
         }
 
-        // SAFETY: Güvenlik filtreleri devreye girdi
         if (finishReason === 'SAFETY') {
-          this.appLogger.infrastructure('SAFETY filter triggered', {
-            method: methodName,
-          });
           throw new HttpException(
-            'AI güvenlik filtreleri devreye girdi. İçerik uygun değil.',
+            'AI güvenlik filtreleri devreye girdi.',
             HttpStatus.BAD_REQUEST,
-          );
-        }
-
-        // MAX_TOKENS: Token limiti aşıldı
-        if (finishReason === 'MAX_TOKENS') {
-          this.appLogger.infrastructure('MAX_TOKENS reached', {
-            method: methodName,
-          });
-          throw new HttpException(
-            'AI yanıtı çok uzun. Lütfen tekrar deneyin.',
-            HttpStatus.BAD_GATEWAY,
-          );
-        }
-
-        // OTHER: Diğer sebepler
-        if (finishReason === 'OTHER') {
-          this.appLogger.infrastructure('Finish reason: OTHER', {
-            method: methodName,
-          });
-          throw new HttpException(
-            'AI beklenmeyen bir hatayla karşılaştı.',
-            HttpStatus.BAD_GATEWAY,
           );
         }
 
@@ -193,12 +167,85 @@ export class AiClientService {
       this.appLogger.infrastructure('Gemini API response received', {
         method: methodName,
         model: this.modelFast,
+        strategy: 'SCHEMA',
         responseLength: text.length,
-        retryCount,
       });
 
-      // Schema mode'da JSON parse et
       return this.parseJsonResponse<T>(text, methodName);
+    } catch (error) {
+      return this.handleAiError(error, methodName, this.modelFast);
+    }
+  }
+
+  /**
+   * PROMPT stratejisi: Schema olmadan, prompt-based JSON
+   * RECITATION'a daha dayanıklı
+   */
+  private async callWithGroundingPrompt<T>(
+    prompt: string,
+    methodName: string,
+  ): Promise<T> {
+    if (!this.genai) {
+      throw new HttpException(
+        'AI servisi mock modda çalışıyor',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
+
+    try {
+      const response = await this.genai.models.generateContent({
+        model: this.modelFast,
+        contents: prompt,
+        config: {
+          tools: [{ googleSearch: {} }],
+          temperature: 0.2, // Biraz daha yaratıcı
+        },
+      });
+
+      const text = response.text || '';
+      const finishReason = response.candidates?.[0]?.finishReason;
+
+      if (!text.trim()) {
+        this.appLogger.infrastructure('Gemini API returned empty response', {
+          method: methodName,
+          model: this.modelFast,
+          strategy: 'PROMPT',
+          finishReason,
+        });
+
+        if (finishReason === 'RECITATION') {
+          throw new HttpException(
+            'AI telif hakkı korumalı içerik tespit etti.',
+            HttpStatus.BAD_GATEWAY,
+          );
+        }
+
+        if (finishReason === 'SAFETY') {
+          throw new HttpException(
+            'AI güvenlik filtreleri devreye girdi.',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+
+        throw new HttpException('AI yanıtı boş döndü', HttpStatus.BAD_GATEWAY);
+      }
+
+      this.appLogger.infrastructure('Gemini API response received', {
+        method: methodName,
+        model: this.modelFast,
+        strategy: 'PROMPT',
+        responseLength: text.length,
+      });
+
+      // JSON parse - markdown code block olabilir, temizle
+      let jsonText = text.trim();
+      if (jsonText.startsWith('```json')) {
+        jsonText = jsonText.replace(/^```json\n?/, '').replace(/\n?```$/, '');
+      } else if (jsonText.startsWith('```')) {
+        jsonText = jsonText.replace(/^```\n?/, '').replace(/\n?```$/, '');
+      }
+
+      return this.parseJsonResponse<T>(jsonText, methodName);
     } catch (error) {
       return this.handleAiError(error, methodName, this.modelFast);
     }
