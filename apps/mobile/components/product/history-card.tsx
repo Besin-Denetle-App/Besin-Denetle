@@ -1,5 +1,7 @@
+import { showSuccessToast } from "@/components/feedback";
 import { COLORS } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
 import { useColorScheme } from "nativewind";
 import { Text, TouchableOpacity, View } from "react-native";
 import type { HistoryItem } from "../../stores/history.store";
@@ -60,14 +62,30 @@ export function HistoryCard({ item, onPress }: HistoryCardProps) {
 
         {/* Barkod ve Tarih */}
         <View className="flex-row items-center mt-1.5">
-          <Ionicons
-            name="barcode-outline"
-            size={14}
-            color={themeColors.muted}
-          />
-          <Text className="text-muted-foreground text-xs font-mono ml-1">
-            {barcode}
-          </Text>
+          <TouchableOpacity
+            onPress={async (e) => {
+              e.stopPropagation();
+              await Clipboard.setStringAsync(barcode);
+              showSuccessToast("Barkod kopyalandı");
+            }}
+            activeOpacity={0.7}
+            className="flex-row items-center"
+          >
+            <Ionicons
+              name="barcode-outline"
+              size={14}
+              color={themeColors.muted}
+            />
+            <Text className="text-muted-foreground text-xs font-mono ml-1">
+              {barcode}
+            </Text>
+            <Ionicons
+              name="copy-outline"
+              size={10}
+              color={themeColors.muted}
+              style={{ marginLeft: 4 }}
+            />
+          </TouchableOpacity>
           <Text className="text-muted-foreground text-xs mx-2">•</Text>
           <Text className="text-muted-foreground text-xs">
             {formatDateShort(viewedAt)}

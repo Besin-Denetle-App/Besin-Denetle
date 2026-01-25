@@ -1,3 +1,4 @@
+import { showSuccessToast } from "@/components/feedback";
 import {
   HealthScore,
   NovaGroup,
@@ -7,6 +8,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { COLORS } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
 import { router, useLocalSearchParams } from "expo-router";
 import { useColorScheme } from "nativewind";
 import { useEffect, useRef, useState } from "react";
@@ -278,9 +280,16 @@ export default function ProductDetailScreen() {
                 {product.quantity}
               </Text>
             )}
-            {/* Barkod Numarası */}
+            {/* Barkod Numarası - Tıklanınca kopyalar */}
             {barcode && (
-              <View className="mt-3 bg-secondary/30 px-4 py-2 rounded-full flex-row items-center">
+              <TouchableOpacity
+                onPress={async () => {
+                  await Clipboard.setStringAsync(barcode);
+                  showSuccessToast("Barkod kopyalandı");
+                }}
+                activeOpacity={0.7}
+                className="mt-3 bg-secondary/30 px-4 py-2 rounded-full flex-row items-center"
+              >
                 <Ionicons
                   name="barcode-outline"
                   size={14}
@@ -289,7 +298,13 @@ export default function ProductDetailScreen() {
                 <Text className="text-muted-foreground font-mono text-sm ml-1">
                   {barcode}
                 </Text>
-              </View>
+                <Ionicons
+                  name="copy-outline"
+                  size={12}
+                  color={themeColors.muted}
+                  style={{ marginLeft: 6 }}
+                />
+              </TouchableOpacity>
             )}
           </View>
 

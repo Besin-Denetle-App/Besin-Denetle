@@ -1,6 +1,6 @@
 {
   "name": "@besin-denetle/mobile",
-  "version": "0.20.0",
+  "version": "0.21.0",
   "description": "Expo-based mobile application for food health scoring and nutrition tracking",
   "author": "Furkan Çelik <iletisim.furkancelik@gmail.com> (https://furkanpasa.com)",
   "license": "GPL-3.0",
@@ -39,6 +39,7 @@
     "expo-auth-session": "~7.0.10",
     "expo-build-properties": "^1.0.10",
     "expo-camera": "~17.0.9",
+    "expo-clipboard": "^8.0.8",
     "expo-constants": "~18.0.10",
     "expo-file-system": "^19.0.21",
     "expo-font": "~14.0.11",
