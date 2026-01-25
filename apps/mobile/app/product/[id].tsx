@@ -568,8 +568,12 @@ export default function ProductDetailScreen() {
                 </Text>
                 <Text className="text-muted-foreground text-sm mx-2">|</Text>
                 <Text className="text-muted-foreground text-sm">
-                  📅{" "}
                   📅 16 Ocak 2026
+                  {/* {new Date(analysis.created_at).toLocaleDateString("tr-TR", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })} */}
                 </Text>
               </View>
 

@@ -115,12 +115,33 @@ async function deleteProducts() {
       console.log(`   - ${voteCount} oy CASCADE ile silinecek`);
       console.log('   - Sadece Barkodlar (Barcode) KORUNACAK\n');
 
+      // 1. ONAY: Normal 'yes' onayı
       const confirmed = await askConfirmation(
         'Devam etmek istediğinize EMİN misiniz? (yes/no): ',
       );
 
       if (!confirmed) {
         console.log('\n❌ İşlem iptal edildi.');
+        return;
+      }
+
+      // 2. ONAY: Kelime kontrolü (Double Check)
+      console.log(
+        '\n🛑 GÜVENLİK KONTROLÜ: Yanlışlıkla silmeyi önlemek için lütfen aşağıya "barkod" yazın.',
+      );
+      const securityCheck = await new Promise<string>((resolve) => {
+        const rl = createInterface({
+          input: process.stdin,
+          output: process.stdout,
+        });
+        rl.question('Onay kelimesi: ', (answer) => {
+          rl.close();
+          resolve(answer.trim());
+        });
+      });
+
+      if (securityCheck !== 'barkod') {
+        console.log('\n❌ Hatalı onay kelimesi! İşlem güvenlik nedeniyle İPTAL edildi.');
         return;
       }
 
