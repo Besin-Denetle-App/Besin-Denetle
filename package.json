@@ -1,6 +1,6 @@
 {
   "name": "@besin-denetle/root",
-  "version": "0.19.2",
+  "version": "0.19.3",
   "description": "Besin Denetle - AI-powered food nutrition analysis platform (monorepo)",
   "author": "Furkan Çelik <iletisim.furkancelik@gmail.com> (https://furkanpasa.com)",
   "license": "GPL-3.0",
@@ -17,7 +17,6 @@
     "build:all": "pnpm --filter @besin-denetle/shared build && pnpm --filter @besin-denetle/backend build",
     "start:prod": "pm2 start ecosystem.config.js",
     "reload:prod": "pm2 reload besin-denetle-backend",
-    "restart:prod": "pm2 restart besin-denetle-backend",
     "db:migrate": "pnpm --filter @besin-denetle/backend db:migrate",
     "db:revert": "pnpm --filter @besin-denetle/backend db:revert",
     "db:show": "pnpm --filter @besin-denetle/backend db:show",

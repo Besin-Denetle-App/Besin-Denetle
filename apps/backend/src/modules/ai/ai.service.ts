@@ -10,8 +10,7 @@ import { AiParserService } from './ai-parser.service';
 import { AiPromptService } from './ai-prompt.service';
 import {
   ANALYZE_CONTENT_SCHEMA,
-  GET_PRODUCT_CONTENT_SCHEMA,
-  IDENTIFY_PRODUCT_SCHEMA,
+  IDENTIFY_PRODUCT_SCHEMA
 } from './ai-schema.config';
 
 /**
@@ -32,7 +31,7 @@ export class AiService {
     private readonly clientService: AiClientService,
     private readonly parserService: AiParserService,
     private readonly appLogger: AppLogger,
-  ) {}
+  ) { }
 
   // ========== PROMPT 1: Ürün Tanımlama ==========
 
@@ -103,12 +102,20 @@ export class AiService {
     // API çağrısı (grounding + schema ile)
     const result = await this.clientService.callWithGrounding<
       Omit<AIContentResult, 'model'>
-    >(prompt, 'getProductContent', GET_PRODUCT_CONTENT_SCHEMA);
+    >(prompt, 'getProductContent');
+
+    const model = this.clientService.getModelFast();
+
+    // DEBUG LOG: Model bilgisi
+    this.appLogger.business('AI GetProductContent completed', {
+      model,
+      envModelFast: process.env.GEMINI_MODEL_FAST,
+    });
 
     // Model bilgisini ekle
     return {
       ...result,
-      model: this.clientService.getModelFast(),
+      model,
     };
   }
 

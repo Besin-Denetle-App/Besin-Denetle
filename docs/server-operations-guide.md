@@ -90,6 +90,7 @@ Backend uygulaması **PM2 Process Manager** ile yönetilir. İşte en sık kulla
 | `pnpm start:prod`                   | Uygulamayı PM2 ile başlatır (veya zaten çalışıyorsa yeniden başlatır).                                           |
 | `pm2 reload besin-denetle-backend`  | **(Önerilen)** Servisi _kesintisiz_ (zero-downtime) yeniden başlatır. Cluster modunda işlemleri sırayla yeniler. |
 | `pm2 restart besin-denetle-backend` | Servisi tamamen durdurup yeniden başlatır. Kısa süreli kesinti olabilir.                                         |
+| `pm2 restart besin-denetle-backend --update-env` | **(Env Değişikliği)** .env dosyasındaki değişiklikleri servise yansıtmak için kullanılır. |
 | `pm2 stop besin-denetle-backend`    | Servisi durdurur.                                                                                                |
 | `pm2 delete besin-denetle-backend`  | Servisi PM2 listesinden tamamen siler.                                                                           |
 
