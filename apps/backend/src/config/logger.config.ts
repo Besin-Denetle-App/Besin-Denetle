@@ -1,4 +1,3 @@
-import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
 import * as winston from 'winston';
 import 'winston-daily-rotate-file';
 
@@ -16,11 +15,27 @@ export const createLoggerConfig = () => {
     // Console transport (development + production)
     new winston.transports.Console({
       format: winston.format.combine(
-        winston.format.timestamp(),
+        winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
         winston.format.ms(),
-        nestWinstonModuleUtilities.format.nestLike('BesinDenetle', {
-          colors: !isProduction,
-          prettyPrint: !isProduction,
+        winston.format.printf(({ level, message, timestamp, ms, context, category, metadata }) => {
+          const appName = 'BesinDenetle';
+          const ctx = context as any;
+          const contextStr = ctx?.requestId ? `[${ctx.requestId}] ` : '';
+          const metaStr = metadata ? ` - ${JSON.stringify({ category, metadata })}` : '';
+
+          // Renk kodları (development için)
+          const colors: Record<string, string> = {
+            error: '\x1b[31m',
+            warn: '\x1b[33m',
+            info: '\x1b[32m',
+            debug: '\x1b[36m',
+          };
+          const reset = '\x1b[0m';
+          const color = isProduction ? '' : (colors[level] || '');
+          const resetColor = isProduction ? '' : reset;
+
+          const levelUpper = level.toUpperCase().padEnd(5);
+          return `[${appName}] ${contextStr}${timestamp} ${color}${levelUpper}${resetColor} ${message}${metaStr} ${ms}`;
         }),
       ),
     }),

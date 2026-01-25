@@ -92,6 +92,7 @@ export class AiClientService {
     prompt: string,
     methodName: string,
     responseSchema: Schema,
+    retryCount = 0,
   ): Promise<T> {
     if (!this.genai) {
       throw new HttpException(
@@ -113,6 +114,8 @@ export class AiClientService {
       });
 
       const text = response.text || '';
+      const finishReason = response.candidates?.[0]?.finishReason;
+
       if (!text.trim()) {
         // Detaylı debug için response object'i logla
         this.appLogger.infrastructure('Gemini API returned empty response', {
@@ -121,12 +124,69 @@ export class AiClientService {
           hasText: !!response.text,
           hasCandidates: !!response.candidates,
           candidatesLength: response.candidates?.length,
-          firstCandidate: response.candidates?.[0] ? {
-            finishReason: response.candidates[0].finishReason,
-            hasContent: !!response.candidates[0].content,
-            partsLength: response.candidates[0].content?.parts?.length,
-          } : null,
+          firstCandidate: response.candidates?.[0]
+            ? {
+              finishReason: response.candidates[0].finishReason,
+              hasContent: !!response.candidates[0].content,
+              partsLength: response.candidates[0].content?.parts?.length,
+            }
+            : null,
+          retryCount,
         });
+
+        // RECITATION: Telif hakkı korumalı içerik tespit edildi
+        if (finishReason === 'RECITATION' && retryCount === 0) {
+          this.appLogger.infrastructure('RECITATION detected, retrying...', {
+            method: methodName,
+          });
+          return this.callWithGrounding<T>(
+            prompt,
+            methodName,
+            responseSchema,
+            1,
+          );
+        }
+
+        if (finishReason === 'RECITATION') {
+          throw new HttpException(
+            'AI telif hakkı korumalı içerik tespit ettiği için yanıt vermeyi durdurdu.',
+            HttpStatus.BAD_GATEWAY,
+          );
+        }
+
+        // SAFETY: Güvenlik filtreleri devreye girdi
+        if (finishReason === 'SAFETY') {
+          this.appLogger.infrastructure('SAFETY filter triggered', {
+            method: methodName,
+          });
+          throw new HttpException(
+            'AI güvenlik filtreleri devreye girdi. İçerik uygun değil.',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+
+        // MAX_TOKENS: Token limiti aşıldı
+        if (finishReason === 'MAX_TOKENS') {
+          this.appLogger.infrastructure('MAX_TOKENS reached', {
+            method: methodName,
+          });
+          throw new HttpException(
+            'AI yanıtı çok uzun. Lütfen tekrar deneyin.',
+            HttpStatus.BAD_GATEWAY,
+          );
+        }
+
+        // OTHER: Diğer sebepler
+        if (finishReason === 'OTHER') {
+          this.appLogger.infrastructure('Finish reason: OTHER', {
+            method: methodName,
+          });
+          throw new HttpException(
+            'AI beklenmeyen bir hatayla karşılaştı.',
+            HttpStatus.BAD_GATEWAY,
+          );
+        }
+
         throw new HttpException('AI yanıtı boş döndü', HttpStatus.BAD_GATEWAY);
       }
 
@@ -134,6 +194,7 @@ export class AiClientService {
         method: methodName,
         model: this.modelFast,
         responseLength: text.length,
+        retryCount,
       });
 
       // Schema mode'da JSON parse et
