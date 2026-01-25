@@ -35,7 +35,7 @@ import {
 import { AnalysisService } from './analysis.service';
 
 @ApiTags('analysis')
-@Controller()
+@Controller('api')
 export class AnalysisController {
   constructor(
     private readonly productService: ProductService,

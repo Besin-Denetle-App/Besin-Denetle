@@ -39,7 +39,7 @@ import { ProductService } from './product.service';
  * Product controller - Ürün işlemleri
  */
 @ApiTags('products')
-@Controller()
+@Controller('api')
 export class ProductController {
   constructor(
     private readonly barcodeService: BarcodeService,

@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../../entities';
+import { AccountCleanupService } from './account-cleanup.service';
 import { AuthService } from './auth.service';
 import { AuthAccountController } from './controllers/auth-account.controller';
 import { AuthLoginController } from './controllers/auth-login.controller';
@@ -35,6 +36,7 @@ import { UserService } from './user.service';
     AuthAccountController,
   ],
   providers: [
+    AccountCleanupService,
     AuthService,
     OAuthService,
     TokenService,

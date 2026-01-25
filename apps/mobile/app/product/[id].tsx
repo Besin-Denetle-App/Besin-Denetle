@@ -1,5 +1,6 @@
 import {
   HealthScore,
+  NovaGroup,
   NutritionTable,
   ProductImage,
 } from "@/components/product";
@@ -210,9 +211,8 @@ export default function ProductDetailScreen() {
               className="flex-1 py-4 items-center flex-row justify-center"
             >
               <Text
-                className={`font-medium ${
-                  activeTab === index ? "text-primary" : "text-muted-foreground"
-                }`}
+                className={`font-medium ${activeTab === index ? "text-primary" : "text-muted-foreground"
+                  }`}
               >
                 {tab}
               </Text>
@@ -401,11 +401,10 @@ export default function ProductDetailScreen() {
             <TouchableOpacity
               onPress={rejectContent}
               disabled={isLoading}
-              className={`py-4 rounded-2xl items-center mb-8 ${
-                isLoading
+              className={`py-4 rounded-2xl items-center mb-8 ${isLoading
                   ? "bg-muted border border-border"
                   : "bg-destructive/10 border border-destructive/20"
-              }`}
+                }`}
             >
               {isLoading ? (
                 <View className="flex-row items-center">
@@ -432,9 +431,12 @@ export default function ProductDetailScreen() {
         >
           {analysis?.analysis_text ? (
             <>
-              {/* Health Score */}
-              <View className="items-center mb-8">
+              {/* Health Score ve Nova Group */}
+              <View className="flex-row items-center justify-center gap-8 mb-8">
                 <HealthScore score={analysis.analysis_text.healthScore} />
+                {analysis.analysis_text.novaGroup && (
+                  <NovaGroup group={analysis.analysis_text.novaGroup} />
+                )}
               </View>
 
               {/* Özet */}
@@ -467,6 +469,12 @@ export default function ProductDetailScreen() {
                         </Text>
                       </View>
                     ))}
+                    {/* Detaylı açıklama */}
+                    {analysis.analysis_text.warning_summary && (
+                      <Text className="text-red-600/80 dark:text-red-400/80 text-sm mt-3 pt-3 border-t border-red-500/20">
+                        {analysis.analysis_text.warning_summary}
+                      </Text>
+                    )}
                   </View>
                 </View>
               )}
@@ -489,6 +497,12 @@ export default function ProductDetailScreen() {
                         </Text>
                       </View>
                     ))}
+                    {/* Detaylı açıklama */}
+                    {analysis.analysis_text.positive_summary && (
+                      <Text className="text-green-600/80 dark:text-green-400/80 text-sm mt-3 pt-3 border-t border-green-500/20">
+                        {analysis.analysis_text.positive_summary}
+                      </Text>
+                    )}
                   </View>
                 </View>
               )}
@@ -579,11 +593,10 @@ export default function ProductDetailScreen() {
             <TouchableOpacity
               onPress={rejectAnalysis}
               disabled={isLoading || isAnalysisLoading}
-              className={`py-4 rounded-2xl items-center mb-8 ${
-                isAnalysisLoading
+              className={`py-4 rounded-2xl items-center mb-8 ${isAnalysisLoading
                   ? "bg-muted border border-border"
                   : "bg-destructive/10 border border-destructive/20"
-              }`}
+                }`}
             >
               {isAnalysisLoading ? (
                 <View className="flex-row items-center">

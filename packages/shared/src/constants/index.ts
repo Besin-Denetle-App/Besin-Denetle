@@ -33,6 +33,8 @@ export const API_ENDPOINTS = {
     REGISTER: "/api/auth/register",
     REFRESH: "/api/auth/refresh",
     LOGOUT: "/api/auth/logout",
+    DELETE_ACCOUNT: "/api/auth/delete-account",
+    RESTORE_ACCOUNT: "/api/auth/restore-account",
   },
   PRODUCTS: {
     SCAN: "/api/products/scan",
@@ -49,4 +51,6 @@ export const API_ENDPOINTS = {
     GENERATE: "/api/analysis/generate",
     REJECT: "/api/analysis/reject",
   },
+  HEALTH: "/api/health",
 } as const;
+

@@ -31,7 +31,7 @@ import { ConfirmRequestDto, RejectContentRequestDto } from './content.dto';
 import { ContentService } from './content.service';
 
 @ApiTags('content')
-@Controller()
+@Controller('api')
 export class ContentController {
   constructor(
     private readonly productService: ProductService,

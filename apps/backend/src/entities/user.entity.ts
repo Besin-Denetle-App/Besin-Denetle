@@ -49,9 +49,13 @@ export class User {
   })
   role: UserRole;
 
-  // Aktif mi
+  // Aktif mi (admin ban için)
   @Column({ default: true })
   is_active: boolean;
+
+  // Silinme sürecinde mi (soft delete için)
+  @Column({ default: false })
+  is_deleted: boolean;
 
   // Kayıt tarihi
   @CreateDateColumn()

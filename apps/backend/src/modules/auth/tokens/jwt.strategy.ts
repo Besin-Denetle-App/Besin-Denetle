@@ -31,8 +31,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: JwtPayload) {
     const user = await this.userService.findById(payload.sub);
 
-    if (!user || !user.is_active) {
-      throw new UnauthorizedException('Kullanıcı bulunamadı veya aktif değil');
+    if (!user) {
+      throw new UnauthorizedException('Kullanıcı bulunamadı');
+    }
+
+    // Admin ban kontrolü
+    if (!user.is_active) {
+      throw new UnauthorizedException('Hesabınız askıya alınmış');
+    }
+
+    // Soft delete kontrolü - özel mesaj
+    if (user.is_deleted) {
+      throw new UnauthorizedException(
+        "Hesabınız silinme sürecinde. Geri yüklemek için restore-account endpoint'ini kullanın.",
+      );
     }
 
     return {

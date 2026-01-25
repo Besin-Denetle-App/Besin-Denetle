@@ -41,7 +41,7 @@ export class AiClientService {
       if (!this.modelFast || !this.modelSmart) {
         throw new Error(
           'GEMINI_MODEL_FAST ve GEMINI_MODEL_SMART env değişkenleri zorunlu! ' +
-          '.env dosyasını kontrol edin. Örn: gemini-3-flash-preview',
+            '.env dosyasını kontrol edin. Örn: gemini-3-flash-preview',
         );
       }
 

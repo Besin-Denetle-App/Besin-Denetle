@@ -12,7 +12,6 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
 
   app.enableCors();
-  app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
   // Swagger konfigürasyonu
@@ -20,9 +19,12 @@ async function bootstrap() {
     .setTitle('Besin Denetle API')
     .setDescription('Besin Denetle mobil uygulama backend API dokümantasyonu')
     .setVersion('1.0')
-    // API tag'leri (controller sırasına göre)
+    // API tag'leri (akış sırasına göre)
     .addTag('auth', 'Kimlik doğrulama işlemleri')
     .addTag('products', 'Ürün tarama ve yönetimi')
+    .addTag('content', 'Ürün içeriği (içindekiler, besin değerleri)')
+    .addTag('analysis', 'AI sağlık analizi')
+    .addTag('health', 'Sunucu sağlık kontrolü')
     // JWT Bearer token desteği - Swagger UI'da "Authorize" butonu ekler
     .addBearerAuth(
       {

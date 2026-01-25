@@ -25,7 +25,7 @@ import { RefreshTokenRequestDto, RegisterRequestDto } from '../dto';
  * Kayıt ve token yenileme endpoint'leri
  */
 @ApiTags('auth')
-@Controller('auth')
+@Controller('api/auth')
 export class AuthRegisterController {
   constructor(
     private readonly authService: AuthService,

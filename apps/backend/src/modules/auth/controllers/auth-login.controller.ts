@@ -25,7 +25,7 @@ import { EmailSignupRequestDto, OAuthRequestDto } from '../dto';
  * Login endpoint'leri - OAuth ve Email ile giriş
  */
 @ApiTags('auth')
-@Controller('auth')
+@Controller('api/auth')
 export class AuthLoginController {
   constructor(
     private readonly authService: AuthService,

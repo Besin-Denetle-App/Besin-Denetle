@@ -29,7 +29,7 @@ import { UserService } from '../user.service';
  * Hesap yönetimi endpoint'leri - Korumalı (JWT gerekli)
  */
 @ApiTags('auth')
-@Controller('auth')
+@Controller('api/auth')
 export class AuthAccountController {
   constructor(
     private readonly authService: AuthService,
@@ -98,7 +98,24 @@ export class AuthAccountController {
     await this.userService.deleteAccount(userId);
     return {
       success: true,
-      message: 'Hesabınız başarıyla silindi',
+      message:
+        "Hesabınız silinmek üzere işaretlendi. Gece 01:00'de kalıcı olarak silinecek.",
+    };
+  }
+
+  @Post('restore-account')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Silinme sürecindeki hesabı geri yükle' })
+  @ApiResponse({ status: 200, description: 'Hesap geri yüklendi' })
+  async restoreAccount(
+    @CurrentUser('id') userId: string,
+  ): Promise<{ success: boolean; message: string }> {
+    await this.userService.restoreAccount(userId);
+    return {
+      success: true,
+      message: 'Hesabınız başarıyla geri yüklendi',
     };
   }
 }

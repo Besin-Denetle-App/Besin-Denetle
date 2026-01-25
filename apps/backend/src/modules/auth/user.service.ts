@@ -105,7 +105,7 @@ export class UserService {
     return this.userRepository.findOne({ where: { email } });
   }
 
-  /** Hesabı sil */
+  /** Hesabı silinme sürecine al (soft delete) */
   async deleteAccount(userId: string): Promise<void> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
 
@@ -113,11 +113,46 @@ export class UserService {
       throw new UnauthorizedException('Kullanıcı bulunamadı');
     }
 
-    this.appLogger.business('Account deletion started', {
+    user.is_deleted = true;
+    await this.userRepository.save(user);
+
+    this.appLogger.business('Account marked for deletion', {
       userId: user.id,
       username: user.username,
     });
-    await this.userRepository.remove(user);
-    this.appLogger.business('Account deleted', { userId: user.id });
+  }
+
+  /** Hesabı geri yükle (soft delete iptal) */
+  async restoreAccount(userId: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new UnauthorizedException('Kullanıcı bulunamadı');
+    }
+
+    if (!user.is_deleted) {
+      return; // Zaten aktif, bir şey yapmaya gerek yok
+    }
+
+    user.is_deleted = false;
+    await this.userRepository.save(user);
+
+    this.appLogger.business('Account restored', {
+      userId: user.id,
+      username: user.username,
+    });
+  }
+
+  /** Silinme sürecindeki hesapları kalıcı olarak sil (cron job için) */
+  async hardDeleteMarkedAccounts(): Promise<{ affected: number }> {
+    const result = await this.userRepository.delete({ is_deleted: true });
+
+    if (result.affected && result.affected > 0) {
+      this.appLogger.business('Deleted accounts cleanup completed', {
+        deletedCount: result.affected,
+      });
+    }
+
+    return { affected: result.affected ?? 0 };
   }
 }

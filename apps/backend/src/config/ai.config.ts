@@ -22,4 +22,3 @@ export interface AiConfig {
   modelFast: string;
   modelSmart: string;
 }
-

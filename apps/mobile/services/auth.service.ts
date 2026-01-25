@@ -1,17 +1,17 @@
 import {
-    API_ENDPOINTS,
-    type LogoutResponse,
-    type OAuthRequest,
-    type OAuthResponse,
-    type RefreshTokenResponse,
-    type RegisterRequest,
-    type RegisterResponse,
+  API_ENDPOINTS,
+  type LogoutResponse,
+  type OAuthRequest,
+  type OAuthResponse,
+  type RefreshTokenResponse,
+  type RegisterRequest,
+  type RegisterResponse,
 } from "@besin-denetle/shared";
 import {
-    clearAuthData,
-    getRefreshToken,
-    saveTokens,
-    saveUser,
+  clearAuthData,
+  getRefreshToken,
+  saveTokens,
+  saveUser,
 } from "../utils/storage";
 import { api } from "./api";
 
@@ -108,9 +108,24 @@ export const logout = async (): Promise<void> => {
 };
 
 /**
- * Hesabı kalıcı olarak sil
+ * Hesabı silinmek üzere işaretle (soft delete)
+ * Gece 01:00'de kalıcı olarak silinecek
  */
-export const deleteAccount = async (): Promise<void> => {
-  await api.delete("/api/auth/delete-account");
+export const deleteAccount = async (): Promise<{ message: string }> => {
+  const response = await api.delete<{ success: boolean; message: string }>(
+    API_ENDPOINTS.AUTH.DELETE_ACCOUNT,
+  );
   await clearAuthData();
+  return { message: response.data.message };
 };
+
+/**
+ * Silinme sürecindeki hesabı geri yükle
+ */
+export const restoreAccount = async (): Promise<{ message: string }> => {
+  const response = await api.post<{ success: boolean; message: string }>(
+    API_ENDPOINTS.AUTH.RESTORE_ACCOUNT,
+  );
+  return { message: response.data.message };
+};
+

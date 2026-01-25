@@ -15,7 +15,7 @@ import {
  * Health check endpoint
  */
 @ApiTags('health')
-@Controller('health')
+@Controller('api/health')
 export class HealthcheckController {
   private readonly startTime = Date.now();
 

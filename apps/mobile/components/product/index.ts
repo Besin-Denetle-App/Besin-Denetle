@@ -4,6 +4,7 @@
 
 export { HealthScore } from "./health-score";
 export { HistoryCard } from "./history-card";
+export { NovaGroup } from "./nova-group";
 export { NutritionTable } from "./nutrition-table";
 export { ProductImage } from "./product-image";
 export { ProductPopup } from "./product-popup";
