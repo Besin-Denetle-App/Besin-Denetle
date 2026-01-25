@@ -41,7 +41,7 @@ export class AiClientService {
       if (!this.modelFast || !this.modelSmart) {
         throw new Error(
           'GEMINI_MODEL_FAST ve GEMINI_MODEL_SMART env değişkenleri zorunlu! ' +
-            '.env dosyasını kontrol edin. Örn: gemini-3-flash-preview',
+          '.env dosyasını kontrol edin. Örn: gemini-3-flash-preview',
         );
       }
 
@@ -114,9 +114,18 @@ export class AiClientService {
 
       const text = response.text || '';
       if (!text.trim()) {
+        // Detaylı debug için response object'i logla
         this.appLogger.infrastructure('Gemini API returned empty response', {
           method: methodName,
           model: this.modelFast,
+          hasText: !!response.text,
+          hasCandidates: !!response.candidates,
+          candidatesLength: response.candidates?.length,
+          firstCandidate: response.candidates?.[0] ? {
+            finishReason: response.candidates[0].finishReason,
+            hasContent: !!response.candidates[0].content,
+            partsLength: response.candidates[0].content?.parts?.length,
+          } : null,
         });
         throw new HttpException('AI yanıtı boş döndü', HttpStatus.BAD_GATEWAY);
       }
