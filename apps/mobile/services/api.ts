@@ -247,14 +247,14 @@ export const parseApiError = (error: unknown): string => {
       return errorMessage;
     }
 
-    // Network hatası
+    // Network hatası - Sunucu kapalı veya bağlantı yok
     if (error.message === "Network Error") {
-      return "Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.";
+      return "🔧 Sunucu bakımda veya bağlantı sorunu. Lütfen birkaç dakika sonra tekrar deneyin.";
     }
 
     // timeout
     if (error.code === "ECONNABORTED") {
-      return "İstek zaman aşımına uğradı. Lütfen tekrar deneyin.";
+      return "⏳ Sunucu yanıt vermedi. Bakım yapılıyor olabilir, lütfen tekrar deneyin.";
     }
 
     // 5xx sunucu hatası

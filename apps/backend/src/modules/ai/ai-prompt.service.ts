@@ -70,7 +70,7 @@ Yanıtını SADECE aşağıdaki JSON formatında ver:
   "nutrition": {
     "energy": 0,
     "fat": 0,
-    "saturated_fat": 0,
+    "saturatedFat": 0,
     "cholesterol": 0,
     "carbohydrates": 0,
     "sugars": 0,
@@ -79,7 +79,7 @@ Yanıtını SADECE aşağıdaki JSON formatında ver:
     "fiber": 0,
     "protein": 0,
     "salt": 0,
-    "vitamins": {"vitamin_c": 0, "vitamin_d": 0},
+    "vitamins": {"vitaminC": 0, "vitaminD": 0},
     "minerals": {"calcium": 0, "iron": 0}
   }
 }`;

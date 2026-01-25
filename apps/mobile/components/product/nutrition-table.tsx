@@ -11,30 +11,43 @@ interface NutritionTableProps {
 // Besin değeri label'ları (Türkçe)
 const NUTRITION_LABELS: Record<string, string> = {
   servingSize: "Porsiyon",
-  calories: "Kalori",
-  protein: "Protein",
-  carbohydrates: "Karbonhidrat",
-  sugars: "Şeker",
+  energy: "Enerji",
   fat: "Yağ",
-  saturatedFat: "Doymuş Yağ",
+  saturatedFat: "Doymuş Yağ",  // └─ Alt
+  cholesterol: "Kolesterol",   // └─ Alt
+  carbohydrates: "Karbonhidrat",
+  sugars: "Şeker",      // └─ Alt
+  polyols: "Polioller", // └─ Alt
+  starch: "Nişasta",    // └─ Alt
   fiber: "Lif",
-  sodium: "Sodyum",
+  protein: "Protein",
   salt: "Tuz",
 };
 
 // Besin değeri birimleri
 const NUTRITION_UNITS: Record<string, string> = {
   servingSize: "",
-  calories: "kcal",
-  protein: "g",
-  carbohydrates: "g",
-  sugars: "g",
+  energy: "kcal",
   fat: "g",
   saturatedFat: "g",
+  cholesterol: "mg",
+  carbohydrates: "g",
+  sugars: "g",
+  polyols: "g",
+  starch: "g",
   fiber: "g",
-  sodium: "mg",
+  protein: "g",
   salt: "g",
 };
+
+// Hiyerarşik yapı: hangi alanlar alt seviye (girintili)
+const SUB_ITEMS = new Set([
+  "saturatedFat",
+  "cholesterol",
+  "sugars",
+  "polyols",
+  "starch",
+]);
 
 /**
  * Besin değerleri tablosu
@@ -58,17 +71,19 @@ export function NutritionTable({ nutrition }: NutritionTableProps) {
     );
   }
 
-  // Gösterilecek değerlerin sırası
+  // Gösterilecek değerlerin sırası (hiyerarşik)
   const orderedKeys = [
     "servingSize",
-    "calories",
-    "protein",
-    "carbohydrates",
-    "sugars",
+    "energy",
     "fat",
-    "saturatedFat",
+    "saturatedFat", // └─ Alt
+    "cholesterol", // └─ Alt
+    "carbohydrates",
+    "sugars", // └─ Alt
+    "polyols", // └─ Alt
+    "starch", // └─ Alt
     "fiber",
-    "sodium",
+    "protein",
     "salt",
   ];
 
@@ -93,15 +108,23 @@ export function NutritionTable({ nutrition }: NutritionTableProps) {
             ? `${value}${unit ? " " + unit : ""}`
             : String(value);
 
+        const isSubItem = SUB_ITEMS.has(key);
+
         return (
           <View
             key={key}
-            className={`flex-row justify-between px-4 py-3 ${
-              index % 2 === 0 ? "bg-card" : "bg-secondary/20"
-            }`}
+            className={`flex-row justify-between py-3 ${index % 2 === 0 ? "bg-card" : "bg-secondary/20"
+              } ${isSubItem ? "pl-8 pr-4" : "px-4"}`}
           >
-            <Text className="text-foreground">{label}</Text>
-            <Text className="text-foreground font-medium">{displayValue}</Text>
+            <Text
+              className={`text-foreground ${isSubItem ? "text-sm text-muted-foreground" : ""}`}
+            >
+              {isSubItem ? "└─ " : ""}
+              {label}
+            </Text>
+            <Text className={`font-medium ${isSubItem ? "text-sm text-muted-foreground" : "text-foreground"}`}>
+              {displayValue}
+            </Text>
           </View>
         );
       })}

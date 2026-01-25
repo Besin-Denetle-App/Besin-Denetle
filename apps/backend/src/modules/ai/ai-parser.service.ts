@@ -14,7 +14,7 @@ import { AppLogger } from '../../common';
  */
 @Injectable()
 export class AiParserService {
-  constructor(private readonly appLogger: AppLogger) {}
+  constructor(private readonly appLogger: AppLogger) { }
 
   // ========== Mock Data (API key yokken) ==========
 
@@ -56,14 +56,16 @@ export class AiParserService {
       allergens: ['Gluten', 'Süt ürünleri', 'Fındık izleri'],
       nutrition: {
         servingSize: '100g',
-        calories: 450,
-        protein: 6.5,
-        carbohydrates: 58,
-        sugars: 42,
+        energy: 450,
         fat: 22,
         saturatedFat: 13,
+        cholesterol: 15,
+        carbohydrates: 58,
+        sugars: 42,
+        polyols: 0,
+        starch: 10,
         fiber: 2.1,
-        sodium: 80,
+        protein: 6.5,
         salt: 0.2,
       },
       model: 'mock-gemini',

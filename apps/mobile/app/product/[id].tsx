@@ -20,7 +20,7 @@ import {
   View,
 } from "react-native";
 import PagerView from "react-native-pager-view";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useProductDetails } from "../../hooks/use-product-details";
 import { useProductStore } from "../../stores/product.store";
 
@@ -31,6 +31,7 @@ export default function ProductDetailScreen() {
   }>();
   const isReadonly = readonly === "true";
   const { colorScheme } = useColorScheme();
+  const insets = useSafeAreaInsets();
 
   // Tema renklerini merkezi dosyadan al
   const themeColors = colorScheme === "dark" ? COLORS.dark : COLORS.light;
@@ -249,7 +250,10 @@ export default function ProductDetailScreen() {
           ref={contentScrollRef}
           key="1"
           className="flex-1"
-          contentContainerStyle={{ padding: 16 }}
+          contentContainerStyle={{
+            padding: 16,
+            paddingBottom: 24 + insets.bottom,
+          }}
         >
           {/* Ürün Bilgileri */}
           <View className="items-center mb-6">
@@ -402,8 +406,8 @@ export default function ProductDetailScreen() {
               onPress={rejectContent}
               disabled={isLoading}
               className={`py-4 rounded-2xl items-center mb-8 ${isLoading
-                  ? "bg-muted border border-border"
-                  : "bg-destructive/10 border border-destructive/20"
+                ? "bg-muted border border-border"
+                : "bg-destructive/10 border border-destructive/20"
                 }`}
             >
               {isLoading ? (
@@ -427,7 +431,10 @@ export default function ProductDetailScreen() {
           ref={aiScrollRef}
           key="2"
           className="flex-1"
-          contentContainerStyle={{ padding: 16 }}
+          contentContainerStyle={{
+            padding: 16,
+            paddingBottom: 24 + insets.bottom,
+          }}
         >
           {analysis?.analysis_text ? (
             <>
@@ -594,8 +601,8 @@ export default function ProductDetailScreen() {
               onPress={rejectAnalysis}
               disabled={isLoading || isAnalysisLoading}
               className={`py-4 rounded-2xl items-center mb-8 ${isAnalysisLoading
-                  ? "bg-muted border border-border"
-                  : "bg-destructive/10 border border-destructive/20"
+                ? "bg-muted border border-border"
+                : "bg-destructive/10 border border-destructive/20"
                 }`}
             >
               {isAnalysisLoading ? (

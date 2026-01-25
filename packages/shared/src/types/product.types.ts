@@ -44,14 +44,16 @@ export interface ICreateProduct {
 export interface INutritionTable {
   [key: string]: string | number | undefined;  // Ek alanlar için esneklik
   servingSize?: string;              // Porsiyon boyutu (örn: "100g", "100ml")
-  calories?: number;                 // Kalori (kcal)
-  protein?: number;                  // Protein (g)
-  carbohydrates?: number;            // Karbonhidrat (g)
-  sugars?: number;                   // Şeker (g)
+  energy?: number;                   // Enerji (kcal)
   fat?: number;                      // Yağ (g)
   saturatedFat?: number;             // Doymuş yağ (g)
+  cholesterol?: number;              // Kolesterol (mg)
+  carbohydrates?: number;            // Karbonhidrat (g)
+  sugars?: number;                   // Şeker (g)
+  polyols?: number;                  // Polioller (g)
+  starch?: number;                   // Nişasta (g)
   fiber?: number;                    // Lif (g)
-  sodium?: number;                   // Sodyum (mg)
+  protein?: number;                  // Protein (g)
   salt?: number;                     // Tuz (g)
   _source?: string;                  // Veriyi sağlayan AI model adı
 }
