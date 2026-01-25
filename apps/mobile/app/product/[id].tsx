@@ -22,7 +22,7 @@ import {
   View,
 } from "react-native";
 import PagerView from "react-native-pager-view";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useProductDetails } from "../../hooks/use-product-details";
 import { useProductStore } from "../../stores/product.store";
 
@@ -33,7 +33,6 @@ export default function ProductDetailScreen() {
   }>();
   const isReadonly = readonly === "true";
   const { colorScheme } = useColorScheme();
-  const insets = useSafeAreaInsets();
 
   // Tema renklerini merkezi dosyadan al
   const themeColors = colorScheme === "dark" ? COLORS.dark : COLORS.light;
@@ -105,7 +104,7 @@ export default function ProductDetailScreen() {
   // Loading durumu - Skeleton
   if (isLoading && !product) {
     return (
-      <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
+      <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom"]}>
         {/* Header Skeleton */}
         <View className="flex-row items-center px-4 py-3 border-b border-border">
           <Skeleton width={40} height={40} borderRadius={8} />
@@ -162,7 +161,7 @@ export default function ProductDetailScreen() {
   // Hata durumu
   if (error && !product) {
     return (
-      <SafeAreaView className="flex-1 bg-background items-center justify-center px-6">
+      <SafeAreaView className="flex-1 bg-background items-center justify-center px-6" edges={["top", "bottom"]}>
         <Ionicons
           name="alert-circle-outline"
           size={64}
@@ -183,7 +182,7 @@ export default function ProductDetailScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom"]}>
       {/* Header */}
       <View className="flex-row items-center px-4 py-3 border-b border-border">
         <TouchableOpacity
@@ -254,7 +253,7 @@ export default function ProductDetailScreen() {
           className="flex-1"
           contentContainerStyle={{
             padding: 16,
-            paddingBottom: Math.max(insets.bottom, 32) + 24,
+            paddingBottom: 24,
           }}
         >
           {/* Ürün Bilgileri */}
@@ -451,7 +450,7 @@ export default function ProductDetailScreen() {
           className="flex-1"
           contentContainerStyle={{
             padding: 16,
-            paddingBottom: Math.max(insets.bottom, 32) + 24,
+            paddingBottom: 24,
           }}
         >
           {analysis?.analysis_text ? (

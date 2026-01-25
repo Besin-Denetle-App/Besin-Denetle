@@ -56,7 +56,7 @@ export default function EmailSignupScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom"]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
@@ -123,18 +123,16 @@ export default function EmailSignupScreen() {
           <TouchableOpacity
             onPress={handleSubmit}
             disabled={!isValid || isLoading}
-            className={`rounded-2xl py-4 items-center mt-8 ${
-              isValid ? "bg-primary" : "bg-muted"
-            }`}
+            className={`rounded-2xl py-4 items-center mt-8 ${isValid ? "bg-primary" : "bg-muted"
+              }`}
             activeOpacity={0.7}
           >
             {isLoading ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
               <Text
-                className={`font-bold text-base ${
-                  isValid ? "text-primary-foreground" : "text-muted-foreground"
-                }`}
+                className={`font-bold text-base ${isValid ? "text-primary-foreground" : "text-muted-foreground"
+                  }`}
               >
                 Devam Et
               </Text>

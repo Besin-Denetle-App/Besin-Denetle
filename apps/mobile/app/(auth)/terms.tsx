@@ -17,7 +17,7 @@ export default function TermsScreen() {
   const { colorScheme } = useColorScheme();
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom"]}>
       {/* Header */}
       <View className="flex-row items-center px-4 py-3 border-b border-border">
         <TouchableOpacity

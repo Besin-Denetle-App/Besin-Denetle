@@ -43,7 +43,7 @@ export default function RegisterScreen() {
   // Henüz hazır değilse loading göster
   if (!isReady) {
     return (
-      <SafeAreaView className="flex-1 bg-background items-center justify-center">
+      <SafeAreaView className="flex-1 bg-background items-center justify-center" edges={["top", "bottom"]}>
         <ActivityIndicator size="large" color={COLORS.primary} />
       </SafeAreaView>
     );

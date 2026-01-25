@@ -11,19 +11,19 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 /**
- * Gizlilik Politikası - Placeholder
- * TODO: gerçek içerik ile güncellenecek KVKK uyumlu metin alındığında güncelle
+ * Gizlilik Politikası Ekranı
+ * Kullanıcıların kişisel verilerinin nasıl işlendiğini açıklar.
  */
 export default function PrivacyScreen() {
   const { colorScheme } = useColorScheme();
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom"]}>
       {/* Header */}
       <View className="flex-row items-center px-4 py-3 border-b border-border">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="w-10 h-10 items-center justify-center"
+          className="w-10 h-10 items-center justify-center -ml-2"
         >
           <Ionicons
             name="arrow-back"
@@ -37,74 +37,102 @@ export default function PrivacyScreen() {
       </View>
 
       {/* İçerik */}
-      <ScrollView className="flex-1 px-6 py-6">
-        <Text className="text-foreground text-base leading-6 mb-4">
-          Bu politika, Besin Denetle uygulamasını kullanırken kişisel
-          verilerinizin nasıl toplandığını ve kullanıldığını açıklar.
+      <ScrollView className="flex-1 px-6 py-6" showsVerticalScrollIndicator={false}>
+        <Text className="text-foreground text-base leading-7 mb-6">
+          Besin Denetle olarak gizliliğinize önem veriyoruz. Bu politika, uygulamamızı kullanırken kişisel verilerinizin nasıl toplandığını, kullanıldığını ve korunduğunu açıklamaktadır.
         </Text>
 
-        <Text className="text-foreground font-bold text-lg mb-2">
-          1. Toplanan Veriler
-        </Text>
-        <Text className="text-muted-foreground text-base leading-6 mb-4">
-          • E-posta adresi ve kullanıcı adı (hesap oluşturmak için){"\n"}•
-          Taranan barkodlar ve ürün oylamalarınız{"\n"}• Son aktiflik zamanı
-        </Text>
+        <Section title="1. Toplanan Bilgiler">
+          <ListItem dot>
+            <Text className="font-bold">Kimlik Bilgileri:</Text> Kullanıcı adı ve şifrelenmiş OAuth kimlikleri (Google/Apple ID).
+          </ListItem>
+          <ListItem dot>
+            <Text className="font-bold">İletişim Bilgileri:</Text> E-posta adresi.
+          </ListItem>
+          <ListItem dot>
+            <Text className="font-bold">Kullanım Verileri:</Text> Taradığınız barkodlar, ürünlere verdiğiniz oylar ve raporlamalar.
+          </ListItem>
+          <ListItem dot>
+            <Text className="font-bold">Cihaz Bilgileri:</Text> Uygulama sürümü, işletim sistemi versiyonu ve tercih edilen tema ayarları.
+          </ListItem>
+        </Section>
 
-        <Text className="text-foreground font-bold text-lg mb-2">
-          2. Veri Kullanımı
-        </Text>
-        <Text className="text-muted-foreground text-base leading-6 mb-4">
-          Verileriniz yalnızca uygulama hizmetlerini sunmak için kullanılır.
-          Reklam veya pazarlama amacıyla üçüncü taraflarla paylaşılmaz.
-        </Text>
-
-        <Text className="text-foreground font-bold text-lg mb-2">
-          3. Veri Saklama
-        </Text>
-        <Text className="text-muted-foreground text-base leading-6 mb-4">
-          Verileriniz sunucularımızda saklanır. Hesabınızı sildiğinizde tüm
-          verileriniz anında kalıcı olarak silinir.
-        </Text>
-
-        <Text className="text-foreground font-bold text-lg mb-2">
-          4. Yerel Depolama
-        </Text>
-        <Text className="text-muted-foreground text-base leading-6 mb-4">
-          {`Oturum bilgileriniz (JWT token) cihazınızda güvenli şekilde saklanır. Tarama geçmişiniz cihazınızda yerel olarak tutulur.`}
-        </Text>
-
-        <Text className="text-foreground font-bold text-lg mb-2">
-          5. Haklarınız
-        </Text>
-        <Text className="text-muted-foreground text-base leading-6 mb-4">
-          Hesabınızı ve tüm verilerinizi istediğiniz zaman Ayarlar {">"}{" "}
-          Gelişmiş Ayarlar {">"} Hesabımı Sil seçeneğinden silebilirsiniz.
-        </Text>
-
-        <Text className="text-foreground font-bold text-lg mb-2">
-          6. İletişim
-        </Text>
-        <Text className="text-muted-foreground text-base leading-6 mb-1">
-          Sorularınız için:
-        </Text>
-        <TouchableOpacity
-          onPress={() =>
-            Linking.openURL(
-              "mailto:iletisim.furkancelik@gmail.com?subject=Besin%20Denetle%20App%20%7C%20Privacy",
-            )
-          }
-          activeOpacity={0.7}
-        >
-          <Text className="text-primary text-base font-medium underline mb-6">
-            iletisim.furkancelik@gmail.com
+        <Section title="2. Bilgilerin Kullanım Amacı">
+          <Text className="text-muted-foreground text-base leading-6 mb-2">
+            Topladığımız verileri şu amaçlarla kullanıyoruz:
           </Text>
-        </TouchableOpacity>
+          <ListItem>• Size kişiselleştirilmiş ürün analizleri sunmak.</ListItem>
+          <ListItem>• Topluluk destekli doğrulama sistemini (oylama) işletmek.</ListItem>
+          <ListItem>• Hesap güvenliğinizi sağlamak ve kötüye kullanımı önlemek.</ListItem>
+          <ListItem>• Uygulama performansını analiz etmek ve geliştirmek.</ListItem>
+        </Section>
 
-        <Text className="text-muted-foreground text-sm text-center mb-8">
-          Son güncelleme: Ocak 2026
+        <Section title="3. Veri Paylaşımı">
+          <Text className="text-muted-foreground text-base leading-6 mb-2">
+            Kişisel verileriniz, yasal zorunluluklar dışında üçüncü şahıslarla paylaşılmaz. Verileriniz reklam veya pazarlama amacıyla satılmaz.
+          </Text>
+          <Text className="text-muted-foreground text-base leading-6">
+            Yapay zeka analizleri için gönderilen verilerde (barkod, içerik listesi) kişisel kimlik bilgileriniz yer almaz.
+          </Text>
+        </Section>
+
+        <Section title="4. Veri Güvenliği">
+          <Text className="text-muted-foreground text-base leading-6">
+            Verileriniz endüstri standardı şifreleme yöntemleri (SSL/TLS) ile korunmaktadır. Kimlik doğrulama işlemleri OAuth 2.0 protokolü üzerinden güvenli bir şekilde gerçekleştirilir.
+          </Text>
+        </Section>
+
+        <Section title="5. Kullanıcı Hakları">
+          <Text className="text-muted-foreground text-base leading-6 mb-2">
+            Uygulama üzerinden dilediğiniz zaman:
+          </Text>
+          <ListItem>• Geçmiş taramalarınızı silebilirsiniz (Yerel verileri temizle).</ListItem>
+          <ListItem>• Hesabınızı ve sunucudaki tüm verilerinizi silebilirsiniz.</ListItem>
+        </Section>
+
+        <Section title="6. İletişim">
+          <Text className="text-muted-foreground text-base leading-6 mb-2">
+            Gizlilik politikamızla ilgili sorularınız için bizimle iletişime geçebilirsiniz:
+          </Text>
+          <TouchableOpacity
+            onPress={() =>
+              Linking.openURL(
+                "mailto:iletisim.furkancelik@gmail.com?subject=Besin%20Denetle%20Gizlilik%20Politikası"
+              )
+            }
+          >
+            <Text className="text-primary text-base font-semibold underline">
+              iletisim.furkancelik@gmail.com
+            </Text>
+          </TouchableOpacity>
+        </Section>
+
+        <Text className="text-muted-foreground text-sm text-center mt-4 mb-8">
+          Son Güncelleme: 25 Ocak 2026
         </Text>
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+// Yardımcı Bileşenler
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <View className="mb-6">
+      <Text className="text-foreground font-bold text-lg mb-3">{title}</Text>
+      <View>{children}</View>
+    </View>
+  );
+}
+
+function ListItem({ children, dot }: { children: React.ReactNode; dot?: boolean }) {
+  return (
+    <View className="flex-row mb-2">
+      {dot && <Text className="text-foreground mr-2 text-base">•</Text>}
+      <Text className="text-muted-foreground text-base leading-6 flex-1">
+        {children}
+      </Text>
+    </View>
+  );
+}
+

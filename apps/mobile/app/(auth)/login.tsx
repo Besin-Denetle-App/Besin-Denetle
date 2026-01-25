@@ -170,7 +170,7 @@ export default function LoginScreen() {
   */
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom"]}>
       <View className="flex-1 px-6 justify-center">
         {/* Logo ve Başlık */}
         <View className="items-center mb-12">

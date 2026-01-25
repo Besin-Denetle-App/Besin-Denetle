@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { ProductImage } from "./product-image";
 
 // AI arama mesajını gösterme gecikmesi (ms)
@@ -73,10 +73,6 @@ export function ProductPopup({
   onFlag,
 }: ProductPopupProps) {
   const { colorScheme } = useColorScheme();
-  const insets = useSafeAreaInsets();
-
-  // Safe area için dinamik bottom padding (en az 32px = pb-8)
-  const bottomPadding = Math.max(insets.bottom, 32);
 
   // Temaya göre error rengi
   const errorColor =
@@ -126,9 +122,9 @@ export function ProductPopup({
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={0}
         >
-          <View
-            className="bg-card rounded-t-3xl px-6 pt-6"
-            style={{ paddingBottom: bottomPadding }}
+          <SafeAreaView
+            className="bg-card rounded-t-3xl px-6 pt-6 pb-4"
+            edges={["bottom"]}
           >
             {/* Kapat Butonu */}
             <TouchableOpacity
@@ -345,7 +341,7 @@ export function ProductPopup({
                 </TouchableOpacity>
               </View>
             )}
-          </View>
+          </SafeAreaView>
         </KeyboardAvoidingView>
       </View>
     </Modal>
