@@ -104,18 +104,10 @@ export class AiService {
       Omit<AIContentResult, 'model'>
     >(prompt, 'getProductContent');
 
-    const model = this.clientService.getModelFast();
-
-    // DEBUG LOG: Model bilgisi
-    this.appLogger.business('AI GetProductContent completed', {
-      model,
-      envModelFast: process.env.GEMINI_MODEL_FAST,
-    });
-
     // Model bilgisini ekle
     return {
       ...result,
-      model,
+      model: this.clientService.getModelFast(),
     };
   }
 
