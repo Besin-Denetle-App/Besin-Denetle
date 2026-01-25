@@ -69,18 +69,6 @@ const getBaseUrl = (): string => {
 const BASE_URL = getBaseUrl();
 console.log("API Base URL:", BASE_URL);
 
-// Retry konfigürasyonu
-const RETRY_CONFIG = {
-  maxRetries: 3,
-  baseDelay: 1000, // 1sn
-  maxDelay: 8000, // max 8sn
-};
-
-// Retry sayıcı için extended config
-interface RetryConfig extends InternalAxiosRequestConfig {
-  _retryCount?: number;
-}
-
 // Axios instance
 export const api = axios.create({
   baseURL: BASE_URL,
@@ -102,17 +90,14 @@ api.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Response interceptor - hata yönetimi ve retry
+// Response interceptor - hata yönetimi
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    const config = error.config as RetryConfig | undefined;
+    const config = error.config;
     if (!config) {
       return Promise.reject(error);
     }
-
-    // Retry sayıcı
-    config._retryCount = config._retryCount ?? 0;
 
     // 401: Token yenileme dene
     if (error.response?.status === 401) {
@@ -141,39 +126,8 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // 4xx client hataları - retry yok
-    if (
-      error.response?.status &&
-      error.response.status >= 400 &&
-      error.response.status < 500
-    ) {
-      return Promise.reject(error);
-    }
-
-    // 5xx veya network hatası - retry
-    const shouldRetry =
-      (error.response?.status && error.response.status >= 500) ||
-      error.code === "ECONNABORTED" ||
-      error.message === "Network Error";
-
-    if (shouldRetry && config._retryCount < RETRY_CONFIG.maxRetries) {
-      config._retryCount += 1;
-
-      // Exponential backoff (1s, 2s, 4s)
-      const delay = Math.min(
-        RETRY_CONFIG.baseDelay * Math.pow(2, config._retryCount - 1),
-        RETRY_CONFIG.maxDelay,
-      );
-
-      console.log(
-        `Retry ${config._retryCount}/${RETRY_CONFIG.maxRetries} - ${delay}ms sonra tekrar denenecek`,
-      );
-
-      // Bekle ve tekrar dene
-      await new Promise((resolve) => setTimeout(resolve, delay));
-      return api(config);
-    }
-
+    // Diğer tüm hatalar - retry YOK, direkt hata göster
+    // Kullanıcı isterse manuel olarak tekrar denesin
     return Promise.reject(error);
   },
 );

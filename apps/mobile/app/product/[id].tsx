@@ -254,7 +254,7 @@ export default function ProductDetailScreen() {
           className="flex-1"
           contentContainerStyle={{
             padding: 16,
-            paddingBottom: 24 + insets.bottom,
+            paddingBottom: Math.max(insets.bottom, 32) + 24,
           }}
         >
           {/* Ürün Bilgileri */}
@@ -348,6 +348,9 @@ export default function ProductDetailScreen() {
             {isLoading && !content ? (
               <View className="bg-card border border-border rounded-2xl p-4 items-center py-6">
                 <ActivityIndicator size="small" color={COLORS.primary} />
+                <Text className="text-muted-foreground mt-2 text-sm">
+                  Alerjenler yükleniyor...
+                </Text>
               </View>
             ) : content?.allergens ? (
               <View className="flex-row flex-wrap gap-2">
@@ -448,7 +451,7 @@ export default function ProductDetailScreen() {
           className="flex-1"
           contentContainerStyle={{
             padding: 16,
-            paddingBottom: 24 + insets.bottom,
+            paddingBottom: Math.max(insets.bottom, 32) + 24,
           }}
         >
           {analysis?.analysis_text ? (
