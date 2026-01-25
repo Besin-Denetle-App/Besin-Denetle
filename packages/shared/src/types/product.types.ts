@@ -94,8 +94,10 @@ export interface ICreateProductContent {
 export interface IAnalysisResult {
   model: string;                // Kullanılan AI model adı (örn: gemini-3-pro-preview)
   summary: string;              // 3-5 cümlelik genel değerlendirme
-  healthScore: number;          // 1-10 arası sağlık puanı (1=kötü, 10=mükemmel)
+  healthScore: number;          // 1-10 arası sağlık puanı (NOVA + Nutri-Score kombinasyonu)
   novaGroup: number;            // 1-4 arası NOVA sınıflandırması (1=doğal, 4=ultra işlenmiş)
+  novaReason: string;           // NOVA grubunun kısa gerekçesi (örn: "Aroma ve emülgatör içeriyor")
+  nutriScore: string;           // Nutri-Score harfi: A, B, C, D veya E
   warnings: string[];           // Kısa uyarı etiketleri (örn: "Yüksek Şeker", "E250")
   positives: string[];          // Kısa olumlu etiketler (örn: "Protein Kaynağı")
   warning_summary: string;      // Risklerin detaylı paragraf açıklaması

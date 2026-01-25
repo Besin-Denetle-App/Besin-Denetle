@@ -1,9 +1,10 @@
 import { showSuccessToast } from "@/components/feedback";
 import {
-  HealthScore,
-  NovaGroup,
-  NutritionTable,
-  ProductImage,
+    HealthScore,
+    NovaGroup,
+    NutriScore,
+    NutritionTable,
+    ProductImage,
 } from "@/components/product";
 import { Skeleton } from "@/components/ui/skeleton";
 import { COLORS } from "@/constants";
@@ -13,13 +14,13 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useColorScheme } from "nativewind";
 import { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  Animated,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
+    ActivityIndicator,
+    Animated,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    useWindowDimensions,
+    View,
 } from "react-native";
 import PagerView from "react-native-pager-view";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -455,13 +456,30 @@ export default function ProductDetailScreen() {
         >
           {analysis?.analysis_text ? (
             <>
-              {/* Health Score ve Nova Group */}
-              <View className="flex-row items-center justify-center gap-8 mb-8">
-                <HealthScore score={analysis.analysis_text.healthScore} />
+              {/* NOVA - Health Score - Nutri-Score (3'lü düzen) */}
+              <View className="flex-row items-center justify-center gap-4 mb-8">
+                {/* Sol: NOVA */}
                 {analysis.analysis_text.novaGroup && (
                   <NovaGroup group={analysis.analysis_text.novaGroup} />
                 )}
+                
+                {/* Orta: Health Score */}
+                <HealthScore score={analysis.analysis_text.healthScore} />
+                
+                {/* Sağ: Nutri-Score */}
+                {analysis.analysis_text.nutriScore && (
+                  <NutriScore score={analysis.analysis_text.nutriScore} />
+                )}
               </View>
+              
+              {/* NOVA Gerekçesi */}
+              {analysis.analysis_text.novaReason && (
+                <View className="bg-card border border-border rounded-2xl p-3 mb-6 -mt-4">
+                  <Text className="text-muted-foreground text-sm text-center">
+                    💡 {analysis.analysis_text.novaReason}
+                  </Text>
+                </View>
+              )}
 
               {/* Özet */}
               <View className="mb-6">

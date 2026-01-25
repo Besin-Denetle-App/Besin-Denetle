@@ -1,8 +1,8 @@
 import {
-  AIAnalysisResult,
-  AIContentResult,
-  AIProductResult,
-  ProductType,
+    AIAnalysisResult,
+    AIContentResult,
+    AIProductResult,
+    ProductType,
 } from '@besin-denetle/shared';
 import { Injectable } from '@nestjs/common';
 import { AppLogger } from '../../common';
@@ -81,6 +81,8 @@ export class AiParserService {
         'Bu ürün yüksek şeker ve doymuş yağ içermektedir. NOVA 4 kategorisinde ultra işlenmiş bir gıdadır. Ara sıra tüketim için uygundur ancak düzenli tüketim önerilmez.',
       healthScore: 4,
       novaGroup: 4,
+      novaReason: 'Aroma, emülgatör ve stabilizatör içeriyor.',
+      nutriScore: 'D',
       warnings: ['Yüksek şeker içeriği', 'Doymuş yağ oranı yüksek', 'E250'],
       positives: ['Protein kaynağı', 'Lif içerir'],
       warning_summary:

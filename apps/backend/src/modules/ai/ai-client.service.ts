@@ -277,7 +277,7 @@ export class AiClientService {
         model: this.modelSmart,
         contents: prompt,
         config: {
-          temperature: 0.7, // Yaratıcı sağlık yorumları için dengeli temperature
+          temperature: 0.8, // Yaratıcı sağlık yorumları için dengeli temperature
           responseMimeType: 'application/json',
           responseSchema,
         },

@@ -49,7 +49,7 @@ Bulduğun tüm verileri şemaya uygun doldur.`;
     name: string | null,
     quantity: string | null,
   ): string {
-    return `Sen bir gıda veri uzmanısın. Aşağıdaki ürünün gerçek paket verilerini web'de bul.
+    return `Sen bir gıda veri uzmanısın. Aşağıdaki ürünün içindekiler listesini ve besin değerlerini bul.
 
 ÜRÜN BİLGİSİ:
 - Marka: ${brand || 'Bilinmiyor'}
@@ -102,38 +102,48 @@ Yanıtını SADECE aşağıdaki JSON formatında ver:
       : 'Bilinmiyor';
 
     return `Sen Beslenme ve Gıda Güvenliği Uzmanısın.
-Motto: "Hem içeriğin doğallığına (katkı maddeleri) hem de besin değerlerinin dengesine (şeker/protein) aynı anda odaklan."
+Motto: "Gıdayı hem işlenme derecesine (NOVA) hem de besin kalitesine (Nutri-Score) göre bütüncül değerlendir."
 
 ÜRÜN BİLGİSİ:
 - Marka: ${brand || 'Bilinmiyor'}
 - İsim: ${name || 'Bilinmiyor'}
 
-İÇİNDEKİLER:
+İÇİNDEKİLER (NOVA için kritik):
 ${ingredients || 'Bilinmiyor'}
 
 ALERJENLER:
 ${allergens || 'Bilinmiyor'}
 
-BESİN DEĞERLERİ (100g başına):
+BESİN DEĞERLERİ (100g başına - Nutri-Score için kritik):
 ${nutritionStr}
 
 GÖREVLER:
-1. NOVA Analizi: Ürünü NOVA sınıflandırmasına (1-4) göre değerlendir.
-   - NOVA 1: İşlenmemiş veya minimal işlenmiş gıdalar
-   - NOVA 2: İşlenmiş mutfak malzemeleri
-   - NOVA 3: İşlenmiş gıdalar
-   - NOVA 4: Ultra işlenmiş gıdalar
+1. NOVA Analizi (İşlenme Derecesi):
+- İçindekiler listesini analiz et ve ürünü 1-4 arasında sınıflandır.
+   - NOVA 1: İşlenmemiş/Minimal
+   - NOVA 2: İşlenmiş Mutfak Malzemeleri
+   - NOVA 3: İşlenmiş Gıdalar
+   - NOVA 4: Ultra İşlenmiş (Aroma, renklendirici, emülgatör vb. içerenler)
+   *Karar gerekçeni kısaca belirt.*
 
-2. Katkı Maddesi Analizi: Riskli E-kodlarını tespit et.
+2. Nutri-Score Tahmini (Besin Kalitesi):
+   - Verilen besin değerlerini (Enerji, Şeker, Doymuş Yağ, Tuz vs. Protein, Lif) baz alarak A, B, C, D, E harflerinden birini ata.
+   - A (Yeşil/En İyi) -> E (Kırmızı/En Kötü).
+   - Eğer besin değerleri eksikse, içindekiler listesine bakarak eğitimli bir tahminde bulun.
 
-3. Sağlık Puanı (1-10): Aşağıdaki matrise göre puanla.
+3. Katkı Maddesi Analizi:
+   - Riskli E-kodlarını veya şüpheli bileşenleri tespit et.
 
-PUANLAMA MATRİSİ (MOBİL UYGULAMA RENKLERİNE GÖRE):
-- 1-3 Puan (Kırmızı): Riskli/Kötü. NOVA 4, Çok yüksek şeker/tuz, Riskli katkılar.
-- 4-6 Puan (Turuncu): Orta. Bazı iyi yönleri var ama kusurlu (örn: Doğal ama çok şekerli).
-- 7-10 Puan (Yeşil): İyi/Mükemmel. NOVA 1-2, Katkısız, Dengeli.
+4. Genel Sağlık Puanı (1-10):
+   - NOVA ve Nutri-Score sonuçlarını birleştirerek nihai bir puan ver.
 
-4. Uyarılar ve Olumlu Yönler: Hem kısa etiketler hem de detaylı açıklamalar yaz.
+   PUANLAMA MATRİSİ:
+   - 8-10 (Yeşil): NOVA 1-2 VE Nutri-Score A-B (Doğal ve Besleyici).
+   - 5-7 (Turuncu): NOVA 3 veya Nutri-Score C-D (Bazı kusurları var).
+   - 1-4 (Kırmızı): NOVA 4 veya Nutri-Score E (Ultra işlenmiş veya besin değeri çok düşük).
+
+5. Sonuç Özeti:
+   - Kullanıcıya "Neden bu puanı aldı?" sorusunu cevaplayan, hem iyi hem kötü yönleri içeren kısa, net uyarılar ve övgüler yaz.
 
 Yanıtını TÜRKÇE olarak ver. Çıktıyı şemaya uygun olarak doldur.`;
   }

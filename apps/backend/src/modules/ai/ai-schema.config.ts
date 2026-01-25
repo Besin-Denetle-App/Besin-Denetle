@@ -136,11 +136,19 @@ export const ANALYZE_CONTENT_SCHEMA = {
     },
     healthScore: {
       type: Type.NUMBER,
-      description: '1-10 arası sağlık puanı',
+      description: '1-10 arası sağlık puanı (NOVA + Nutri-Score kombinasyonu)',
     },
     novaGroup: {
       type: Type.NUMBER,
       description: '1-4 arası NOVA grubu',
+    },
+    novaReason: {
+      type: Type.STRING,
+      description: 'NOVA grubunun kısa gerekçesi (örn: "Aroma ve emülgatör içeriyor")',
+    },
+    nutriScore: {
+      type: Type.STRING,
+      description: 'Nutri-Score harfi: A, B, C, D veya E',
     },
     warnings: {
       type: Type.ARRAY,
@@ -169,6 +177,8 @@ export const ANALYZE_CONTENT_SCHEMA = {
     'summary',
     'healthScore',
     'novaGroup',
+    'novaReason',
+    'nutriScore',
     'warnings',
     'positives',
     'warning_summary',
