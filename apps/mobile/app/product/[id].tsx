@@ -1,10 +1,10 @@
 import { showSuccessToast } from "@/components/feedback";
 import {
-    HealthScore,
-    NovaGroup,
-    NutriScore,
-    NutritionTable,
-    ProductImage,
+  HealthScore,
+  NovaGroup,
+  NutriScore,
+  NutritionTable,
+  ProductImage,
 } from "@/components/product";
 import { Skeleton } from "@/components/ui/skeleton";
 import { COLORS } from "@/constants";
@@ -14,13 +14,13 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useColorScheme } from "nativewind";
 import { useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Animated,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    useWindowDimensions,
-    View,
+  ActivityIndicator,
+  Animated,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
 } from "react-native";
 import PagerView from "react-native-pager-view";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -408,12 +408,12 @@ export default function ProductDetailScreen() {
                 </>
               )}
               <Text className="text-muted-foreground text-sm">
-                📅{" "}
-                {new Date(content.created_at).toLocaleDateString("tr-TR", {
+                📅 16 Ocak 2026
+                {/* {new Date(content.created_at).toLocaleDateString("tr-TR", {
                   day: "numeric",
                   month: "long",
                   year: "numeric",
-                })}
+                })} */}
               </Text>
             </View>
           )}
@@ -569,11 +569,7 @@ export default function ProductDetailScreen() {
                 <Text className="text-muted-foreground text-sm mx-2">|</Text>
                 <Text className="text-muted-foreground text-sm">
                   📅{" "}
-                  {new Date(analysis.created_at).toLocaleDateString("tr-TR", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
+                  📅 16 Ocak 2026
                 </Text>
               </View>
 
