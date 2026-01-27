@@ -43,6 +43,13 @@ module.exports = {
         NODE_ENV: "production", // PM2 her zaman production modunda
       },
       time: true, // Loglara zaman damgası ekle
+      // Log rotation ayarları
+      log_date_format: "YYYY-MM-DDTHH:mm:ss",
+      error_file: "~/.pm2/logs/besin-denetle/besin-denetle-error.log",
+      out_file: "~/.pm2/logs/besin-denetle/besin-denetle-out.log",
+      merge_logs: true, // Tüm instance'ların loglarını birleştir
+      max_restarts: 10, // 10 restart sonrası durdurmayı durdur (crash loop koruması)
+      min_uptime: "10s", // En az 10 saniye çalışmazsa restart sayılır
     },
   ],
 };
