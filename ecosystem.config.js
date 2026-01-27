@@ -31,7 +31,7 @@ const envVars = loadEnvFile(envPath);
 module.exports = {
   apps: [
     {
-      name: "besin-denetle-backend",
+      name: "besin-denetle",
       script: "apps/backend/dist/main.js",
       cwd: __dirname,
       instances: 2,
