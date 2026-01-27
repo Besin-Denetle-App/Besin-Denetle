@@ -3,20 +3,22 @@ import { Injectable } from '@nestjs/common';
 /**
  * AI Prompt Service
  * Tüm Gemini API promptlarını merkezi olarak yönetir.
- * Promptları düzenlemek, versiyonlamak ve A/B test yapmak için kullanılır.
  *
- * NOT: JSON format talimatları kaldırıldı çünkü Structured Output (responseSchema) kullanılıyor.
+ * Prompt 1-2 için V1/V2 versiyonları:
+ * - V1: Schema-uyumlu (JSON talimatı yok, schema zaten zorluyor)
+ * - V2: JSON talimatları dahil (backup model için, schema olmadan çalışır)
  *
- * @version 2.0 (Ocak 2026 - Gemini 3 + Structured Output)
+ * @version 3.0 (Ocak 2026 - Fallback Sistemi)
  */
 @Injectable()
 export class AiPromptService {
+  // ========== PROMPT 1: ÜRÜN TANIMLAMA ==========
+
   /**
-   * PROMPT 1: Ürün Tanımlama
-   * Barkoddan marka/isim/gramaj bilgisi çeker
-   * Google Search grounding + Structured Output
+   * PROMPT 1 - V1 (Primary): Schema-uyumlu
+   * Grounding + Schema ile çalışır, JSON format talimatı yok
    */
-  buildIdentifyProductPrompt(barcode: string): string {
+  buildIdentifyProductPromptV1(barcode: string): string {
     return `Sen Türkiye pazarındaki ürünler konusunda uzmanlaşmış bir veri asistanısın.
 Aşağıdaki barkod numarasına sahip ürünü web'de detaylıca ara.
 
@@ -40,11 +42,48 @@ Bulduğun tüm verileri şemaya uygun doldur.`;
   }
 
   /**
-   * PROMPT 2: İçerik Bilgisi
-   * Ürünün içindekiler listesi + besin değerleri
-   * Google Search grounding + Structured Output
+   * PROMPT 1 - V2 (Backup): JSON talimatları dahil
+   * Sadece Grounding ile çalışır, Schema yok
    */
-  buildGetProductContentPrompt(
+  buildIdentifyProductPromptV2(barcode: string): string {
+    return `Sen Türkiye pazarındaki ürünler konusunda uzmanlaşmış bir veri asistanısın.
+Aşağıdaki barkod numarasına sahip ürünü web'de detaylıca ara.
+
+Barkod: ${barcode}
+
+ÜRÜN TİPİ BELİRLEME KURALLARI:
+0 = Belirsiz (ürünü bulamadın veya emin değilsin)
+1 = İnsan yiyeceği (gıda, yemek, bisküvi, çikolata, süt ürünleri, meyve, sebze vb.)
+2 = İnsan içeceği (su, meyve suyu, çay, kahve, enerji içeceği vb.)
+3 = Evcil hayvan yiyeceği/içeceği (kedi maması, köpek maması, kuş yemi vb.)
+9 = Diğer (gıda değil - elektronik, giyim, kozmetik, oyuncak vb.)
+
+ÖNEMLİ KURALLAR:
+1. Ürün tipini yukarıdaki kurallara göre belirle.
+2. Gramaj bilgisini başlık ve açıklamalardan hassas şekilde çek.
+3. Bulamadığın alanları null bırak, tahmin etme.
+4. Eğer ürünü kesin bulamazsan confidence skorunu 50'nin altına düşür.
+5. Ürünü net bulduysan confidence skoru 70-100 arası olmalı.
+
+Yanıtını SADECE aşağıdaki JSON formatında ver, başka hiçbir açıklama ekleme:
+{
+  "productType": 0,
+  "confidence": 0,
+  "product": {
+    "brand": "marka veya null",
+    "name": "ürün adı veya null",
+    "quantity": "gramaj veya null"
+  }
+}`;
+  }
+
+  // ========== PROMPT 2: İÇERİK BİLGİSİ ==========
+
+  /**
+   * PROMPT 2 - V1 (Primary): Schema-uyumlu
+   * Grounding + Schema ile çalışır, JSON format talimatı yok
+   */
+  buildGetProductContentPromptV1(
     brand: string | null,
     name: string | null,
     quantity: string | null,
@@ -63,11 +102,38 @@ Bulduğun tüm verileri şemaya uygun doldur.`;
 4. Bulamadığın alanları null bırak, tahmin etme.
 5. Sadece resmi/güvenilir kaynaklardan veri al.
 
-Yanıtını SADECE aşağıdaki JSON formatında ver:
+Bulduğun tüm verileri şemaya uygun doldur.`;
+  }
+
+  /**
+   * PROMPT 2 - V2 (Backup): JSON talimatları dahil
+   * Sadece Grounding ile çalışır, Schema yok
+   */
+  buildGetProductContentPromptV2(
+    brand: string | null,
+    name: string | null,
+    quantity: string | null,
+  ): string {
+    return `Sen bir gıda veri uzmanısın. Aşağıdaki ürünün içindekiler listesini ve besin değerlerini bul.
+
+ÜRÜN BİLGİSİ:
+- Marka: ${brand || 'Bilinmiyor'}
+- İsim: ${name || 'Bilinmiyor'}
+- Gramaj: ${quantity || 'Bilinmiyor'}
+
+ÖNEMLİ KURALLAR:
+1. İçindekiler listesini temiz ve düzgün formatta yaz.
+2. Alerjenleri ayrı ayrı dizi olarak belirt (örn: ["Gluten", "Süt", "Fındık"]).
+3. Besin değerleri HER ZAMAN 100g (veya 100ml) başına olmalı.
+4. Bulamadığın alanları null bırak, tahmin etme.
+5. Sadece resmi/güvenilir kaynaklardan veri al.
+
+Yanıtını SADECE aşağıdaki JSON formatında ver, başka hiçbir açıklama ekleme:
 {
-  "ingredients": "içindekiler listesi string olarak",
+  "ingredients": "içindekiler listesi string olarak veya null",
   "allergens": ["alerjen1", "alerjen2"],
   "nutrition": {
+    "servingSize": "100g",
     "energy": 0,
     "fat": 0,
     "saturatedFat": 0,
@@ -79,16 +145,18 @@ Yanıtını SADECE aşağıdaki JSON formatında ver:
     "fiber": 0,
     "protein": 0,
     "salt": 0,
-    "vitamins": {"vitaminC": 0, "vitaminD": 0},
-    "minerals": {"calcium": 0, "iron": 0}
+    "vitamins": null,
+    "minerals": null
   }
 }`;
   }
 
+  // ========== PROMPT 3: SAĞLIK ANALİZİ ==========
+
   /**
    * PROMPT 3: Sağlık Analizi
    * İçerik bilgisine göre sağlık değerlendirmesi
-   * Structured Output (Google Search yok)
+   * Structured Output (Google Search yok) - Fallback yok
    */
   buildAnalyzeContentPrompt(
     brand: string | null,

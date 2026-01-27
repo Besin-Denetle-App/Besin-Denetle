@@ -17,11 +17,15 @@ export const createLoggerConfig = () => {
       format: winston.format.combine(
         winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
         winston.format.ms(),
-        winston.format.printf(({ level, message, timestamp, ms, context, category, metadata }) => {
+        winston.format.printf((info) => {
+          const { level, message, timestamp, ms, context, category, metadata } =
+            info;
           const appName = 'BesinDenetle';
-          const ctx = context as any;
+          const ctx = context as { requestId?: string } | undefined;
           const contextStr = ctx?.requestId ? `[${ctx.requestId}] ` : '';
-          const metaStr = metadata ? ` - ${JSON.stringify({ category, metadata })}` : '';
+          const metaStr = metadata
+            ? ` - ${JSON.stringify({ category, metadata })}`
+            : '';
 
           // Renk kodları (development için)
           const colors: Record<string, string> = {
@@ -31,11 +35,12 @@ export const createLoggerConfig = () => {
             debug: '\x1b[36m',
           };
           const reset = '\x1b[0m';
-          const color = isProduction ? '' : (colors[level] || '');
+          const color = isProduction ? '' : colors[String(level)] || '';
           const resetColor = isProduction ? '' : reset;
 
-          const levelUpper = level.toUpperCase().padEnd(5);
-          return `[${appName}] ${contextStr}${timestamp} ${color}${levelUpper}${resetColor} ${message}${metaStr} ${ms}`;
+          const levelUpper = String(level).toUpperCase().padEnd(5);
+          const msStr = typeof ms === 'string' ? ms : '';
+          return `[${appName}] ${contextStr}${String(timestamp)} ${color}${levelUpper}${resetColor} ${String(message)}${metaStr} ${msStr}`;
         }),
       ),
     }),

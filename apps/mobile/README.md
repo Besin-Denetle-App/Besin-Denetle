@@ -109,7 +109,7 @@ eas login
 **Environment Variables (EAS Secrets):**
 ```bash
 # Production için
-eas env:create --name API_URL --value "https://besindenetle.furkanpasa.com/api" --type string --visibility secret --environment production
+eas env:create --name API_URL --value "https://besindenetle.furkanpasa.com/" --type string --visibility secret --environment production
 ```
 
 **Build Alma:**

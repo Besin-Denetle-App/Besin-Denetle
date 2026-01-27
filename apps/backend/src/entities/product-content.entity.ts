@@ -45,6 +45,10 @@ export class ProductContent {
   @Column({ type: 'jsonb', nullable: true })
   nutrition_table: INutritionTable | null;
 
+  // Kullanılan AI model adı (örn: gemini-3-flash-preview)
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  model: string | null;
+
   // Skor
   @Column({ type: 'int', default: 0 })
   @Index()

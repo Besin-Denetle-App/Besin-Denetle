@@ -10,7 +10,8 @@ import { AiParserService } from './ai-parser.service';
 import { AiPromptService } from './ai-prompt.service';
 import {
   ANALYZE_CONTENT_SCHEMA,
-  IDENTIFY_PRODUCT_SCHEMA
+  GET_PRODUCT_CONTENT_SCHEMA,
+  IDENTIFY_PRODUCT_SCHEMA,
 } from './ai-schema.config';
 
 /**
@@ -18,11 +19,13 @@ import {
  * Diğer AI servislerini koordine eder.
  *
  * 3 farklı prompt için Gemini API kullanımı:
- * 1. identifyProduct - barkoddan ürün bilgisi (grounding + schema)
- * 2. getProductContent - içindekiler + besin değerleri (grounding + schema)
- * 3. analyzeContent - sağlık analizi (sadece schema, grounding yok)
+ * 1. identifyProduct - barkoddan ürün bilgisi (grounding + fallback)
+ * 2. getProductContent - içindekiler + besin değerleri (grounding + fallback)
+ * 3. analyzeContent - sağlık analizi (sadece schema, fallback yok)
  *
- * Gemini 3 Structured Output (responseSchema) ile %100 type-safe çıktılar.
+ * Fallback Sistemi: Primary başarısız olursa backup model devreye girer.
+ *
+ * @version 3.0 (Ocak 2026 - Fallback Sistemi)
  */
 @Injectable()
 export class AiService {
@@ -31,13 +34,13 @@ export class AiService {
     private readonly clientService: AiClientService,
     private readonly parserService: AiParserService,
     private readonly appLogger: AppLogger,
-  ) { }
+  ) {}
 
   // ========== PROMPT 1: Ürün Tanımlama ==========
 
   /**
    * Barkoddan marka/isim/gramaj bilgisi çeker
-   * Google Search grounding + Structured Output
+   * Google Search grounding + Fallback sistemi
    * @returns AIProductResult veya null (confidence < 50 ise)
    */
   async identifyProduct(barcode: string): Promise<AIProductResult | null> {
@@ -46,15 +49,18 @@ export class AiService {
       return this.parserService.mockIdentifyProduct(barcode);
     }
 
-    // Prompt oluştur
-    const prompt = this.promptService.buildIdentifyProductPrompt(barcode);
+    // V1 ve V2 promptları oluştur
+    const promptV1 = this.promptService.buildIdentifyProductPromptV1(barcode);
+    const promptV2 = this.promptService.buildIdentifyProductPromptV2(barcode);
 
-    // API çağrısı (grounding + schema ile)
-    const result = await this.clientService.callWithGrounding<AIProductResult>(
-      prompt,
-      'identifyProduct',
-      IDENTIFY_PRODUCT_SCHEMA,
-    );
+    // API çağrısı (fallback sistemi ile)
+    const result =
+      await this.clientService.callWithGroundingAndFallback<AIProductResult>(
+        promptV1,
+        promptV2,
+        'identifyProduct',
+        IDENTIFY_PRODUCT_SCHEMA,
+      );
 
     // Confidence kontrolü: < 50 = ürün bulunamadı
     if (result.confidence < 50) {
@@ -80,7 +86,7 @@ export class AiService {
 
   /**
    * Ürünün içindekiler listesi + besin değerleri
-   * Google Search grounding + Structured Output
+   * Google Search grounding + Fallback sistemi
    */
   async getProductContent(
     brand: string | null,
@@ -92,17 +98,22 @@ export class AiService {
       return this.parserService.mockGetProductContent(brand, name);
     }
 
-    // Prompt oluştur
-    const prompt = this.promptService.buildGetProductContentPrompt(
+    // V1 ve V2 promptları oluştur
+    const promptV1 = this.promptService.buildGetProductContentPromptV1(
+      brand,
+      name,
+      quantity,
+    );
+    const promptV2 = this.promptService.buildGetProductContentPromptV2(
       brand,
       name,
       quantity,
     );
 
-    // API çağrısı (grounding + schema ile)
-    const result = await this.clientService.callWithGrounding<
+    // API çağrısı (fallback sistemi ile)
+    const result = await this.clientService.callWithGroundingAndFallback<
       Omit<AIContentResult, 'model'>
-    >(prompt, 'getProductContent');
+    >(promptV1, promptV2, 'getProductContent', GET_PRODUCT_CONTENT_SCHEMA);
 
     // Model bilgisini ekle
     return {
@@ -115,7 +126,7 @@ export class AiService {
 
   /**
    * İçerik bilgisine göre sağlık değerlendirmesi
-   * Structured Output (Google Search yok)
+   * Structured Output (Google Search yok) - Fallback yok
    */
   async analyzeContent(
     brand: string | null,
@@ -138,7 +149,7 @@ export class AiService {
       nutrition,
     );
 
-    // API çağrısı (sadece schema, grounding yok)
+    // API çağrısı (sadece schema, grounding yok, fallback yok)
     const result = await this.clientService.callWithoutGrounding<
       Omit<AIAnalysisResult, 'model'>
     >(prompt, 'analyzeContent', ANALYZE_CONTENT_SCHEMA);

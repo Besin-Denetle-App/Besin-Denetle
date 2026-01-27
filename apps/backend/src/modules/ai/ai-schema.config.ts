@@ -144,7 +144,8 @@ export const ANALYZE_CONTENT_SCHEMA = {
     },
     novaReason: {
       type: Type.STRING,
-      description: 'NOVA grubunun kısa gerekçesi (örn: "Aroma ve emülgatör içeriyor")',
+      description:
+        'NOVA grubunun kısa gerekçesi (örn: "Aroma ve emülgatör içeriyor")',
     },
     nutriScore: {
       type: Type.STRING,

@@ -141,7 +141,9 @@ async function deleteProducts() {
       });
 
       if (securityCheck !== 'barkod') {
-        console.log('\n❌ Hatalı onay kelimesi! İşlem güvenlik nedeniyle İPTAL edildi.');
+        console.log(
+          '\n❌ Hatalı onay kelimesi! İşlem güvenlik nedeniyle İPTAL edildi.',
+        );
         return;
       }
 

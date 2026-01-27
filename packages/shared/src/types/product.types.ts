@@ -55,7 +55,6 @@ export interface INutritionTable {
   fiber?: number;                    // Lif (g)
   protein?: number;                  // Protein (g)
   salt?: number;                     // Tuz (g)
-  _source?: string;                  // Veriyi sağlayan AI model adı
 }
 
 /**
@@ -68,6 +67,7 @@ export interface IProductContent {
   ingredients: string | null;        // İçindekiler listesi
   allergens: string | null;          // Alerjen bilgisi (virgülle ayrılmış)
   nutrition_table: INutritionTable | null;
+  model: string | null;              // Kullanılan AI model adı
   score: number;                     // Oylama skoru
   vote_count: number;                // Toplam oy sayısı
   is_manual: boolean;
@@ -82,6 +82,7 @@ export interface ICreateProductContent {
   ingredients?: string | null;
   allergens?: string | null;
   nutrition_table?: INutritionTable | null;
+  model?: string | null;
   is_manual?: boolean;
 }
 

@@ -1,17 +1,39 @@
-import { GoogleGenAI, Schema } from '@google/genai';
+import { FinishReason, GoogleGenAI, Schema } from '@google/genai';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AppLogger } from '../../common';
-import { AiConfig, GroundingStrategy } from '../../config';
+import { AiConfig } from '../../config';
+
+/**
+ * Non-retryable hatalar - Fallback denenmeden direkt kullanıcıya dönülür
+ * Bu hatalar altyapısal sorunlardır, backup model de aynı hatayı verir.
+ */
+class NonRetryableError extends Error {
+  constructor(
+    message: string,
+    public readonly httpStatus: HttpStatus,
+    public readonly userMessage: string,
+  ) {
+    super(message);
+    this.name = 'NonRetryableError';
+  }
+}
 
 /**
  * AI Client Service
  * Gemini API ile iletişimi yönetir.
- * Model konfigürasyonu, API çağrıları ve hata yönetimi.
  *
- * Grounding Stratejileri:
- * - SCHEMA: Structured Output (responseSchema) - RECITATION riski var
- * - PROMPT: Prompt-based JSON - RECITATION'a dayanıklı
+ * Fallback Sistemi (Prompt 1-2):
+ * 1. Primary: modelFast + Grounding + Schema
+ * 2. Fallback: modelFastBackup + Grounding (Schema yok)
+ *
+ * Non-Retryable Hatalar (fallback denenmez):
+ * - 429 Rate Limit: API quota doldu
+ * - 401/403 Auth: API key hatası
+ * - 500+ Server: Gemini sunucu hatası
+ * - Network: Bağlantı hatası
+ *
+ * @version 3.0 (Ocak 2026 - Akıllı Fallback)
  */
 @Injectable()
 export class AiClientService {
@@ -20,8 +42,11 @@ export class AiClientService {
   private readonly genai: GoogleGenAI | null;
 
   private readonly modelFast: string;
+  private readonly modelFastBackup: string;
   private readonly modelSmart: string;
-  private readonly groundingStrategy: GroundingStrategy;
+
+  // Her bir API çağrısı için timeout (ms)
+  private readonly API_TIMEOUT_MS = 60000; // 60 saniye
 
   constructor(
     private readonly configService: ConfigService,
@@ -37,23 +62,22 @@ export class AiClientService {
     }
 
     this.modelFast = aiConfig.modelFast;
+    this.modelFastBackup = aiConfig.modelFastBackup;
     this.modelSmart = aiConfig.modelSmart;
-    this.groundingStrategy = aiConfig.groundingStrategy;
 
     if (!this.isMockMode && this.apiKey) {
-      // Model isimleri zorunlu (mock mode dışında)
-      if (!this.modelFast || !this.modelSmart) {
+      if (!this.modelFast || !this.modelFastBackup || !this.modelSmart) {
         throw new Error(
-          'GEMINI_MODEL_FAST ve GEMINI_MODEL_SMART env değişkenleri zorunlu! ' +
-          '.env dosyasını kontrol edin. Örn: gemini-3-flash-preview',
+          'GEMINI_MODEL_FAST, GEMINI_MODEL_FAST_BACKUP ve GEMINI_MODEL_SMART env değişkenleri zorunlu! ' +
+            '.env dosyasını kontrol edin.',
         );
       }
 
       this.genai = new GoogleGenAI({ apiKey: this.apiKey });
       this.appLogger.business('AI Client Service initialized', {
         modelFast: this.modelFast,
+        modelFastBackup: this.modelFastBackup,
         modelSmart: this.modelSmart,
-        groundingStrategy: this.groundingStrategy,
       });
     } else {
       this.genai = null;
@@ -84,36 +108,21 @@ export class AiClientService {
     return this.modelSmart;
   }
 
-  /**
-   * Google Search grounding + Structured Output ile API çağrısı
-   * Prompt 1 ve 2 için kullanılır
-   *
-   * @param prompt - Gemini'ye gönderilecek prompt
-   * @param methodName - Log için method adı
-   * @param responseSchema - Gemini Schema tanımı (SCHEMA stratejisi için)
-   * @returns Schema'ya uygun typed obje
-   */
-  async callWithGrounding<T>(
-    prompt: string,
-    methodName: string,
-    responseSchema?: Schema,
-  ): Promise<T> {
-    // Strateji seçimi
-    if (this.groundingStrategy === 'PROMPT') {
-      return this.callWithGroundingPrompt<T>(prompt, methodName);
-    }
-    return this.callWithGroundingSchema<T>(
-      prompt,
-      methodName,
-      responseSchema!,
-    );
-  }
+  // ========== PROMPT 1-2: FALLBACK SİSTEMİ ==========
 
   /**
-   * SCHEMA stratejisi: Structured Output ile API çağrısı
+   * Google Search grounding + Fallback ile API çağrısı
+   * Prompt 1 ve 2 için kullanılır
+   *
+   * Akış:
+   * 1. Primary: modelFast + Grounding + Schema → başarılıysa dön
+   * 2. Non-retryable hata → direkt kullanıcıya dön
+   * 3. Retryable hata → modelFastBackup + Grounding (Schema yok) → dene
+   * 4. Backup da hata → kullanıcıya dön
    */
-  private async callWithGroundingSchema<T>(
-    prompt: string,
+  async callWithGroundingAndFallback<T>(
+    promptV1: string,
+    promptV2: string,
     methodName: string,
     responseSchema: Schema,
   ): Promise<T> {
@@ -124,141 +133,207 @@ export class AiClientService {
       );
     }
 
+    // ===== PRIMARY: modelFast + Grounding + Schema =====
     try {
-      const response = await this.genai.models.generateContent({
-        model: this.modelFast,
-        contents: prompt,
-        config: {
-          tools: [{ googleSearch: {} }],
-          temperature: 0.1,
-          responseMimeType: 'application/json',
-          responseSchema,
-        },
-      });
-
-      const text = response.text || '';
-      const finishReason = response.candidates?.[0]?.finishReason;
-
-      if (!text.trim()) {
-        this.appLogger.infrastructure('Gemini API returned empty response', {
-          method: methodName,
-          model: this.modelFast,
-          strategy: 'SCHEMA',
-          finishReason,
-        });
-
-        if (finishReason === 'RECITATION') {
-          throw new HttpException(
-            'AI telif hakkı korumalı içerik tespit ettiği için yanıt vermeyi durdurdu.',
-            HttpStatus.BAD_GATEWAY,
-          );
-        }
-
-        if (finishReason === 'SAFETY') {
-          throw new HttpException(
-            'AI güvenlik filtreleri devreye girdi.',
-            HttpStatus.BAD_REQUEST,
-          );
-        }
-
-        throw new HttpException('AI yanıtı boş döndü', HttpStatus.BAD_GATEWAY);
+      return await this.callPrimary<T>(promptV1, methodName, responseSchema);
+    } catch (primaryError) {
+      // Non-retryable hata mı kontrol et
+      if (primaryError instanceof NonRetryableError) {
+        this.appLogger.error(
+          `Non-retryable error in ${methodName}, skipping fallback`,
+          primaryError,
+          {
+            method: methodName,
+            model: this.modelFast,
+            httpStatus: primaryError.httpStatus,
+          },
+        );
+        throw new HttpException(
+          primaryError.userMessage,
+          primaryError.httpStatus,
+        );
       }
 
-      this.appLogger.infrastructure('Gemini API response received', {
+      // Retryable hata - fallback'e geç
+      this.appLogger.infrastructure('Primary model failed, trying fallback', {
         method: methodName,
-        model: this.modelFast,
-        strategy: 'SCHEMA',
-        responseLength: text.length,
+        primaryModel: this.modelFast,
+        backupModel: this.modelFastBackup,
+        error:
+          primaryError instanceof Error
+            ? primaryError.message
+            : String(primaryError),
       });
-
-      return this.parseJsonResponse<T>(text, methodName);
-    } catch (error) {
-      return this.handleAiError(error, methodName, this.modelFast);
     }
-  }
 
-  /**
-   * PROMPT stratejisi: Schema olmadan, prompt-based JSON
-   * RECITATION'a daha dayanıklı
-   */
-  private async callWithGroundingPrompt<T>(
-    prompt: string,
-    methodName: string,
-  ): Promise<T> {
-    if (!this.genai) {
+    // ===== FALLBACK: modelFastBackup + Grounding (Schema yok) =====
+    try {
+      const result = await this.callFallback<T>(promptV2, methodName);
+      this.appLogger.business('Fallback model succeeded', {
+        method: methodName,
+        model: this.modelFastBackup,
+      });
+      return result;
+    } catch (fallbackError) {
+      // Non-retryable hata
+      if (fallbackError instanceof NonRetryableError) {
+        throw new HttpException(
+          fallbackError.userMessage,
+          fallbackError.httpStatus,
+        );
+      }
+
+      // Her iki model de başarısız
+      this.appLogger.error(
+        `Both primary and fallback failed: ${methodName}`,
+        fallbackError instanceof Error
+          ? fallbackError
+          : new Error(String(fallbackError)),
+        {
+          method: methodName,
+          primaryModel: this.modelFast,
+          backupModel: this.modelFastBackup,
+        },
+      );
+
+      if (fallbackError instanceof HttpException) {
+        throw fallbackError;
+      }
+
       throw new HttpException(
-        'AI servisi mock modda çalışıyor',
+        'AI servisi geçici olarak kullanılamıyor',
         HttpStatus.SERVICE_UNAVAILABLE,
       );
     }
-
-    try {
-      const response = await this.genai.models.generateContent({
-        model: this.modelFast,
-        contents: prompt,
-        config: {
-          tools: [{ googleSearch: {} }],
-          temperature: 0.2, // Biraz daha yaratıcı
-        },
-      });
-
-      const text = response.text || '';
-      const finishReason = response.candidates?.[0]?.finishReason;
-
-      if (!text.trim()) {
-        this.appLogger.infrastructure('Gemini API returned empty response', {
-          method: methodName,
-          model: this.modelFast,
-          strategy: 'PROMPT',
-          finishReason,
-        });
-
-        if (finishReason === 'RECITATION') {
-          throw new HttpException(
-            'AI telif hakkı korumalı içerik tespit etti.',
-            HttpStatus.BAD_GATEWAY,
-          );
-        }
-
-        if (finishReason === 'SAFETY') {
-          throw new HttpException(
-            'AI güvenlik filtreleri devreye girdi.',
-            HttpStatus.BAD_REQUEST,
-          );
-        }
-
-        throw new HttpException('AI yanıtı boş döndü', HttpStatus.BAD_GATEWAY);
-      }
-
-      this.appLogger.infrastructure('Gemini API response received', {
-        method: methodName,
-        model: this.modelFast,
-        strategy: 'PROMPT',
-        responseLength: text.length,
-      });
-
-      // JSON parse - markdown code block olabilir, temizle
-      let jsonText = text.trim();
-      if (jsonText.startsWith('```json')) {
-        jsonText = jsonText.replace(/^```json\n?/, '').replace(/\n?```$/, '');
-      } else if (jsonText.startsWith('```')) {
-        jsonText = jsonText.replace(/^```\n?/, '').replace(/\n?```$/, '');
-      }
-
-      return this.parseJsonResponse<T>(jsonText, methodName);
-    } catch (error) {
-      return this.handleAiError(error, methodName, this.modelFast);
-    }
   }
 
   /**
+   * Primary API çağrısı: modelFast + Grounding + Schema
+   */
+  private async callPrimary<T>(
+    prompt: string,
+    methodName: string,
+    responseSchema: Schema,
+  ): Promise<T> {
+    let response;
+    try {
+      response = await this.withTimeout(
+        this.genai!.models.generateContent({
+          model: this.modelFast,
+          contents: prompt,
+          config: {
+            tools: [{ googleSearch: {} }],
+            temperature: 0.1,
+            responseMimeType: 'application/json',
+            responseSchema,
+          },
+        }),
+        methodName,
+        this.modelFast,
+      );
+    } catch (error) {
+      // API çağrısı sırasında hata - non-retryable mi kontrol et
+      this.checkNonRetryableError(error, methodName, this.modelFast);
+      throw error; // Retryable hata, üst katmana fırlat
+    }
+
+    const text = response.text || '';
+    const finishReason = response.candidates?.[0]?.finishReason;
+
+    if (!text.trim()) {
+      this.appLogger.infrastructure('Primary model returned empty response', {
+        method: methodName,
+        model: this.modelFast,
+        finishReason,
+      });
+
+      if (finishReason === FinishReason.RECITATION) {
+        throw new Error('RECITATION: Telif hakkı korumalı içerik');
+      }
+
+      if (finishReason === FinishReason.SAFETY) {
+        throw new Error('SAFETY: Güvenlik filtreleri devreye girdi');
+      }
+
+      throw new Error('Empty response from primary model');
+    }
+
+    this.appLogger.infrastructure('Primary model response received', {
+      method: methodName,
+      model: this.modelFast,
+      responseLength: text.length,
+    });
+
+    return this.parseJsonResponse<T>(text, methodName);
+  }
+
+  /**
+   * Fallback API çağrısı: modelFastBackup + Grounding (Schema yok)
+   */
+  private async callFallback<T>(
+    prompt: string,
+    methodName: string,
+  ): Promise<T> {
+    let response;
+    try {
+      response = await this.withTimeout(
+        this.genai!.models.generateContent({
+          model: this.modelFastBackup,
+          contents: prompt,
+          config: {
+            tools: [{ googleSearch: {} }],
+            temperature: 0.2,
+          },
+        }),
+        methodName,
+        this.modelFastBackup,
+      );
+    } catch (error) {
+      this.checkNonRetryableError(error, methodName, this.modelFastBackup);
+      throw error;
+    }
+
+    const text = response.text || '';
+    const finishReason = response.candidates?.[0]?.finishReason;
+
+    if (!text.trim()) {
+      this.appLogger.infrastructure('Fallback model returned empty response', {
+        method: methodName,
+        model: this.modelFastBackup,
+        finishReason,
+      });
+
+      if (finishReason === FinishReason.RECITATION) {
+        throw new HttpException(
+          'AI telif hakkı korumalı içerik tespit etti',
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
+
+      if (finishReason === FinishReason.SAFETY) {
+        throw new HttpException(
+          'AI güvenlik filtreleri devreye girdi',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      throw new HttpException('AI yanıtı boş döndü', HttpStatus.BAD_GATEWAY);
+    }
+
+    this.appLogger.infrastructure('Fallback model response received', {
+      method: methodName,
+      model: this.modelFastBackup,
+      responseLength: text.length,
+    });
+
+    return this.parseJsonResponse<T>(text, methodName);
+  }
+
+  // ========== PROMPT 3: SCHEMA ONLY ==========
+
+  /**
    * Google Search olmadan Structured Output ile API çağrısı
-   * Prompt 3 (sağlık analizi) için kullanılır
-   *
-   * @param prompt - Gemini'ye gönderilecek prompt
-   * @param methodName - Log için method adı
-   * @param responseSchema - Gemini Schema tanımı
-   * @returns Schema'ya uygun typed obje
+   * Prompt 3 (sağlık analizi) için kullanılır - Fallback yok
    */
   async callWithoutGrounding<T>(
     prompt: string,
@@ -272,48 +347,224 @@ export class AiClientService {
       );
     }
 
+    let response;
     try {
-      const response = await this.genai.models.generateContent({
-        model: this.modelSmart,
-        contents: prompt,
-        config: {
-          temperature: 0.8, // Yaratıcı sağlık yorumları için dengeli temperature
-          responseMimeType: 'application/json',
-          responseSchema,
-        },
-      });
-
-      const text = response.text || '';
-      if (!text.trim()) {
-        this.appLogger.infrastructure('Gemini API returned empty response', {
-          method: methodName,
+      response = await this.withTimeout(
+        this.genai.models.generateContent({
           model: this.modelSmart,
-        });
-        throw new HttpException('AI yanıtı boş döndü', HttpStatus.BAD_GATEWAY);
-      }
+          contents: prompt,
+          config: {
+            temperature: 1.0,
+            responseMimeType: 'application/json',
+            responseSchema,
+          },
+        }),
+        methodName,
+        this.modelSmart,
+      );
+    } catch (error) {
+      this.checkNonRetryableError(error, methodName, this.modelSmart);
+      // Retryable hatalar için genel hata mesajı
+      this.appLogger.error(
+        `Gemini API error: ${methodName}`,
+        error instanceof Error ? error : new Error(String(error)),
+        { method: methodName, model: this.modelSmart },
+      );
+      throw new HttpException(
+        'AI servisi geçici olarak kullanılamıyor',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
 
-      this.appLogger.infrastructure('Gemini API response received', {
+    const text = response.text || '';
+    const finishReason = response.candidates?.[0]?.finishReason;
+
+    if (!text.trim()) {
+      this.appLogger.infrastructure('Smart model returned empty response', {
         method: methodName,
         model: this.modelSmart,
-        responseLength: text.length,
+        finishReason,
       });
 
-      // Schema mode'da JSON parse et
-      return this.parseJsonResponse<T>(text, methodName);
+      if (finishReason === FinishReason.RECITATION) {
+        throw new HttpException(
+          'AI telif hakkı korumalı içerik tespit etti',
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
+
+      if (finishReason === FinishReason.SAFETY) {
+        throw new HttpException(
+          'AI güvenlik filtreleri devreye girdi',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      throw new HttpException('AI yanıtı boş döndü', HttpStatus.BAD_GATEWAY);
+    }
+
+    this.appLogger.infrastructure('Smart model response received', {
+      method: methodName,
+      model: this.modelSmart,
+      responseLength: text.length,
+    });
+
+    return this.parseJsonResponse<T>(text, methodName);
+  }
+
+  // ========== HELPER METHODS ==========
+
+  /**
+   * Non-retryable hata kontrolü
+   * Bu hatalar altyapısal sorunlardır, fallback denenmez.
+   */
+  private checkNonRetryableError(
+    error: unknown,
+    methodName: string,
+    model: string,
+  ): void {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    // 429 Rate Limit / Quota Exceeded
+    if (
+      errorMessage.includes('429') ||
+      errorMessage.includes('RESOURCE_EXHAUSTED') ||
+      errorMessage.includes('quota')
+    ) {
+      this.appLogger.error(
+        `Rate limit exceeded: ${methodName}`,
+        error as Error,
+        {
+          method: methodName,
+          model,
+          errorType: 'RATE_LIMIT',
+        },
+      );
+      throw new NonRetryableError(
+        'Rate limit exceeded',
+        HttpStatus.TOO_MANY_REQUESTS,
+        'AI servisi şu an yoğun, lütfen biraz sonra tekrar deneyin',
+      );
+    }
+
+    // 401/403 Authentication Errors
+    if (
+      errorMessage.includes('401') ||
+      errorMessage.includes('403') ||
+      errorMessage.includes('API_KEY') ||
+      errorMessage.includes('PERMISSION_DENIED') ||
+      errorMessage.includes('UNAUTHENTICATED')
+    ) {
+      this.appLogger.error(
+        `Authentication error: ${methodName}`,
+        error as Error,
+        {
+          method: methodName,
+          model,
+          errorType: 'AUTH_ERROR',
+        },
+      );
+      throw new NonRetryableError(
+        'Authentication failed',
+        HttpStatus.SERVICE_UNAVAILABLE,
+        'AI servisi yapılandırma hatası',
+      );
+    }
+
+    // 500+ Server Errors
+    if (
+      errorMessage.includes('500') ||
+      errorMessage.includes('502') ||
+      errorMessage.includes('503') ||
+      errorMessage.includes('504') ||
+      errorMessage.includes('INTERNAL') ||
+      errorMessage.includes('UNAVAILABLE')
+    ) {
+      this.appLogger.error(`Server error: ${methodName}`, error as Error, {
+        method: methodName,
+        model,
+        errorType: 'SERVER_ERROR',
+      });
+      throw new NonRetryableError(
+        'Server error',
+        HttpStatus.SERVICE_UNAVAILABLE,
+        'AI servisi geçici olarak kullanılamıyor',
+      );
+    }
+
+    // Network Errors
+    if (
+      errorMessage.includes('ENOTFOUND') ||
+      errorMessage.includes('ECONNREFUSED') ||
+      errorMessage.includes('ETIMEDOUT') ||
+      errorMessage.includes('ECONNRESET') ||
+      errorMessage.includes('network') ||
+      errorMessage.includes('fetch failed')
+    ) {
+      this.appLogger.error(`Network error: ${methodName}`, error as Error, {
+        method: methodName,
+        model,
+        errorType: 'NETWORK_ERROR',
+      });
+      throw new NonRetryableError(
+        'Network error',
+        HttpStatus.SERVICE_UNAVAILABLE,
+        'AI servisine bağlanılamadı',
+      );
+    }
+
+    // Diğer hatalar retryable olarak kabul edilir (fallback denenir)
+  }
+
+  /**
+   * API çağrısı için timeout wrapper
+   * 60 saniyeyi aşan çağrıları iptal eder
+   */
+  private async withTimeout<T>(
+    promise: Promise<T>,
+    methodName: string,
+    model: string,
+  ): Promise<T> {
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        reject(
+          new Error(
+            `TIMEOUT: API çağrısı ${this.API_TIMEOUT_MS / 1000} saniyeyi aştı`,
+          ),
+        );
+      }, this.API_TIMEOUT_MS);
+    });
+
+    try {
+      return await Promise.race([promise, timeoutPromise]);
     } catch (error) {
-      return this.handleAiError(error, methodName, this.modelSmart);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
+      if (errorMessage.includes('TIMEOUT')) {
+        this.appLogger.error(`API timeout: ${methodName}`, error as Error, {
+          method: methodName,
+          model,
+          timeoutMs: this.API_TIMEOUT_MS,
+          errorType: 'TIMEOUT',
+        });
+        throw new HttpException(
+          'AI servisi yanıt vermedi, lütfen tekrar deneyin',
+          HttpStatus.GATEWAY_TIMEOUT,
+        );
+      }
+
+      throw error;
     }
   }
 
   /**
    * JSON parse helper
-   * Markdown code block formatını temizleyip JSON parse eder
    */
   private parseJsonResponse<T>(text: string, methodName: string): T {
     try {
       let cleaned = text.trim();
 
-      // ```json ... ``` formatını temizle
       if (cleaned.startsWith('```')) {
         cleaned = cleaned
           .replace(/^```(?:json)?\n?/, '')
@@ -328,48 +579,10 @@ export class AiClientService {
         {
           method: methodName,
           rawTextLength: text.length,
+          rawTextPreview: text.substring(0, 100),
         },
       );
       throw new HttpException('AI yanıtı işlenemedi', HttpStatus.BAD_GATEWAY);
     }
-  }
-
-  /**
-   * Hata yönetimi - 429, rate limit, genel hatalar
-   */
-  private handleAiError(
-    error: unknown,
-    methodName: string,
-    model: string,
-  ): never {
-    const errorMessage = (error as Error).message || 'Bilinmeyen AI hatası';
-    this.appLogger.error(
-      `Gemini API failed: ${methodName}`,
-      error instanceof Error ? error : new Error(String(error)),
-      {
-        method: methodName,
-        model,
-      },
-    );
-
-    if (error instanceof HttpException) {
-      throw error;
-    }
-
-    // 429 Rate Limit
-    if (
-      errorMessage.includes('429') ||
-      errorMessage.includes('RESOURCE_EXHAUSTED')
-    ) {
-      throw new HttpException(
-        'AI servisi şu an yoğun, lütfen biraz sonra tekrar deneyin',
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
-    }
-
-    throw new HttpException(
-      'AI servisi şu an kullanılamıyor',
-      HttpStatus.SERVICE_UNAVAILABLE,
-    );
   }
 }

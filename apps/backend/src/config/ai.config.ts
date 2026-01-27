@@ -1,36 +1,26 @@
 import { registerAs } from '@nestjs/config';
 
 /**
- * AI Grounding Stratejisi
- * SCHEMA: Structured Output (responseSchema ile) - RECITATION riski var
- * PROMPT: Prompt-based JSON (responseSchema yok) - RECITATION'a dayanıklı
- */
-export type GroundingStrategy = 'SCHEMA' | 'PROMPT';
-
-/**
  * Gemini AI model konfigürasyonu.
  * Model isimlerini .env dosyasından ayarlayın.
  *
- * Mevcut modeller (Ocak 2026):
- * - Preview: gemini-3-flash-preview, gemini-3-pro-preview (şu an kullanılan)
- * - Stable: gemini-3-flash, gemini-3-pro
- * - Eski: gemini-2.5-flash, gemini-2.5-pro
+ * Prompt 1-2: Primary + Backup (fallback) modeli
+ * Prompt 3: Sadece smart model
  */
 export default registerAs('ai', () => ({
-  // Prompt 1-2: Ürün tanımlama (hızlı model)
+  // Prompt 1-2: Ürün tanımlama (primary model - Grounding + Schema)
   modelFast: process.env.GEMINI_MODEL_FAST || '',
 
-  // Prompt 3: Sağlık analizi (akıllı model)
-  modelSmart: process.env.GEMINI_MODEL_SMART || '',
+  // Prompt 1-2: Fallback model (sadece Grounding, Schema yok)
+  modelFastBackup: process.env.GEMINI_MODEL_FAST_BACKUP || '',
 
-  // Grounding stratejisi (SCHEMA veya PROMPT)
-  groundingStrategy:
-    (process.env.GEMINI_GROUNDING_STRATEGY as GroundingStrategy) || 'PROMPT',
+  // Prompt 3: Sağlık analizi (Schema)
+  modelSmart: process.env.GEMINI_MODEL_SMART || '',
 }));
 
 // Tip tanımı
 export interface AiConfig {
   modelFast: string;
+  modelFastBackup: string;
   modelSmart: string;
-  groundingStrategy: GroundingStrategy;
 }

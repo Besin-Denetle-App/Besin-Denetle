@@ -1,8 +1,8 @@
 import {
-    AIAnalysisResult,
-    AIContentResult,
-    AIProductResult,
-    ProductType,
+  AIAnalysisResult,
+  AIContentResult,
+  AIProductResult,
+  ProductType,
 } from '@besin-denetle/shared';
 import { Injectable } from '@nestjs/common';
 import { AppLogger } from '../../common';
@@ -14,7 +14,7 @@ import { AppLogger } from '../../common';
  */
 @Injectable()
 export class AiParserService {
-  constructor(private readonly appLogger: AppLogger) { }
+  constructor(private readonly appLogger: AppLogger) {}
 
   // ========== Mock Data (API key yokken) ==========
 

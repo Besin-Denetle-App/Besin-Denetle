@@ -111,9 +111,8 @@ export class ContentController {
         product_id: productId,
         ingredients: aiContent.ingredients,
         allergens: aiContent.allergens?.join(', ') ?? null,
-        nutrition_table: aiContent.nutrition
-          ? { ...aiContent.nutrition, _source: aiContent.model }
-          : null,
+        nutrition_table: aiContent.nutrition ?? null,
+        model: aiContent.model,
         is_manual: false,
       });
       isContentNew = true;
@@ -211,9 +210,8 @@ export class ContentController {
         product_id: content.product_id,
         ingredients: aiContent.ingredients,
         allergens: aiContent.allergens?.join(', ') ?? null,
-        nutrition_table: aiContent.nutrition
-          ? { ...aiContent.nutrition, _source: aiContent.model }
-          : null,
+        nutrition_table: aiContent.nutrition ?? null,
+        model: aiContent.model,
         is_manual: false,
       });
       isContentNew = true;

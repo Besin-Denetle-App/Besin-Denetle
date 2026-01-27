@@ -310,13 +310,13 @@ Local build için değişkenler `apps/mobile/eas.json` dosyasındaki `env` bloğ
     "preview": {
       "env": {
         "APP_ENV": "preview",
-        "API_URL": "https://besindenetle.furkanpasa.com/api"
+        "API_URL": "https://besindenetle.furkanpasa.com/"
       }
     },
     "production": {
       "env": {
         "APP_ENV": "production",
-        "API_URL": "https://besindenetle.furkanpasa.com/api"
+        "API_URL": "https://besindenetle.furkanpasa.com/"
       }
     }
   }
