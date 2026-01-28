@@ -143,6 +143,55 @@ sysctl vm.overcommit_memory
 # Çıktı: vm.overcommit_memory = 1 olmalı
 ```
 
+### 8. Log Yönetimi Kurulumu
+
+Tüm servis loglarını merkezi bir klasörde toplamak için log yapısını oluşturun:
+
+```bash
+# 1. Log grubu oluştur
+sudo groupadd besin-denetle-logs
+
+# 2. İlgili kullanıcıları gruba ekle
+sudo usermod -aG besin-denetle-logs caddy
+sudo usermod -aG besin-denetle-logs $USER  # PM2'yi çalıştıran kullanıcı
+
+# 3. Ana log klasörünü oluştur
+sudo mkdir -p /var/log/besin-denetle
+sudo chown root:besin-denetle-logs /var/log/besin-denetle
+sudo chmod 775 /var/log/besin-denetle
+
+# 4. Servis klasörlerini oluştur
+sudo mkdir -p /var/log/besin-denetle/{caddy,pm2,postgres,backend}
+
+# 5. Sahiplik ayarla
+sudo chown caddy:besin-denetle-logs /var/log/besin-denetle/caddy
+sudo chown $USER:besin-denetle-logs /var/log/besin-denetle/pm2
+sudo chown postgres:besin-denetle-logs /var/log/besin-denetle/postgres
+sudo chown $USER:besin-denetle-logs /var/log/besin-denetle/backend
+
+# 6. İzinleri ayarla ve setgid aktifleştir
+sudo chmod 775 /var/log/besin-denetle/{caddy,pm2,postgres,backend}
+sudo chmod g+s /var/log/besin-denetle /var/log/besin-denetle/{caddy,pm2,postgres,backend}
+```
+
+**Oluşan Yapı:**
+
+```
+/var/log/besin-denetle/
+├── caddy/          # Caddy web server logları
+├── pm2/            # PM2 process manager logları
+├── postgres/       # PostgreSQL logları
+└── backend/        # Backend uygulama logları (winston)
+    ├── app/            # Business ve database logları
+    ├── error/          # Hata logları
+    ├── security/       # Güvenlik olayları
+    ├── http/           # HTTP request/response
+    └── infrastructure/ # Sistem durumu (Redis, AI vb.)
+```
+
+> [!TIP]
+> `setgid` (g+s) sayesinde bu klasörlerde oluşturulan yeni dosyalar otomatik olarak `besin-denetle-logs` grubuna ait olur.
+
 ### 9. Bağımlılıkları Yükle ve Build Et
 
 ```bash
@@ -209,7 +258,7 @@ pnpm start:prod
 - [ ] **Firewall:** Sadece 80/443 portları açık, 50103 kapalı (Opsiyonel)
 - [ ] **SSL:** Caddy veya Nginx ile HTTPS aktif
 
-_(Firewall ve Caddy kurulum detayları için Operasyon ve Bakım Rehberi'ne bakınız.)_
+_(Firewall ve Caddy kurulum detayları için [Server Güvenlik Kurulum Rehberi](./server-security-setup.md)'ne bakınız.)_
 
 ---
 

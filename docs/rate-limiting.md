@@ -85,10 +85,10 @@ Birden fazla endpoint aynı havuzu paylaşır:
 |-------|-------|--------------|
 | `scan_db` | 12/dk | `/products/scan`, `/products/reject` |
 | `scan_ai` | 6/dk | `/products/scan`, `/products/reject` |
-| `content_db` | 10/dk | `/products/confirm`, `/content/reject` |
-| `content_ai` | 5/dk | `/products/confirm`, `/content/reject` |
-| `analysis_db` | 10/dk | `/analysis/generate`, `/analysis/reject` |
-| `analysis_ai` | 5/dk | `/analysis/generate`, `/analysis/reject` |
+| `content_db` | 8/dk | `/products/confirm`, `/content/reject` |
+| `content_ai` | 4/dk | `/products/confirm`, `/content/reject` |
+| `analysis_db` | 8/dk | `/analysis/generate`, `/analysis/reject` |
+| `analysis_ai` | 4/dk | `/analysis/generate`, `/analysis/reject` |
 
 ### Endpoint Limitleri (Dakikalık)
 
@@ -99,7 +99,7 @@ Tek endpoint için ek kısıtlama:
 | `scan_reject` | 3/dk | `/products/reject` |
 | `content_reject` | 3/dk | `/content/reject` |
 | `analysis_reject` | 3/dk | `/analysis/reject` |
-| `flag` | 5/dk | `/barcodes/flag` |
+| `flag` | 1/dk | `/barcodes/flag` |
 
 ### Global Limitler (Saatlik/Günlük)
 
@@ -107,7 +107,7 @@ Tek endpoint için ek kısıtlama:
 |-------|------|-----|----------|
 | `total_db` | 180 | 360 | Tüm DB çağrıları |
 | `total_ai` | 90 | 180 | Tüm AI çağrıları |
-| `total_reject` | 90 | 180 | Tüm reject işlemleri |
+| `total_reject` | 45 | 90 | Tüm reject işlemleri |
 
 ### Auth Limitleri
 
@@ -119,6 +119,7 @@ Tek endpoint için ek kısıtlama:
 | `/auth/refresh` | IP | 20/dk | `refresh_ip` |
 | `/auth/logout` | User | 20/dk | `logout_user` |
 | `/auth/delete-account` | User | **1/saat** | `delete_user` |
+| `/auth/restore-account` | User | **2/saat** | `restore_user` |
 
 ### Health Limiti
 

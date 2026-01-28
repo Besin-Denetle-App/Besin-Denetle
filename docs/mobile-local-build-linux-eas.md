@@ -1,7 +1,7 @@
 # 🐧 Linux/WSL2 EAS Local Build Rehberi
 
 ![WSL2](https://img.shields.io/badge/WSL2-Ubuntu_22.04-e95420.svg)
-![Android SDK](https://img.shields.io/badge/Android_SDK-36-6f42c1.svg)
+![Android SDK](https://img.shields.io/badge/Android_SDK-34-6f42c1.svg)
 ![Java](https://img.shields.io/badge/Java-JDK_17-007396.svg)
 ![Expo](https://img.shields.io/badge/Expo-~54.0-000020.svg)
 
@@ -35,7 +35,7 @@ Bu rehber, **WSL2 Ubuntu** veya **native Linux** üzerinde **EAS Local Build** (
 | **Node.js**     | 20.x LTS      | JavaScript runtime        | ~500 MB    |
 | **pnpm**        | 9.x           | Monorepo paket yöneticisi | ~50 MB     |
 | **Java JDK**    | 17            | Android Gradle build      | ~300 MB    |
-| **Android SDK** | 36            | Platform ve build tools   | ~8-10 GB   |
+| **Android SDK** | 34            | Platform ve build tools   | ~8-10 GB   |
 | **EAS CLI**     | Latest        | Expo build aracı          | ~50 MB     |
 
 ## 🚀 Adım Adım Kurulum
@@ -126,7 +126,7 @@ pnpm -v
 ---
 
 ### 6- Android SDK Kurulumu
-Android Studio kurmadan, yalnızca command-line tools ile SDK kurulumu: (Android 36 için)
+Android Studio kurmadan, yalnızca command-line tools ile SDK kurulumu: (Android 34 için)
 #### 6.1 SDK Dizinini Oluştur
 ```bash
 mkdir -p ~/android-sdk/cmdline-tools
@@ -134,7 +134,7 @@ cd ~/android-sdk/cmdline-tools
 ```
 #### 6.2 Command Line Tools İndir
 ```bash
-# En güncel sürümü indir (2024)
+# En güncel sürümü indir
 wget https://dl.google.com/android/repository/commandlinetools-linux-14742923_latest.zip -O cmdline-tools.zip
 
 # Arşivi aç
@@ -174,7 +174,7 @@ export ANDROID_HOME=$HOME/android-sdk
 export ANDROID_SDK_ROOT=$HOME/android-sdk
 export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
 export PATH=$PATH:$ANDROID_HOME/platform-tools
-export PATH=$PATH:$ANDROID_HOME/build-tools/36.0.0
+export PATH=$PATH:$ANDROID_HOME/build-tools/34.0.0
 
 # ============================================
 # Java Configuration
@@ -195,8 +195,8 @@ echo $JAVA_HOME     # /usr/lib/jvm/java-17-openjdk-amd64
 yes | sdkmanager --licenses
 # Gerekli paketleri kur
 sdkmanager "platform-tools"
-sdkmanager "platforms;android-36"
-sdkmanager "build-tools;36.0.0"
+sdkmanager "platforms;android-34"
+sdkmanager "build-tools;34.0.0"
 sdkmanager "ndk;26.1.10909125"
 ```
 ---
@@ -267,15 +267,17 @@ echo "=========================================="
 ### 1- Projeyi Klonla
 
 ```bash
-cd ~
-git clone https://github.com/Besin-Denetle-App/Besin-Denetle.git
-cd Besin-Denetle
+mkdir ~/besin-denetle 
+cd ~/besin-denetle 
+git clone https://github.com/Besin-Denetle-App/Besin-Denetle.git .
 ```
+
 ### 2- Bağımlılıkları Yükle
 ```bash
 # Root dizininde monorepo bağımlılıklarını yükle
 pnpm install
 ```
+
 **Çıktı:**
 ```
 Packages: +xxxx
@@ -296,6 +298,7 @@ Progress: resolved xxxx, reused xxxx, downloaded xx, added xxxx, done
 │ cloud prod      │ EAS Secrets     │ API_URL                    │
 └─────────────────┴─────────────────┴────────────────────────────┘
 ```
+
 #### Development (.env dosyası)
 ```bash
 # Sadece expo start için kullanılır
@@ -633,7 +636,7 @@ cat apps/mobile/eas.json
 | ----------------------------------- | ------------------------ |
 | `sdkmanager --list`                 | Tüm paketleri listele    |
 | `sdkmanager --list_installed`       | Kurulu paketleri listele |
-| `sdkmanager "platforms;android-36"` | Android 36 platform kur  |
+| `sdkmanager "platforms;android-34"` | Android 34 platform kur  |
 | `sdkmanager --update`               | Paketleri güncelle       |
 | `sdkmanager --licenses`             | Lisansları kabul et      |
 

@@ -51,10 +51,10 @@ export const createLoggerConfig = () => {
     // 1. App logs - business + database (security/http/error have dedicated files)
     transports.push(
       new winston.transports.DailyRotateFile({
-        dirname: 'logs',
+        dirname: '/var/log/besin-denetle/backend/app',
         filename: 'app-%DATE%.log',
         datePattern: 'YYYY-MM-DD',
-        maxSize: '20m', // 20MB per file
+        maxSize: '50m', // 50MB per file
         maxFiles: '14d', // 14 gün sakla
         zippedArchive: true, // gzip compression
         format: winston.format.combine(
@@ -75,11 +75,11 @@ export const createLoggerConfig = () => {
     // 2. Error logs - sadece hatalar
     transports.push(
       new winston.transports.DailyRotateFile({
-        dirname: 'logs',
+        dirname: '/var/log/besin-denetle/backend/error',
         filename: 'error-%DATE%.log',
         datePattern: 'YYYY-MM-DD',
-        maxSize: '20m',
-        maxFiles: '30d', // Hataları daha uzun sakla
+        maxSize: '50m',
+        maxFiles: '30d',
         zippedArchive: true,
         level: 'error',
         format: winston.format.combine(
@@ -92,10 +92,10 @@ export const createLoggerConfig = () => {
     // 3. Security logs - güvenlik olayları için ayrı dosya
     transports.push(
       new winston.transports.DailyRotateFile({
-        dirname: 'logs/security',
+        dirname: '/var/log/besin-denetle/backend/security',
         filename: 'security-%DATE%.log',
         datePattern: 'YYYY-MM-DD',
-        maxSize: '10m',
+        maxSize: '50m',
         maxFiles: '90d', // Güvenlik loglarını 3 ay sakla
         zippedArchive: true,
         // Sadece security category'sini logla
@@ -113,11 +113,11 @@ export const createLoggerConfig = () => {
     // 4. HTTP logs - API request/response
     transports.push(
       new winston.transports.DailyRotateFile({
-        dirname: 'logs/http',
+        dirname: '/var/log/besin-denetle/backend/http',
         filename: 'http-%DATE%.log',
         datePattern: 'YYYY-MM-DD',
-        maxSize: '50m', // HTTP logs daha büyük olabilir
-        maxFiles: '7d', // 1 hafta yeterli
+        maxSize: '50m', // 50 mb
+        maxFiles: '7d', // 1 Hafta
         zippedArchive: true,
         format: winston.format.combine(
           winston.format.timestamp(),
@@ -132,10 +132,10 @@ export const createLoggerConfig = () => {
     // 5. Infrastructure logs - sistem durumu (Redis, AI, vb.)
     transports.push(
       new winston.transports.DailyRotateFile({
-        dirname: 'logs/infrastructure',
+        dirname: '/var/log/besin-denetle/backend/infrastructure',
         filename: 'infrastructure-%DATE%.log',
         datePattern: 'YYYY-MM-DD',
-        maxSize: '20m',
+        maxSize: '50m',
         maxFiles: '30d', // Sistem durumu için 1 ay sakla
         zippedArchive: true,
         format: winston.format.combine(
