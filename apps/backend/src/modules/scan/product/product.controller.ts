@@ -1,4 +1,5 @@
 import {
+  ConfirmResponse,
   RejectProductResponse,
   ScanResponse,
   VoteTarget,
@@ -28,8 +29,9 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../auth/tokens/jwt-auth.guard';
 import { VoteService } from '../../vote/vote.service';
 import { BarcodeService } from '../barcode/barcode.service';
+import { ContentService } from '../content/content.service';
 import {
-  FlagBarcodeRequestDto,
+  ConfirmRequestDto,
   RejectProductRequestDto,
   ScanRequestDto,
 } from './product.dto';
@@ -39,11 +41,12 @@ import { ProductService } from './product.service';
  * Product controller - Ürün işlemleri
  */
 @ApiTags('products')
-@Controller('api')
+@Controller('products')
 export class ProductController {
   constructor(
     private readonly barcodeService: BarcodeService,
     private readonly productService: ProductService,
+    private readonly contentService: ContentService,
     private readonly voteService: VoteService,
     private readonly aiService: AiService,
     private readonly rateLimitHelper: RateLimitHelper,
@@ -53,7 +56,7 @@ export class ProductController {
   /**
    * Barkod tara - DB'de yoksa AI'dan al
    */
-  @Post('products/scan')
+  @Post('scan')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -190,9 +193,96 @@ export class ProductController {
   }
 
   /**
+   * POST /api/products/confirm
+   * Ürün onayı + içerik getir (DB'de yoksa AI ile oluştur)
+   */
+  @Post('confirm')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Ürün onayla, içerik getir' })
+  @ApiResponse({ status: 200, description: 'İçerik döner' })
+  @ApiResponse({
+    status: 400,
+    description: 'Non-food ürün confirm edilemez',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Bu ürün yiyecek/içecek kategorisinde değil',
+        error: 'Bad Request',
+      },
+    },
+  })
+  async confirm(
+    @CurrentUser('id') userId: string,
+    @Body() dto: ConfirmRequestDto,
+  ): Promise<ConfirmResponse> {
+    const { productId } = dto;
+
+    const product = await this.productService.findById(productId);
+    if (!product) {
+      throw new NotFoundException('Ürün bulunamadı');
+    }
+
+    // Non-food koruma: Sadece yiyecek/içecek ürünler confirm edilebilir
+    this.foodCheckService.assertHumanFood(product.barcode?.type, {
+      userId,
+      action: 'CONFIRM_PRODUCT',
+      resourceId: productId,
+    });
+
+    await this.rateLimitHelper.checkContent(userId);
+
+    // Ürün onaylandı - upvote
+    void this.voteService.vote(
+      userId,
+      VoteTarget.PRODUCT,
+      productId,
+      VoteType.UP,
+    );
+
+    let content = await this.contentService.findBestByProductId(productId);
+    let isContentNew = false;
+
+    if (content) {
+      // DB hit
+      await this.rateLimitHelper.incrementContentDb(userId);
+    } else {
+      // AI hit - yeni içerik oluştur
+      await this.rateLimitHelper.incrementContentAi(userId);
+
+      const aiContent = await this.aiService.getProductContent(
+        product.brand,
+        product.name,
+        product.quantity,
+      );
+
+      content = await this.contentService.create({
+        product_id: productId,
+        ingredients: aiContent.ingredients,
+        allergens: aiContent.allergens?.join(', ') ?? null,
+        nutrition_table: aiContent.nutrition ?? null,
+        model: aiContent.model,
+        is_manual: false,
+      });
+      isContentNew = true;
+    }
+
+    // İçerik upvote
+    void this.voteService.vote(
+      userId,
+      VoteTarget.CONTENT,
+      content.id,
+      VoteType.UP,
+    );
+
+    return { content, isContentNew };
+  }
+
+  /**
    * Ürün reddet, sonraki varyant getir
    */
-  @Post('products/reject')
+  @Post('reject')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -314,53 +404,5 @@ export class ProductController {
       isNew: true,
       noMoreVariants: false,
     };
-  }
-
-  /**
-   * POST /api/barcodes/flag
-   * Non-food barkodu bildir
-   */
-  @Post('barcodes/flag')
-  @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Barkodu bildir (non-food)' })
-  @ApiResponse({ status: 200, description: 'Bildirim alındı' })
-  @ApiResponse({
-    status: 400,
-    description: 'Gıda ürünleri bildirilemez',
-    schema: {
-      example: {
-        statusCode: 400,
-        message: 'Bu barkod zaten gıda kategorisinde',
-        error: 'Bad Request',
-      },
-    },
-  })
-  async flagBarcode(
-    @CurrentUser('id') userId: string,
-    @Body() dto: FlagBarcodeRequestDto,
-  ): Promise<{ success: boolean }> {
-    const { barcodeId } = dto;
-
-    // Rate limit kontrolü
-    await this.rateLimitHelper.checkFlag(userId);
-
-    const barcode = await this.barcodeService.findById(barcodeId);
-    if (!barcode) {
-      throw new NotFoundException('Barkod bulunamadı');
-    }
-
-    // Gıda ürünlerinin flag edilmesini engelle
-    if (this.foodCheckService.isHumanFoodType(barcode.type)) {
-      throw new BadRequestException('Bu barkod zaten gıda kategorisinde');
-    }
-
-    // Rate limit sayacını artır
-    await this.rateLimitHelper.incrementFlag(userId);
-
-    await this.barcodeService.flag(barcodeId);
-
-    return { success: true };
   }
 }

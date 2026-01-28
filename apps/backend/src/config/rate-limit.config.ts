@@ -70,12 +70,13 @@ export default registerAs('rateLimit', () => ({
     refresh_ip: { limit: 20, ttlSeconds: 60 },
     logout_user: { limit: 20, ttlSeconds: 60 },
     delete_user: { limit: 1, ttlSeconds: 3600 },
+    restore_user: { limit: 2, ttlSeconds: 3600 },
   },
 
   // ============================================
   // HEALTH LİMİTLERİ (IP bazlı)
   // ============================================
   health: {
-    check_ip: { limit: 2, ttlSeconds: 60 },
+    check_ip: { limit: 3, ttlSeconds: 60 },
   },
 }));

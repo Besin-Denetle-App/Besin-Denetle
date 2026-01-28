@@ -1,9 +1,4 @@
-import {
-  ConfirmResponse,
-  RejectContentResponse,
-  VoteTarget,
-  VoteType,
-} from '@besin-denetle/shared';
+import { RejectContentResponse, VoteTarget, VoteType } from '@besin-denetle/shared';
 import {
   Body,
   Controller,
@@ -27,11 +22,11 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../auth/tokens/jwt-auth.guard';
 import { VoteService } from '../../vote/vote.service';
 import { ProductService } from '../product/product.service';
-import { ConfirmRequestDto, RejectContentRequestDto } from './content.dto';
+import { RejectContentRequestDto } from './content.dto';
 import { ContentService } from './content.service';
 
 @ApiTags('content')
-@Controller('api')
+@Controller('content')
 export class ContentController {
   constructor(
     private readonly productService: ProductService,
@@ -43,97 +38,10 @@ export class ContentController {
   ) {}
 
   /**
-   * POST /api/products/confirm
-   * Ürün onayı + içerik getir (DB'de yoksa AI ile oluştur)
-   */
-  @Post('products/confirm')
-  @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Ürün onayla, içerik getir' })
-  @ApiResponse({ status: 200, description: 'İçerik döner' })
-  @ApiResponse({
-    status: 400,
-    description: 'Non-food ürün confirm edilemez',
-    schema: {
-      example: {
-        statusCode: 400,
-        message: 'Bu ürün yiyecek/içecek kategorisinde değil',
-        error: 'Bad Request',
-      },
-    },
-  })
-  async confirm(
-    @CurrentUser('id') userId: string,
-    @Body() dto: ConfirmRequestDto,
-  ): Promise<ConfirmResponse> {
-    const { productId } = dto;
-
-    const product = await this.productService.findById(productId);
-    if (!product) {
-      throw new NotFoundException('Ürün bulunamadı');
-    }
-
-    // Non-food koruma: Sadece yiyecek/içecek ürünler confirm edilebilir
-    this.foodCheckService.assertHumanFood(product.barcode?.type, {
-      userId,
-      action: 'CONFIRM_PRODUCT',
-      resourceId: productId,
-    });
-
-    await this.rateLimitHelper.checkContent(userId);
-
-    // Ürün onaylandı - upvote
-    void this.voteService.vote(
-      userId,
-      VoteTarget.PRODUCT,
-      productId,
-      VoteType.UP,
-    );
-
-    let content = await this.contentService.findBestByProductId(productId);
-    let isContentNew = false;
-
-    if (content) {
-      // DB hit
-      await this.rateLimitHelper.incrementContentDb(userId);
-    } else {
-      // AI hit - yeni içerik oluştur
-      await this.rateLimitHelper.incrementContentAi(userId);
-
-      const aiContent = await this.aiService.getProductContent(
-        product.brand,
-        product.name,
-        product.quantity,
-      );
-
-      content = await this.contentService.create({
-        product_id: productId,
-        ingredients: aiContent.ingredients,
-        allergens: aiContent.allergens?.join(', ') ?? null,
-        nutrition_table: aiContent.nutrition ?? null,
-        model: aiContent.model,
-        is_manual: false,
-      });
-      isContentNew = true;
-    }
-
-    // İçerik upvote
-    void this.voteService.vote(
-      userId,
-      VoteTarget.CONTENT,
-      content.id,
-      VoteType.UP,
-    );
-
-    return { content, isContentNew };
-  }
-
-  /**
    * POST /api/content/reject
    * Mevcut içeriği reddet, sonraki varyantı getir veya yeni oluştur
    */
-  @Post('content/reject')
+  @Post('reject')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

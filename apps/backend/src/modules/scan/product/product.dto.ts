@@ -1,5 +1,5 @@
 import {
-  FlagBarcodeRequest,
+  ConfirmRequest,
   RejectProductRequest,
   ScanRequest,
 } from '@besin-denetle/shared';
@@ -53,10 +53,10 @@ export class RejectProductRequestDto implements RejectProductRequest {
 }
 
 /**
- * Barkod bildirme isteği
+ * Ürün onaylama isteği
  */
-export class FlagBarcodeRequestDto implements FlagBarcodeRequest {
-  @ApiProperty({ description: 'Barkod ID', example: 'uuid' })
+export class ConfirmRequestDto implements ConfirmRequest {
+  @ApiProperty({ description: 'Ürün ID', example: 'uuid' })
   @IsUUID()
-  barcodeId: string;
+  productId: string;
 }

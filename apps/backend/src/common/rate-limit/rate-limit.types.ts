@@ -41,6 +41,7 @@ export enum RateLimitKeyPrefix {
   AUTH_REFRESH = 'rl:auth:refresh',
   AUTH_LOGOUT = 'rl:auth:logout',
   AUTH_DELETE = 'rl:auth:delete',
+  AUTH_RESTORE = 'rl:auth:restore',
 
   // Health check (IP bazlı)
   HEALTH = 'rl:health',
@@ -98,6 +99,7 @@ export interface RateLimitAuthConfig {
   refresh_ip: RateLimitRule;
   logout_user: RateLimitRule;
   delete_user: RateLimitRule;
+  restore_user: RateLimitRule;
 }
 
 export interface RateLimitHealthConfig {

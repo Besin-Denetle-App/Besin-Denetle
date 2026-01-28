@@ -29,7 +29,7 @@ import { UserService } from '../user.service';
  * Hesap yönetimi endpoint'leri - Korumalı (JWT gerekli)
  */
 @ApiTags('auth')
-@Controller('api/auth')
+@Controller('auth')
 export class AuthAccountController {
   constructor(
     private readonly authService: AuthService,
@@ -112,6 +112,22 @@ export class AuthAccountController {
   async restoreAccount(
     @CurrentUser('id') userId: string,
   ): Promise<{ success: boolean; message: string }> {
+    const authConfig =
+      this.configService.get<RateLimitAuthConfig>('rateLimit.auth')!;
+
+    await this.rateLimitService.checkUserLimit(
+      RateLimitKeyPrefix.AUTH_RESTORE,
+      userId,
+      authConfig.restore_user,
+      'auth_restore',
+    );
+
+    await this.rateLimitService.incrementUserLimit(
+      RateLimitKeyPrefix.AUTH_RESTORE,
+      userId,
+      authConfig.restore_user,
+    );
+
     await this.userService.restoreAccount(userId);
     return {
       success: true,

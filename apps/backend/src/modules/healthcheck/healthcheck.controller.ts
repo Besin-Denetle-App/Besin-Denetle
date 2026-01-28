@@ -5,17 +5,17 @@ import type { Request } from 'express';
 import { DataSource } from 'typeorm';
 
 import {
-  getClientIp,
-  RateLimitHealthConfig,
-  RateLimitKeyPrefix,
-  RateLimitService,
+    getClientIp,
+    RateLimitHealthConfig,
+    RateLimitKeyPrefix,
+    RateLimitService,
 } from '../../common';
 
 /**
  * Health check endpoint
  */
 @ApiTags('health')
-@Controller('api/health')
+@Controller('health')
 export class HealthcheckController {
   private readonly startTime = Date.now();
 

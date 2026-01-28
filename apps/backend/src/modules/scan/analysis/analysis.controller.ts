@@ -35,7 +35,7 @@ import {
 import { AnalysisService } from './analysis.service';
 
 @ApiTags('analysis')
-@Controller('api')
+@Controller('analysis')
 export class AnalysisController {
   constructor(
     private readonly productService: ProductService,
@@ -51,7 +51,7 @@ export class AnalysisController {
    * POST /api/analysis/generate
    * DB'de varsa getir, yoksa AI ile oluştur
    */
-  @Post('analysis/generate')
+  @Post('generate')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -133,7 +133,7 @@ export class AnalysisController {
    * POST /api/analysis/reject
    * Mevcut analizi reddet, sonraki varyantı getir veya yeni oluştur
    */
-  @Post('analysis/reject')
+  @Post('reject')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

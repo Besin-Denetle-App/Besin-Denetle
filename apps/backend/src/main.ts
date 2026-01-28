@@ -12,6 +12,7 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
 
   app.enableCors();
+  app.setGlobalPrefix('api'); // Tüm endpoint'lere /api prefix'i ekler
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
   // Swagger konfigürasyonu
@@ -22,6 +23,7 @@ async function bootstrap() {
     // API tag'leri (akış sırasına göre)
     .addTag('auth', 'Kimlik doğrulama işlemleri')
     .addTag('products', 'Ürün tarama ve yönetimi')
+    .addTag('barcodes', 'Barkod bildirme işlemleri')
     .addTag('content', 'Ürün içeriği (içindekiler, besin değerleri)')
     .addTag('analysis', 'AI sağlık analizi')
     .addTag('health', 'Sunucu sağlık kontrolü')
