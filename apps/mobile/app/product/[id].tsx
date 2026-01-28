@@ -562,10 +562,14 @@ export default function ProductDetailScreen() {
 
               {/* AI Model ve Tarih Bilgisi */}
               <View className="flex-row items-center justify-center py-4 border-t border-border mt-2">
-                <Text className="text-muted-foreground text-sm">
-                  🤖 {analysis.analysis_text.model}
-                </Text>
-                <Text className="text-muted-foreground text-sm mx-2">|</Text>
+                {analysis.model && (
+                  <>
+                    <Text className="text-muted-foreground text-sm">
+                      🤖 {analysis.model}
+                    </Text>
+                    <Text className="text-muted-foreground text-sm mx-2">|</Text>
+                  </>
+                )}
                 <Text className="text-muted-foreground text-sm">
                   📅 {new Date(analysis.created_at).toLocaleDateString("tr-TR", {
                     day: "numeric",

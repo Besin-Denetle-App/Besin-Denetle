@@ -60,6 +60,7 @@ export class AnalysisService {
     const analysis = this.analysisRepository.create({
       product_content_id: data.product_content_id,
       analysis_text: data.analysis_text ?? null,
+      model: data.model ?? null,
       is_manual: data.is_manual ?? false,
       score: 0,
       vote_count: 0,

@@ -93,7 +93,6 @@ export interface ICreateProductContent {
  * Prompt 3 çıktısı olarak DB'ye kaydedilir
  */
 export interface IAnalysisResult {
-  model: string;                // Kullanılan AI model adı (örn: gemini-3-pro-preview)
   summary: string;              // 3-5 cümlelik genel değerlendirme
   healthScore: number;          // 1-10 arası sağlık puanı (NOVA + Nutri-Score kombinasyonu)
   novaGroup: number;            // 1-4 arası NOVA sınıflandırması (1=doğal, 4=ultra işlenmiş)
@@ -113,6 +112,7 @@ export interface IContentAnalysis {
   id: string;
   product_content_id: string;
   analysis_text: IAnalysisResult | null;
+  model: string | null;              // Kullanılan AI model adı (örn: gemini-3-pro-preview)
   score: number;                     // Oylama skoru
   vote_count: number;                // Toplam oy sayısı
   is_manual: boolean;
@@ -124,6 +124,7 @@ export interface IContentAnalysis {
  */
 export interface ICreateContentAnalysis {
   product_content_id: string;
+  model?: string | null;
   analysis_text?: IAnalysisResult | null;
   is_manual?: boolean;
 }

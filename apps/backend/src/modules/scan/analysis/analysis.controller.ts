@@ -100,7 +100,7 @@ export class AnalysisController {
 
       const product = await this.productService.findById(content.product_id);
 
-      const aiAnalysis = await this.aiService.analyzeContent(
+      const { result: aiAnalysis, model } = await this.aiService.analyzeContent(
         product?.brand ?? null,
         product?.name ?? null,
         content.ingredients,
@@ -111,6 +111,7 @@ export class AnalysisController {
       const newAnalysis = await this.analysisService.create({
         product_content_id: contentId,
         analysis_text: aiAnalysis,
+        model,
         is_manual: false,
       });
       analysis = newAnalysis;
@@ -208,7 +209,7 @@ export class AnalysisController {
         analysis.product_content_id,
       );
 
-      const aiAnalysis = await this.aiService.analyzeContent(
+      const { result: aiAnalysis, model } = await this.aiService.analyzeContent(
         product?.brand ?? null,
         product?.name ?? null,
         content.ingredients,
@@ -219,6 +220,7 @@ export class AnalysisController {
       nextAnalysis = await this.analysisService.create({
         product_content_id: analysis.product_content_id,
         analysis_text: aiAnalysis,
+        model,
         is_manual: false,
       });
       isNew = true;

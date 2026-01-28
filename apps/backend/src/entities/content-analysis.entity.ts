@@ -37,6 +37,10 @@ export class ContentAnalysis {
   @Column({ type: 'jsonb', nullable: true })
   analysis_text: IAnalysisResult | null;
 
+  // Kullanılan AI model adı (örn: gemini-3-pro-preview)
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  model: string | null;
+
   // Skor
   @Column({ type: 'int', default: 0 })
   @Index()

@@ -1,7 +1,7 @@
 import {
-  AIAnalysisResult,
   AIContentResult,
   AIProductResult,
+  IAnalysisResult,
 } from '@besin-denetle/shared';
 import { Injectable } from '@nestjs/common';
 import { AppLogger } from '../../common';
@@ -127,6 +127,7 @@ export class AiService {
   /**
    * İçerik bilgisine göre sağlık değerlendirmesi
    * Structured Output (Google Search yok) - Fallback yok
+   * @returns { result: IAnalysisResult, model: string } - Analiz sonucu ve kullanılan model
    */
   async analyzeContent(
     brand: string | null,
@@ -134,10 +135,14 @@ export class AiService {
     ingredients: string | null,
     allergens: string | null,
     nutrition: Record<string, unknown> | null,
-  ): Promise<AIAnalysisResult> {
+  ): Promise<{ result: IAnalysisResult; model: string }> {
     // Mock mode kontrolü
     if (this.clientService.isInMockMode()) {
-      return this.parserService.mockAnalyzeContent(name);
+      const mockResult = this.parserService.mockAnalyzeContent(name);
+      return {
+        result: mockResult,
+        model: 'mock-model',
+      };
     }
 
     // Prompt oluştur
@@ -150,13 +155,16 @@ export class AiService {
     );
 
     // API çağrısı (sadece schema, grounding yok, fallback yok)
-    const result = await this.clientService.callWithoutGrounding<
-      Omit<AIAnalysisResult, 'model'>
-    >(prompt, 'analyzeContent', ANALYZE_CONTENT_SCHEMA);
+    const result =
+      await this.clientService.callWithoutGrounding<IAnalysisResult>(
+        prompt,
+        'analyzeContent',
+        ANALYZE_CONTENT_SCHEMA,
+      );
 
-    // Model bilgisini ekle
+    // Model bilgisini ayrı döndür
     return {
-      ...result,
+      result,
       model: this.clientService.getModelSmart(),
     };
   }

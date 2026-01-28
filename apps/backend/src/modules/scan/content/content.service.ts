@@ -56,6 +56,7 @@ export class ContentService {
       ingredients: data.ingredients ?? null,
       allergens: data.allergens ?? null,
       nutrition_table: data.nutrition_table ?? null,
+      model: data.model ?? null,
       is_manual: data.is_manual ?? false,
       score: 0,
       vote_count: 0,

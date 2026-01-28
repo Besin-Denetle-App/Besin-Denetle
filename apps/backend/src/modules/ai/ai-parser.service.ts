@@ -1,7 +1,7 @@
 import {
-  AIAnalysisResult,
   AIContentResult,
   AIProductResult,
+  IAnalysisResult,
   ProductType,
 } from '@besin-denetle/shared';
 import { Injectable } from '@nestjs/common';
@@ -72,11 +72,10 @@ export class AiParserService {
     };
   }
 
-  mockAnalyzeContent(name: string | null): AIAnalysisResult {
+  mockAnalyzeContent(name: string | null): IAnalysisResult {
     this.appLogger.infrastructure('MOCK: analyzeContent', { name });
 
     return {
-      model: 'mock-gemini',
       summary:
         'Bu ürün yüksek şeker ve doymuş yağ içermektedir. NOVA 4 kategorisinde ultra işlenmiş bir gıdadır. Ara sıra tüketim için uygundur ancak düzenli tüketim önerilmez.',
       healthScore: 4,
