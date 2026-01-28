@@ -3,15 +3,16 @@ import { router } from "expo-router";
 import { useColorScheme } from "nativewind";
 import { useState } from "react";
 import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    KeyboardAvoidingView,
+    Platform,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { showErrorToast } from "../../components/feedback";
 import { useDebouncedNavigation } from "../../hooks/use-debounce";
 import { parseApiError } from "../../services/api";
 import { useAuthStore } from "../../stores/auth.store";
@@ -51,7 +52,9 @@ export default function EmailSignupScreen() {
       }
     } catch (err) {
       console.error("[EmailSignup] Error:", err);
-      setError(parseApiError(err));
+      const errorMsg = parseApiError(err);
+      setError(errorMsg);
+      showErrorToast(errorMsg);
     }
   };
 

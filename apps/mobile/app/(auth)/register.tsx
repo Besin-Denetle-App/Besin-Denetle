@@ -4,15 +4,16 @@ import { router } from "expo-router";
 import { useColorScheme } from "nativewind";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    KeyboardAvoidingView,
+    Platform,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { showErrorToast } from "../../components/feedback";
 import { parseApiError } from "../../services/api";
 import { useAuthStore } from "../../stores/auth.store";
 
@@ -30,6 +31,7 @@ export default function RegisterScreen() {
     const timer = setTimeout(() => {
       if (!tempToken) {
         console.log("[Register] No tempToken found, redirecting to login");
+        showErrorToast("Oturum bilgisi bulunamadı. Lütfen tekrar giriş yapın.");
         router.replace("/(auth)/login");
       } else {
         console.log("[Register] tempToken found, ready to register");

@@ -89,7 +89,7 @@ module.exports = {
     name: "Besin Denetle",
     slug: "Besin-Denetle",
     scheme: "besindenetle",
-    version: "0.24.2",
+    version: "0.25.0",
     orientation: "portrait",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,

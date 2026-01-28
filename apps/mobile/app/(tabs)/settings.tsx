@@ -1,5 +1,5 @@
 import { showInfoToast } from "@/components/feedback";
-import { COLORS } from "@/constants";
+import { APP_CONFIG, COLORS } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import * as WebBrowser from "expo-web-browser";
@@ -447,9 +447,7 @@ export default function SettingsScreen() {
           <View className="flex-row items-center gap-2 mb-2">
             <TouchableOpacity
               onPress={() =>
-                WebBrowser.openBrowserAsync(
-                  "https://besindenetle.furkanpasa.com/privacy",
-                )
+                WebBrowser.openBrowserAsync(APP_CONFIG.urls.privacy)
               }
               activeOpacity={0.7}
             >
@@ -460,9 +458,7 @@ export default function SettingsScreen() {
             <Text className="text-muted-foreground">•</Text>
             <TouchableOpacity
               onPress={() =>
-                WebBrowser.openBrowserAsync(
-                  "https://besindenetle.furkanpasa.com/terms",
-                )
+                WebBrowser.openBrowserAsync(APP_CONFIG.urls.terms)
               }
               activeOpacity={0.7}
             >

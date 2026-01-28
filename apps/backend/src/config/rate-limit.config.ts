@@ -26,12 +26,12 @@ export default registerAs('rateLimit', () => ({
     scan_ai: { limit: 6, ttlSeconds: 60 },
 
     // /products/confirm + /content/reject
-    content_db: { limit: 10, ttlSeconds: 60 },
-    content_ai: { limit: 5, ttlSeconds: 60 },
+    content_db: { limit: 8, ttlSeconds: 60 },
+    content_ai: { limit: 4, ttlSeconds: 60 },
 
     // /analysis/generate + /analysis/reject
-    analysis_db: { limit: 10, ttlSeconds: 60 },
-    analysis_ai: { limit: 5, ttlSeconds: 60 },
+    analysis_db: { limit: 8, ttlSeconds: 60 },
+    analysis_ai: { limit: 4, ttlSeconds: 60 },
   },
 
   // ============================================
@@ -42,7 +42,7 @@ export default registerAs('rateLimit', () => ({
     scan_reject: { limit: 3, ttlSeconds: 60 },
     content_reject: { limit: 3, ttlSeconds: 60 },
     analysis_reject: { limit: 3, ttlSeconds: 60 },
-    flag: { limit: 5, ttlSeconds: 60 },
+    flag: { limit: 1, ttlSeconds: 60 },
   },
 
   // ============================================
@@ -53,8 +53,8 @@ export default registerAs('rateLimit', () => ({
     total_db_day: { limit: 360, ttlSeconds: 86400 },
     total_ai_hour: { limit: 90, ttlSeconds: 3600 },
     total_ai_day: { limit: 180, ttlSeconds: 86400 },
-    total_reject_hour: { limit: 90, ttlSeconds: 3600 },
-    total_reject_day: { limit: 180, ttlSeconds: 86400 },
+    total_reject_hour: { limit: 45, ttlSeconds: 3600 },
+    total_reject_day: { limit: 90, ttlSeconds: 86400 },
   },
 
   // ============================================
@@ -69,13 +69,13 @@ export default registerAs('rateLimit', () => ({
     // User bazlı (giriş yaptıktan sonra)
     refresh_ip: { limit: 20, ttlSeconds: 60 },
     logout_user: { limit: 20, ttlSeconds: 60 },
-    delete_user: { limit: 1, ttlSeconds: 3600 }, // 1/saat - kritik işlem
+    delete_user: { limit: 1, ttlSeconds: 3600 },
   },
 
   // ============================================
   // HEALTH LİMİTLERİ (IP bazlı)
   // ============================================
   health: {
-    check_ip: { limit: 3, ttlSeconds: 60 },
+    check_ip: { limit: 2, ttlSeconds: 60 },
   },
 }));

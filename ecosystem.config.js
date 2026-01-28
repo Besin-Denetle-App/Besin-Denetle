@@ -34,7 +34,7 @@ module.exports = {
       name: "besin-denetle",
       script: "apps/backend/dist/main.js",
       cwd: __dirname,
-      instances: 2,
+      instances: 1,
       autorestart: true,
       watch: false,
       max_memory_restart: "1024M",

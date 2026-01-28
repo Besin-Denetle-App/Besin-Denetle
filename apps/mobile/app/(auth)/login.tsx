@@ -7,13 +7,14 @@ import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { showErrorToast } from "../../components/feedback";
 import { useDebouncedNavigation } from "../../hooks/use-debounce";
 import { parseApiError } from "../../services/api";
 import { useAuthStore } from "../../stores/auth.store";
@@ -70,7 +71,9 @@ export default function LoginScreen() {
               router.replace("/(tabs)");
             }
           } catch (err) {
-            setError(parseApiError(err));
+            const errorMsg = parseApiError(err);
+            setError(errorMsg);
+            showErrorToast(errorMsg);
           } finally {
             isProcessingRef.current = false;
             setIsProcessing(false);
@@ -78,7 +81,9 @@ export default function LoginScreen() {
         }
       } else if (response?.type === "error") {
         console.error("Google auth error:", response.error);
-        setError("Google girişi sırasında bir hata oluştu");
+        const errorMsg = "Google girişi sırasında bir hata oluştu";
+        setError(errorMsg);
+        showErrorToast(errorMsg);
       } else if (response?.type === "dismiss") {
         console.log("Google auth dismissed by user");
       }
@@ -108,26 +113,32 @@ export default function LoginScreen() {
             }
           } catch (err) {
             console.error("Backend login error:", err);
-            setError(parseApiError(err));
+            const errorMsg = parseApiError(err);
+            setError(errorMsg);
+            showErrorToast(errorMsg);
           } finally {
             setIsProcessing(false);
           }
         } else {
           console.error("idToken missing in response");
-          setError("Google girişi başarısız: idToken alınamadı");
+          const errorMsg = "Google girişi başarısız: idToken alınamadı";
+          setError(errorMsg);
+          showErrorToast(errorMsg);
         }
       } else if (result?.type === "error") {
         console.error("Google auth error:", result.error);
-        setError(
-          "Google girişi sırasında bir hata oluştu: " +
-          (result.error?.message || "Bilinmeyen hata"),
-        );
+        const errorMsg = "Google girişi sırasında bir hata oluştu: " +
+          (result.error?.message || "Bilinmeyen hata");
+        setError(errorMsg);
+        showErrorToast(errorMsg);
       } else if (result?.type === "dismiss" || result?.type === "cancel") {
         console.log("Google auth dismissed/cancelled by user");
       }
     } catch (err) {
       console.error("promptAsync error:", err);
-      setError(parseApiError(err));
+      const errorMsg = parseApiError(err);
+      setError(errorMsg);
+      showErrorToast(errorMsg);
     }
   };
 

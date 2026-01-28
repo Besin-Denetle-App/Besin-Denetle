@@ -1,20 +1,21 @@
 import {
-  API_ENDPOINTS,
-  ApiErrorResponse,
-  ERROR_CODES,
+    API_ENDPOINTS,
+    ApiErrorResponse,
+    ERROR_CODES,
 } from "@besin-denetle/shared";
 import axios, {
-  AxiosError,
-  InternalAxiosRequestConfig,
-  isAxiosError,
+    AxiosError,
+    InternalAxiosRequestConfig,
+    isAxiosError,
 } from "axios";
 import Constants from "expo-constants";
 import { router } from "expo-router";
+import { APP_CONFIG } from "../constants";
 import {
-  clearAuthData,
-  getAccessToken,
-  getRefreshToken,
-  saveTokens,
+    clearAuthData,
+    getAccessToken,
+    getRefreshToken,
+    saveTokens,
 } from "../utils/storage";
 
 // API base URL belirleme
@@ -72,7 +73,7 @@ console.log("API Base URL:", BASE_URL);
 // Axios instance
 export const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 30000, // 30sn (AI işlemleri uzun sürebilir)
+  timeout: APP_CONFIG.api.timeout,
   headers: {
     "Content-Type": "application/json",
   },

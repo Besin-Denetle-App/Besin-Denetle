@@ -17,7 +17,7 @@ export const APP_CONFIG = {
    */
   scanner: {
     confirmationThreshold: 3, // Kaç kez okunursa barkod onaylanır
-    scanDebounceMs: 500, // Taramalar arası minimum süre (ms)
+    scanDebounceMs: 333, // Taramalar arası minimum süre (ms)
     supportedFormats: [
       "ean13",
       "ean8",
@@ -32,10 +32,7 @@ export const APP_CONFIG = {
    * API ayarları
    */
   api: {
-    timeout: 30000, // 30sn (AI işlemleri uzun sürebilir)
-    retryCount: 3, // Max retry
-    retryBaseDelay: 1000, // İlk retry gecikmesi (ms)
-    retryMaxDelay: 8000, // Max retry gecikmesi (ms)
+    timeout: 60000, // 60sn (AI işlemleri uzun sürebilir)
   },
 
   /**
@@ -53,6 +50,14 @@ export const APP_CONFIG = {
    */
   fileSystem: {
     imageDirectory: "product_images/",
+  },
+
+  /**
+   * Harici URL'ler
+   */
+  urls: {
+    privacy: "https://besindenetle.furkanpasa.com/privacy",
+    terms: "https://besindenetle.furkanpasa.com/terms",
   },
 } as const;
 
