@@ -1,10 +1,10 @@
 import { showSuccessToast } from "@/components/feedback";
 import {
-    HealthScore,
-    NovaGroup,
-    NutriScore,
-    NutritionTable,
-    ProductImage,
+  HealthScore,
+  NovaGroup,
+  NutriScore,
+  NutritionTable,
+  ProductImage,
 } from "@/components/product";
 import { Skeleton } from "@/components/ui/skeleton";
 import { COLORS } from "@/constants";
@@ -14,13 +14,13 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useColorScheme } from "nativewind";
 import { useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Animated,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    useWindowDimensions,
-    View,
+  ActivityIndicator,
+  Animated,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
 } from "react-native";
 import PagerView from "react-native-pager-view";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -422,7 +422,7 @@ export default function ProductDetailScreen() {
             <TouchableOpacity
               onPress={rejectContent}
               disabled={isLoading}
-              className={`py-4 rounded-2xl items-center mb-8 ${isLoading
+              className={`py-4 rounded-2xl items-center mb-4 ${isLoading
                 ? "bg-muted border border-border"
                 : "bg-destructive/10 border border-destructive/20"
                 }`}
@@ -637,7 +637,7 @@ export default function ProductDetailScreen() {
             <TouchableOpacity
               onPress={rejectAnalysis}
               disabled={isLoading || isAnalysisLoading}
-              className={`py-4 rounded-2xl items-center mb-8 ${isAnalysisLoading
+              className={`py-4 rounded-2xl items-center mb-4 ${isAnalysisLoading
                 ? "bg-muted border border-border"
                 : "bg-destructive/10 border border-destructive/20"
                 }`}
