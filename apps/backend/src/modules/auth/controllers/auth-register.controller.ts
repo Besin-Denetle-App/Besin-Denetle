@@ -1,21 +1,21 @@
 import { RefreshTokenResponse, RegisterResponse } from '@besin-denetle/shared';
 import {
-    Body,
-    Controller,
-    HttpCode,
-    HttpStatus,
-    Post,
-    Req,
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 
 import {
-    getClientIp,
-    RateLimitAuthConfig,
-    RateLimitKeyPrefix,
-    RateLimitService,
+  getClientIp,
+  RateLimitAuthConfig,
+  RateLimitKeyPrefix,
+  RateLimitService,
 } from '../../../common';
 
 import { AuthService } from '../auth.service';

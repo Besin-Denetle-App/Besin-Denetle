@@ -1,4 +1,8 @@
-import { RejectContentResponse, VoteTarget, VoteType } from '@besin-denetle/shared';
+import {
+  RejectContentResponse,
+  VoteTarget,
+  VoteType,
+} from '@besin-denetle/shared';
 import {
   Body,
   Controller,
