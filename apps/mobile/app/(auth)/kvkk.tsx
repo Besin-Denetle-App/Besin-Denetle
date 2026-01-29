@@ -39,7 +39,7 @@ export default function KVKKScreen() {
             {/* İçerik */}
             <ScrollView className="flex-1 px-6 py-6" showsVerticalScrollIndicator={false}>
                 <Text className="text-foreground text-base leading-7 mb-6">
-                    6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, Besin Denetle uygulaması ("Veri Sorumlusu") olarak, kişisel verilerinizin güvenliği hususuna azami hassasiyet göstermekteyiz.
+                    6698 sayılı Kişisel Verilerin Korunması Kanunu (&quot;KVKK&quot;) uyarınca, Besin Denetle uygulaması (&quot;Veri Sorumlusu&quot;) olarak, kişisel verilerinizin güvenliği hususuna azami hassasiyet göstermekteyiz.
                 </Text>
 
                 <Section title="1. Veri Sorumlusu">
@@ -82,9 +82,15 @@ export default function KVKKScreen() {
                     </Text>
                 </Section>
 
-                <Section title="6. İlgili Kişinin Hakları (Madde 11)">
+                <Section title="6. Kişisel Verilerin Saklanma Süresi">
+                    <Text className="text-muted-foreground text-base leading-6">
+                        Kişisel verileriniz, hesabınız aktif olduğu sürece saklanır. Hesabınızı silmeniz halinde tüm kişisel verileriniz KVKK m.7 uyarınca kalıcı olarak silinir veya anonim hale getirilir.
+                    </Text>
+                </Section>
+
+                <Section title="7. İlgili Kişinin Hakları (Madde 11)">
                     <Text className="text-muted-foreground text-base leading-6 mb-2">
-                        KVKK'nın 11. maddesi uyarınca aşağıdaki haklara sahipsiniz:
+                        KVKK&apos;nın 11. maddesi uyarınca aşağıdaki haklara sahipsiniz:
                     </Text>
                     <ListItem dot>Kişisel verilerinizin işlenip işlenmediğini öğrenme,</ListItem>
                     <ListItem dot>İşlenmişse buna ilişkin bilgi talep etme,</ListItem>
@@ -94,7 +100,7 @@ export default function KVKKScreen() {
                     <ListItem dot>KVKK m.7 uyarınca silinmesini veya yok edilmesini isteme.</ListItem>
                 </Section>
 
-                <Section title="7. Başvuru ve İletişim">
+                <Section title="8. Başvuru ve İletişim">
                     <Text className="text-muted-foreground text-base leading-6 mb-2">
                         KVKK kapsamındaki haklarınızı kullanmakla ilgili taleplerinizi aşağıdaki e-posta adresi üzerinden bize iletebilirsiniz:
                     </Text>

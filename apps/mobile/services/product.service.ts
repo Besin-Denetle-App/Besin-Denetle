@@ -1,20 +1,21 @@
 import {
-    API_ENDPOINTS,
-    type ConfirmRequest,
-    type ConfirmResponse,
-    type FlagBarcodeRequest,
-    type FlagBarcodeResponse,
-    type GenerateAnalysisRequest,
-    type GenerateAnalysisResponse,
-    type RejectAnalysisRequest,
-    type RejectAnalysisResponse,
-    type RejectContentRequest,
-    type RejectContentResponse,
-    type RejectProductRequest,
-    type RejectProductResponse,
-    type ScanRequest,
-    type ScanResponse,
+  API_ENDPOINTS,
+  type ConfirmRequest,
+  type ConfirmResponse,
+  type FlagBarcodeRequest,
+  type FlagBarcodeResponse,
+  type GenerateAnalysisRequest,
+  type GenerateAnalysisResponse,
+  type RejectAnalysisRequest,
+  type RejectAnalysisResponse,
+  type RejectContentRequest,
+  type RejectContentResponse,
+  type RejectProductRequest,
+  type RejectProductResponse,
+  type ScanRequest,
+  type ScanResponse,
 } from "@besin-denetle/shared";
+import { APP_CONFIG } from "../constants";
 import { api } from "./api";
 
 /**
@@ -25,6 +26,7 @@ export const scanBarcode = async (barcode: string): Promise<ScanResponse> => {
   const response = await api.post<ScanResponse>(
     API_ENDPOINTS.PRODUCTS.SCAN,
     request,
+    { timeout: APP_CONFIG.api.timeouts.scan },
   );
   return response.data;
 };
@@ -39,6 +41,7 @@ export const confirmProduct = async (
   const response = await api.post<ConfirmResponse>(
     API_ENDPOINTS.PRODUCTS.CONFIRM,
     request,
+    { timeout: APP_CONFIG.api.timeouts.confirm },
   );
   return response.data;
 };
@@ -53,6 +56,7 @@ export const generateAnalysis = async (
   const response = await api.post<GenerateAnalysisResponse>(
     API_ENDPOINTS.ANALYSIS.GENERATE,
     request,
+    { timeout: APP_CONFIG.api.timeouts.analysis },
   );
   return response.data;
 };
@@ -68,6 +72,7 @@ export const rejectProduct = async (
   const response = await api.post<RejectProductResponse>(
     API_ENDPOINTS.PRODUCTS.REJECT,
     request,
+    { timeout: APP_CONFIG.api.timeouts.reject },
   );
   return response.data;
 };
@@ -83,6 +88,7 @@ export const rejectContent = async (
   const response = await api.post<RejectContentResponse>(
     API_ENDPOINTS.CONTENT.REJECT,
     request,
+    { timeout: APP_CONFIG.api.timeouts.reject },
   );
   return response.data;
 };
@@ -98,6 +104,7 @@ export const rejectAnalysis = async (
   const response = await api.post<RejectAnalysisResponse>(
     API_ENDPOINTS.ANALYSIS.REJECT,
     request,
+    { timeout: APP_CONFIG.api.timeouts.reject },
   );
   return response.data;
 };
@@ -112,6 +119,7 @@ export const flagBarcode = async (
   const response = await api.post<FlagBarcodeResponse>(
     API_ENDPOINTS.BARCODES.FLAG,
     request,
+    { timeout: APP_CONFIG.api.timeouts.flag },
   );
   return response.data;
 };

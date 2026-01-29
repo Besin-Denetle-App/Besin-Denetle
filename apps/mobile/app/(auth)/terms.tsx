@@ -62,8 +62,11 @@ export default function TermsScreen() {
           3. Kullanıcı Sorumlulukları
         </Text>
         <Text className="text-muted-foreground text-base leading-6 mb-4">
-          • Uygulamayı yalnızca yasal amaçlarla kullanın{"\n"}• Topluluk
-          oylamalarında dürüst olun{"\n"}• Yanıltıcı bilgi girişi yapmayın
+          • Uygulamayı yalnızca yasal amaçlarla kullanın{"\n"}
+          • Topluluk oylamalarında dürüst olun{"\n"}
+          • Yanıltıcı bilgi girişi yapmayın{"\n"}
+          • Spam, bot kullanımı veya sistemi manipüle etmeye çalışmayın{"\n"}
+          • Uygulamayı kötüye kullanmak hesap askıya alınmasına neden olabilir
         </Text>
 
         <Text className="text-foreground font-bold text-lg mb-2">
@@ -82,7 +85,16 @@ export default function TermsScreen() {
         </Text>
 
         <Text className="text-foreground font-bold text-lg mb-2">
-          6. İletişim
+          6. Değişiklik Hakkı
+        </Text>
+        <Text className="text-muted-foreground text-base leading-6 mb-4">
+          Bu kullanım koşullarını önceden haber vermeksizin güncelleme hakkını
+          saklı tutarız. Değişiklikler uygulama içinde yayınlandığı andan
+          itibaren geçerli olur.
+        </Text>
+
+        <Text className="text-foreground font-bold text-lg mb-2">
+          7. İletişim
         </Text>
         <Text className="text-muted-foreground text-base leading-6 mb-1">
           Sorularınız için:

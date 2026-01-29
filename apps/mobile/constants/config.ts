@@ -32,7 +32,15 @@ export const APP_CONFIG = {
    * API ayarları
    */
   api: {
-    timeout: 60000, // 60sn (AI işlemleri uzun sürebilir)
+    defaultTimeout: 180000, // 180sn - genel istekler için
+    timeouts: {
+      scan: 100000,       // 100sn - barkod tarama (hızlı olmalı)
+      confirm: 180000,    // 180sn - içindekiler (AI)
+      analysis: 180000,   // 180sn - analiz (ağır AI işlemi)
+      reject: 180000,     // 180sn - reddetme
+      flag: 60000,       // 60sn - bildirim
+      auth: 30000,       // 30sn - auth işlemleri
+    },
   },
 
   /**

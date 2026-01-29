@@ -1,17 +1,18 @@
 import {
-  API_ENDPOINTS,
-  type LogoutResponse,
-  type OAuthRequest,
-  type OAuthResponse,
-  type RefreshTokenResponse,
-  type RegisterRequest,
-  type RegisterResponse,
+    API_ENDPOINTS,
+    type LogoutResponse,
+    type OAuthRequest,
+    type OAuthResponse,
+    type RefreshTokenResponse,
+    type RegisterRequest,
+    type RegisterResponse,
 } from "@besin-denetle/shared";
+import { APP_CONFIG } from "../constants";
 import {
-  clearAuthData,
-  getRefreshToken,
-  saveTokens,
-  saveUser,
+    clearAuthData,
+    getRefreshToken,
+    saveTokens,
+    saveUser,
 } from "../utils/storage";
 import { api } from "./api";
 
@@ -24,6 +25,7 @@ export const emailSignup = async (request: {
   const response = await api.post<OAuthResponse>(
     API_ENDPOINTS.AUTH.EMAIL_SIGNUP,
     request,
+    { timeout: APP_CONFIG.api.timeouts.auth },
   );
   const data = response.data;
 
@@ -43,6 +45,7 @@ export const oauth = async (request: OAuthRequest): Promise<OAuthResponse> => {
   const response = await api.post<OAuthResponse>(
     API_ENDPOINTS.AUTH.OAUTH,
     request,
+    { timeout: APP_CONFIG.api.timeouts.auth },
   );
   const data = response.data;
 
@@ -64,6 +67,7 @@ export const register = async (
   const response = await api.post<RegisterResponse>(
     API_ENDPOINTS.AUTH.REGISTER,
     request,
+    { timeout: APP_CONFIG.api.timeouts.auth },
   );
   const data = response.data;
 
@@ -85,6 +89,7 @@ export const refresh = async (): Promise<RefreshTokenResponse | null> => {
     const response = await api.post<RefreshTokenResponse>(
       API_ENDPOINTS.AUTH.REFRESH,
       { refreshToken },
+      { timeout: APP_CONFIG.api.timeouts.auth },
     );
     const data = response.data;
 
@@ -100,7 +105,7 @@ export const refresh = async (): Promise<RefreshTokenResponse | null> => {
  */
 export const logout = async (): Promise<void> => {
   try {
-    await api.post<LogoutResponse>(API_ENDPOINTS.AUTH.LOGOUT);
+    await api.post<LogoutResponse>(API_ENDPOINTS.AUTH.LOGOUT, {}, { timeout: APP_CONFIG.api.timeouts.auth });
   } catch {
     // Hata olsa bile yerel verileri temizle
   }
@@ -114,6 +119,7 @@ export const logout = async (): Promise<void> => {
 export const deleteAccount = async (): Promise<{ message: string }> => {
   const response = await api.delete<{ success: boolean; message: string }>(
     API_ENDPOINTS.AUTH.DELETE_ACCOUNT,
+    { timeout: APP_CONFIG.api.timeouts.auth },
   );
   await clearAuthData();
   return { message: response.data.message };
@@ -125,6 +131,8 @@ export const deleteAccount = async (): Promise<{ message: string }> => {
 export const restoreAccount = async (): Promise<{ message: string }> => {
   const response = await api.post<{ success: boolean; message: string }>(
     API_ENDPOINTS.AUTH.RESTORE_ACCOUNT,
+    {},
+    { timeout: APP_CONFIG.api.timeouts.auth },
   );
   return { message: response.data.message };
 };

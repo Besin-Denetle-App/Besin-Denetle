@@ -50,10 +50,10 @@ export default function PrivacyScreen() {
             <Text className="font-bold">İletişim Bilgileri:</Text> E-posta adresi.
           </ListItem>
           <ListItem dot>
-            <Text className="font-bold">Kullanım Verileri:</Text> Taradığınız barkodlar, ürünlere verdiğiniz oylar ve raporlamalar.
+            <Text className="font-bold">Kullanım Verileri:</Text> Taradığınız barkodlar, ürünlere ait raporlamalar.
           </ListItem>
           <ListItem dot>
-            <Text className="font-bold">Cihaz Bilgileri:</Text> Uygulama sürümü, işletim sistemi versiyonu ve tercih edilen tema ayarları.
+            <Text className="font-bold">Cihaz Bilgileri:</Text> Uygulama sürümü, işletim sistemi versiyonu
           </ListItem>
         </Section>
 
@@ -61,7 +61,6 @@ export default function PrivacyScreen() {
           <Text className="text-muted-foreground text-base leading-6 mb-2">
             Topladığımız verileri şu amaçlarla kullanıyoruz:
           </Text>
-          <ListItem>• Size kişiselleştirilmiş ürün analizleri sunmak.</ListItem>
           <ListItem>• Topluluk destekli doğrulama sistemini (oylama) işletmek.</ListItem>
           <ListItem>• Hesap güvenliğinizi sağlamak ve kötüye kullanımı önlemek.</ListItem>
           <ListItem>• Uygulama performansını analiz etmek ve geliştirmek.</ListItem>
@@ -69,10 +68,10 @@ export default function PrivacyScreen() {
 
         <Section title="3. Veri Paylaşımı">
           <Text className="text-muted-foreground text-base leading-6 mb-2">
-            Kişisel verileriniz, yasal zorunluluklar dışında üçüncü şahıslarla paylaşılmaz. Verileriniz reklam veya pazarlama amacıyla satılmaz.
+            Kişisel verileriniz, yasal zorunluluklar dışında asla üçüncü şahıslarla paylaşılmaz. Verileriniz reklam veya pazarlama amacıyla satılmaz.
           </Text>
-          <Text className="text-muted-foreground text-base leading-6">
-            Yapay zeka analizleri için gönderilen verilerde (barkod, içerik listesi) kişisel kimlik bilgileriniz yer almaz.
+          <Text className="text-muted-foreground text-base leading-6 mb-2">
+            Hiçbir kişisel veriniz yapay zeka modellerine gönderilmemektedir. AI analizleri yalnızca ürün barkodu ve içerik listesi gibi anonim ürün bilgileriyle gerçekleştirilir.
           </Text>
         </Section>
 
@@ -82,7 +81,13 @@ export default function PrivacyScreen() {
           </Text>
         </Section>
 
-        <Section title="5. Kullanıcı Hakları">
+        <Section title="5. Veri Saklama Süresi">
+          <Text className="text-muted-foreground text-base leading-6">
+            Kişisel verileriniz, hesabınız aktif olduğu sürece saklanır. Hesabınızı sildiğinizde tüm verileriniz kalıcı olarak silinir. Cihazınızdaki yerel veriler (tarama geçmişi) 40 gün sonra veya siz silene kadar saklanır.
+          </Text>
+        </Section>
+
+        <Section title="6. Kullanıcı Hakları">
           <Text className="text-muted-foreground text-base leading-6 mb-2">
             Uygulama üzerinden dilediğiniz zaman:
           </Text>
@@ -90,7 +95,7 @@ export default function PrivacyScreen() {
           <ListItem>• Hesabınızı ve sunucudaki tüm verilerinizi silebilirsiniz.</ListItem>
         </Section>
 
-        <Section title="6. İletişim">
+        <Section title="7. İletişim">
           <Text className="text-muted-foreground text-base leading-6 mb-2">
             Gizlilik politikamızla ilgili sorularınız için bizimle iletişime geçebilirsiniz:
           </Text>

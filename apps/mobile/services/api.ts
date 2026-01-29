@@ -73,7 +73,7 @@ console.log("API Base URL:", BASE_URL);
 // Axios instance
 export const api = axios.create({
   baseURL: BASE_URL,
-  timeout: APP_CONFIG.api.timeout,
+  timeout: APP_CONFIG.api.defaultTimeout,
   headers: {
     "Content-Type": "application/json",
   },
