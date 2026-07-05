@@ -4,19 +4,19 @@ import { Ionicons } from "@expo/vector-icons";
 import { useColorScheme } from "nativewind";
 import { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ProductImage } from "./product-image";
 
 // AI arama mesajını gösterme gecikmesi (ms)
-const AI_SEARCH_DELAY_MS = 2000;
+const AI_SEARCH_DELAY_MS = 4000;
 
 interface ProductPopupProps {
   visible: boolean;
